@@ -1,7 +1,7 @@
 // === Tipos partilhados entre apps/web e apps/api ===
 
-// --- Roles RBAC ---
-export type UserRole = 'admin' | 'socio' | 'advogado' | 'estagiario' | 'secretaria' | 'cliente'
+// --- Roles RBAC — UPPERCASE alinhado com enums Prisma ---
+export type UserRole = 'ADMIN' | 'SOCIO' | 'ADVOGADO' | 'ESTAGIARIO' | 'SECRETARIA' | 'CLIENTE'
 
 // --- Tipos de processo jurídico PT ---
 export type MatterType =
