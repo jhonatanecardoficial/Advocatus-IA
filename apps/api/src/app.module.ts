@@ -1,17 +1,38 @@
-import { Module } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
-import { ThrottlerModule } from '@nestjs/throttler'
-import { PrismaModule } from './prisma/prisma.module'
-import { AuthModule } from './auth/auth.module'
-import { TenantsModule } from './tenants/tenants.module'
-import { ClientsModule } from './clients/clients.module'
-import { MattersModule } from './matters/matters.module'
-import { TasksModule } from './tasks/tasks.module'
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { LoggerModule } from 'nestjs-pino';
+import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './auth/auth.module';
+import { TenantsModule } from './tenants/tenants.module';
+import { ClientsModule } from './clients/clients.module';
+import { MattersModule } from './matters/matters.module';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
-        ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
+        LoggerModule.forRoot({
+            pinoHttp: {
+                level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+                autoLogging: false,
+                transport: {
+                    targets: [
+                        {
+                            target: 'pino-pretty',
+                            options: { singleLine: true },
+                        },
+                        {
+                            target: 'pino-opentelemetry-transport',
+                            options: { loggerName: 'advocatus-api' },
+                        },
+                    ],
+                },
+            },
+        }),
+        ...(process.env.NODE_ENV === 'test'
+            ? [ThrottlerModule.forRoot([{ ttl: 60_000, limit: 10000 }])]
+            : [ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }])]),
         PrismaModule,
         AuthModule,
         TenantsModule,

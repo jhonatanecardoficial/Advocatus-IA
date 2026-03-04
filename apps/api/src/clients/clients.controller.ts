@@ -38,7 +38,7 @@ export class ClientsController {
     @HttpCode(HttpStatus.CREATED)
     @UsePipes(new ZodValidationPipe(CreateClientSchema))
     create(@CurrentUser() user: RequestUser, @Body() dto: CreateClientDto) {
-        return this.clientsService.create(user.tenantId, dto)
+        return this.clientsService.create(user.tenantId, dto);
     }
 
     @Get()

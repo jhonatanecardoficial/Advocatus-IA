@@ -1,4 +1,4 @@
-import { PipeTransform, BadRequestException } from '@nestjs/common'
+import { PipeTransform, BadRequestException, ArgumentMetadata } from '@nestjs/common'
 import { ZodSchema } from 'zod'
 
 /**
@@ -8,7 +8,12 @@ import { ZodSchema } from 'zod'
 export class ZodValidationPipe implements PipeTransform {
     constructor(private readonly schema: ZodSchema) { }
 
-    transform(value: unknown) {
+    transform(value: unknown, metadata?: ArgumentMetadata) {
+        // Ignora a validação para decorators custom (como o @CurrentUser)
+        if (metadata && !['body', 'query', 'param'].includes(metadata.type)) {
+            return value;
+        }
+
         const result = this.schema.safeParse(value)
 
         if (!result.success) {
@@ -22,3 +27,4 @@ export class ZodValidationPipe implements PipeTransform {
         return result.data
     }
 }
+

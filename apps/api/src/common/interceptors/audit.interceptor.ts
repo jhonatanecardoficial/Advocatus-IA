@@ -5,8 +5,8 @@ import {
     CallHandler,
 } from '@nestjs/common'
 import { Observable, tap } from 'rxjs'
-import { PrismaService } from '../prisma/prisma.service'
-import { RequestUser } from '../auth/strategies/jwt.strategy'
+import { PrismaService } from '../../prisma/prisma.service'
+import { RequestUser } from '../../auth/strategies/jwt.strategy'
 
 /**
  * Interceptor global de auditoria — regista todas as operações mutativas (POST, PUT, PATCH, DELETE)

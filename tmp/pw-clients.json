@@ -1,0 +1,283 @@
+﻿[dotenv@17.3.1] injecting env (3) from .env.test -- tip: ÔÜÖ´©Å  override existing env vars with { override: true }
+[dotenv@17.3.1] injecting env (0) from .env.test -- tip: ­ƒöÉ prevent committing .env to code: https://dotenvx.com/precommit
+{
+  "config": {
+    "configFile": "C:\\Users\\E\\Desktop\\Ecard\\Projeto IA\\Advocatus IA\\playwright.config.ts",
+    "rootDir": "C:/Users/E/Desktop/Ecard/Projeto IA/Advocatus IA/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/E/Desktop/Ecard/Projeto IA/Advocatus IA/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/E/Desktop/Ecard/Projeto IA/Advocatus IA/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 15000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 12,
+    "webServer": {
+      "command": "pnpm --filter @advocatus/api run dev",
+      "url": "http://127.0.0.1:4000/api/v1/auth/health",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "api\\clients.spec.ts",
+      "file": "api/clients.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Clients API",
+          "file": "api/clients.spec.ts",
+          "line": 4,
+          "column": 15,
+          "specs": [
+            {
+              "title": "Criar um novo Cliente (POST /clients)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 15000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 62,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m201\u001b[39m\nReceived: \u001b[31m500\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m201\u001b[39m\nReceived: \u001b[31m500\u001b[39m\n    at C:\\Users\\E\\Desktop\\Ecard\\Projeto IA\\Advocatus IA\\tests\\api\\clients.spec.ts:29:35",
+                        "location": {
+                          "file": "C:\\Users\\E\\Desktop\\Ecard\\Projeto IA\\Advocatus IA\\tests\\api\\clients.spec.ts",
+                          "column": 35,
+                          "line": 29
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 27 |\u001b[39m         })\u001b[33m;\u001b[39m\n \u001b[90m 28 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 29 |\u001b[39m         expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m201\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 30 |\u001b[39m         \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 31 |\u001b[39m         expect(data\u001b[33m.\u001b[39mdata\u001b[33m.\u001b[39mname)\u001b[33m.\u001b[39mtoBe(\u001b[32m\"Jo├úo Silva\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 32 |\u001b[39m         expect(data\u001b[33m.\u001b[39mdata\u001b[33m.\u001b[39mid)\u001b[33m.\u001b[39mtoBeDefined()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\E\\Desktop\\Ecard\\Projeto IA\\Advocatus IA\\tests\\api\\clients.spec.ts",
+                            "column": 35,
+                            "line": 29
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m201\u001b[39m\nReceived: \u001b[31m500\u001b[39m\n\n  27 |         });\n  28 |\n> 29 |         expect(response.status()).toBe(201);\n     |                                   ^\n  30 |         const data = await response.json();\n  31 |         expect(data.data.name).toBe(\"Jo├úo Silva\");\n  32 |         expect(data.data.id).toBeDefined();\n    at C:\\Users\\E\\Desktop\\Ecard\\Projeto IA\\Advocatus IA\\tests\\api\\clients.spec.ts:29:35"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T18:06:46.602Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "C:\\Users\\E\\Desktop\\Ecard\\Projeto IA\\Advocatus IA\\tests\\api\\clients.spec.ts",
+                        "column": 35,
+                        "line": 29
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "c197617a10094df58e57-99cc9d4b541fc53e101f",
+              "file": "api/clients.spec.ts",
+              "line": 16,
+              "column": 9
+            },
+            {
+              "title": "Listar Clientes (GET /clients)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 15000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T18:06:47.801Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c197617a10094df58e57-fd60c88d85213a92c611",
+              "file": "api/clients.spec.ts",
+              "line": 36,
+              "column": 9
+            },
+            {
+              "title": "Obter um Cliente espec├¡fico (GET /clients/:id)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 15000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T18:06:47.801Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c197617a10094df58e57-393a28394a3f7f20c980",
+              "file": "api/clients.spec.ts",
+              "line": 47,
+              "column": 9
+            },
+            {
+              "title": "Erro 404 ao consultar Cliente inexistente",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 15000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T18:06:47.801Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c197617a10094df58e57-c451d83b52d04e6fe412",
+              "file": "api/clients.spec.ts",
+              "line": 57,
+              "column": 9
+            },
+            {
+              "title": "Erro 401 ao aceder sem Token",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 15000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T18:06:47.801Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c197617a10094df58e57-e1685fb4af4b9a962142",
+              "file": "api/clients.spec.ts",
+              "line": 64,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-03-04T18:06:35.269Z",
+    "duration": 13595.044,
+    "expected": 0,
+    "skipped": 4,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

@@ -2,11 +2,10 @@ import { Controller, Get, UseGuards, HttpCode, HttpStatus } from '@nestjs/common
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { CurrentUser } from './decorators/current-user.decorator'
 import { RequestUser } from './strategies/jwt.strategy'
-import { AuthService } from './auth.service'
 
 @Controller('auth')
 export class AuthController {
-    constructor(private readonly authService: AuthService) { }
+    constructor() { }
 
     /**
      * GET /api/v1/auth/me

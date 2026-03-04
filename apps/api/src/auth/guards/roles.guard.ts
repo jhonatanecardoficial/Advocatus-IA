@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { ROLES_KEY } from '../decorators/roles.decorator'
-import { UserRole } from '@advocatus/types'
+import { UserRole } from '@prisma/client'
 
 /** Hierarquia de roles — índice mais alto = mais permissões */
 const ROLE_HIERARCHY: Record<string, number> = {
