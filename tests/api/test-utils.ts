@@ -21,7 +21,7 @@ export async function setupTestContext(): Promise<TestContext> {
     // Corre o seed no contexto da api (onde @prisma/client está instalado)
     // Passa TEST_DB_URL para o processo filho para evitar dependência de .env hardcoded
     const raw = execSync(
-        `pnpm --filter @advocatus/api exec node seed.test.js create ${uniqueId}`,
+        `pnpm --filter @advocatus/api exec node seed-test-data.js create ${uniqueId}`,
         {
             cwd: ROOT_DIR,
             encoding: 'utf-8',
@@ -48,7 +48,7 @@ export async function setupTestContext(): Promise<TestContext> {
 
 export async function cleanupTestContext(ctx: TestContext) {
     execSync(
-        `pnpm --filter @advocatus/api exec node seed.test.js delete _ ${ctx.tenantId} ${ctx.userId}`,
+        `pnpm --filter @advocatus/api exec node seed-test-data.js delete _ ${ctx.tenantId} ${ctx.userId}`,
         {
             cwd: ROOT_DIR,
             encoding: 'utf-8',

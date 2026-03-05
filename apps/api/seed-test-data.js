@@ -1,5 +1,5 @@
 // Script de seed para os testes Playwright
-// Executado via: pnpm --filter @advocatus/api exec node seed.test.js <action> <uniqueId> [tenantId]
+// Executado via: pnpm --filter @advocatus/api exec node seed-test-data.js <action> <uniqueId> [tenantId]
 const { PrismaClient } = require('@prisma/client');
 
 // Porta e URL da DB configur\u00e1veis via env — sem valores hardcoded
