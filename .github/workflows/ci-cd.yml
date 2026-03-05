@@ -30,6 +30,22 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
+    - name: Setup Supabase CLI
+      uses: supabase/setup-cli@v1
+      with:
+        version: latest
+
+    - name: Start local Supabase backend
+      run: supabase start
+
+    - name: Generate Prisma Client
+      run: pnpm db:generate
+
+    - name: Push Prisma Schema to database
+      run: pnpm --filter @advocatus/api exec prisma db push
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
     - name: Lint code
       run: pnpm lint
 

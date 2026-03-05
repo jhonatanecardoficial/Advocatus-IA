@@ -26,7 +26,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
             name: 'rls_tenant_isolation',
             query: {
                 $allModels: {
-                    async $allOperations({ args, query }) {
+                    async $allOperations({ args, query }: any) {
                         // PrismaPromise array permite executar o set_config primeiro
                         // e logo de seguida a query na MAIS absoluta mesma conexão db.
                         const [, result] = await rootClient.$transaction([
