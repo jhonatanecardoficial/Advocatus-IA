@@ -19,6 +19,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
      */
     withTenant(tenantId: string) {
         // Note: Guardamos a referência da instância root PrismaClient para invocar transactions
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const rootClient = this
 
         return rootClient.$extends({
