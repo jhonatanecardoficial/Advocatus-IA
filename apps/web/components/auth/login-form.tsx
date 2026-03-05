@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { ArrowRight, Lock, Mail, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { loginAction } from "@/app/actions/auth"
 
 const loginSchema = z.object({
     email: z.string().email("Por favor, insira um email válido."),
@@ -31,22 +32,16 @@ export function LoginForm() {
         setIsLoading(true)
         setErrorMsg("")
         try {
-            const response = await fetch(process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/auth/login` : "http://localhost:4000/api/v1/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(_data),
-                credentials: "include", // Importante para receber/enviar cookies HttpOnly
-            });
+            const result = await loginAction(_data);
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData?.message || "Erro de autenticação.");
+            if (result.error) {
+                setErrorMsg(result.error);
+            } else if (result.success) {
+                // Simulate success and redirect
+                window.location.href = "/dashboard"
             }
-
-            // Simulate success and redirect
-            window.location.href = "/dashboard"
         } catch (err: any) {
-            setErrorMsg(err.message || "Credenciais inválidas. Por favor, tente novamente.")
+            setErrorMsg("Ocorreu um erro inesperado. Por favor, tente novamente.")
         } finally {
             setIsLoading(false)
         }
