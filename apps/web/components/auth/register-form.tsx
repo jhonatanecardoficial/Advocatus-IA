@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { ArrowRight, ArrowLeft, Building2, User, Mail, Lock, Loader2, Scale } from "lucide-react"
 import Link from "next/link"
+import { registerAction } from "@/app/actions/auth"
 
 const registerSchema = z.object({
     step: z.number().min(1).max(3),
@@ -68,28 +69,16 @@ export function RegisterForm() {
         setIsLoading(true)
         setErrorMsg("")
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1"
-            const response = await fetch(`${apiUrl}/auth/register`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    email: data.email,
-                    password: data.password,
-                    name: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
-                    tenantName: data.officeName || "Escritório",
-                }),
-                credentials: "include",
-            });
+            const result = await registerAction(data);
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData?.message || "Erro ao criar conta.");
+            if (result.error) {
+                setErrorMsg(result.error);
+            } else if (result.success) {
+                window.location.href = "/dashboard"
             }
-
-            window.location.href = "/dashboard"
         } catch (error: any) {
             console.error(error)
-            setErrorMsg(error.message || "Ocorreu um erro no registo.")
+            setErrorMsg("Ocorreu um erro inesperado no registo.")
         } finally {
             setIsLoading(false)
         }

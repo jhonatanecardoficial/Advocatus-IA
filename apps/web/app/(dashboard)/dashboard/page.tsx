@@ -1,16 +1,48 @@
 import { ArrowUpRight, Scale, Users, Clock, AlertTriangle } from "lucide-react";
+import { cookies } from "next/headers";
 
-export default function DashboardPage() {
+async function fetchDashboardData() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("access_token")?.value;
+
+    if (!token) return { user: null, matters: [] };
+
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
+
+    try {
+        const [meRes, mattersRes] = await Promise.all([
+            fetch(`${API_URL}/auth/me`, {
+                headers: { Authorization: `Bearer ${token}` },
+                cache: "no-store",
+            }),
+            fetch(`${API_URL}/matters`, {
+                headers: { Authorization: `Bearer ${token}` },
+                cache: "no-store",
+            })
+        ]);
+
+        const user = meRes.ok ? (await meRes.json()).data : null;
+        const matters = mattersRes.ok ? await mattersRes.json() : [];
+
+        return { user, matters };
+    } catch (e) {
+        return { user: null, matters: [] };
+    }
+}
+
+export default async function DashboardPage() {
+    const { user, matters } = await fetchDashboardData();
+
     return (
         <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
             {/* Header Overview */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-2 border-navy pb-6">
                 <div>
                     <h1 className="text-5xl font-display font-black text-navy uppercase tracking-tighter">
-                        Visão Geral
+                        Olá, {user?.name ? user.name.split(" ")[0] : "Advogado"}
                     </h1>
                     <p className="text-slate-500 mt-2 font-mono text-sm uppercase tracking-widest">
-                        Semana 42 • Última atualização: Hoje, 09:41
+                        Workspace: {user?.tenantId || "---"} • Última atualização: Hoje, 09:41
                     </p>
                 </div>
                 <div className="flex gap-4">
@@ -33,9 +65,9 @@ export default function DashboardPage() {
                     </div>
                     <div>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-6xl font-display font-black text-navy tracking-tighter">142</span>
+                            <span className="text-6xl font-display font-black text-navy tracking-tighter">{matters?.length || 0}</span>
                             <span className="text-sm font-bold text-green-600 flex items-center">
-                                <ArrowUpRight className="h-3 w-3 mr-1" /> 12%
+                                <ArrowUpRight className="h-3 w-3 mr-1" /> Ativos
                             </span>
                         </div>
                     </div>
