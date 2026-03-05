@@ -63,6 +63,8 @@ jobs:
         CI: true
         SUPABASE_JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
         SUPABASE_URL: "http://127.0.0.1:54321"
+        DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+        DIRECT_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 
     - name: Upload Playwright report
       uses: actions/upload-artifact@v4
