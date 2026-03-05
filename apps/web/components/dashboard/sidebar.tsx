@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ChevronDown, LayoutDashboard, FileText, Users, Calendar, Settings, ChevronLeft, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, FileText, Users, Calendar, Settings, ChevronLeft, ChevronRight } from 'lucide-react'
 
 export function Sidebar() {
     const [isExpanded, setIsExpanded] = useState(true)
