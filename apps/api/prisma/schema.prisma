@@ -41,29 +41,30 @@ model Tenant {
 // UTILIZADORES com RBAC granular
 // ============================================================
 model User {
-  id              String   @id @default(cuid())
-  tenantId        String
-  email           String
-  name            String
-  barNumber       String?  // Nº Ordem dos Advogados
-  role            UserRole @default(ADVOGADO)
-  avatarUrl       String?
-  mfaEnabled      Boolean  @default(false)
-  mfaSecret       String?  // Encriptado
-  lastLoginAt     DateTime?
-  passwordHash    String?
-  supabaseUserId  String?  @unique
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String    @id @default(cuid())
+  tenantId       String
+  email          String
+  name           String
+  barNumber      String? // Nº Ordem dos Advogados
+  role           UserRole  @default(ADVOGADO)
+  avatarUrl      String?
+  mfaEnabled     Boolean   @default(false)
+  mfaSecret      String? // Encriptado
+  lastLoginAt    DateTime?
+  passwordHash   String?
+  supabaseUserId String?   @unique
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  tenant         Tenant      @relation(fields: [tenantId], references: [id])
-  assignedTasks  Task[]      @relation("TaskAssignee")
-  createdTasks   Task[]      @relation("TaskCreator")
-  timeEntries    TimeEntry[]
-  auditLogs      AuditLog[]
-  sentMessages   Message[]
+  tenant        Tenant      @relation(fields: [tenantId], references: [id])
+  assignedTasks Task[]      @relation("TaskAssignee")
+  createdTasks  Task[]      @relation("TaskCreator")
+  timeEntries   TimeEntry[]
+  auditLogs     AuditLog[]
+  sentMessages  Message[]
 
   @@unique([tenantId, email])
+  @@index([tenantId])
   @@map("users")
 }
 
@@ -85,11 +86,12 @@ model Client {
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
 
-  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
   matters  Matter[]
   invoices Invoice[]
 
   @@unique([tenantId, nif])
+  @@index([tenantId])
   @@map("clients")
 }
 
@@ -97,23 +99,23 @@ model Client {
 // PROCESSOS / MATTERS
 // ============================================================
 model Matter {
-  id               String       @id @default(cuid())
-  tenantId         String
-  clientId         String
-  responsibleId    String?
-  title            String
-  type             MatterType   @default(OUTRO)
-  status           MatterStatus @default(ATIVO)
-  courtReference   String?
-  citiusReference  String?      // Referência manual inserida pelo advogado
-  opposingParty    String?
-  opposingCounsel  String?
-  description      String?
-  openedAt         DateTime     @default(now())
-  deadlineAt       DateTime?
-  closedAt         DateTime?
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  id              String       @id @default(cuid())
+  tenantId        String
+  clientId        String
+  responsibleId   String?
+  title           String
+  type            MatterType   @default(OUTRO)
+  status          MatterStatus @default(ATIVO)
+  courtReference  String?
+  citiusReference String? // Referência manual inserida pelo advogado
+  opposingParty   String?
+  opposingCounsel String?
+  description     String?
+  openedAt        DateTime     @default(now())
+  deadlineAt      DateTime?
+  closedAt        DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   tenant      Tenant      @relation(fields: [tenantId], references: [id])
   client      Client      @relation(fields: [clientId], references: [id])
@@ -123,6 +125,7 @@ model Matter {
   invoices    Invoice[]
   messages    Message[]
 
+  @@index([tenantId])
   @@map("matters")
 }
 
@@ -130,31 +133,32 @@ model Matter {
 // DOCUMENTOS com versionamento e assinatura digital eIDAS
 // ============================================================
 model Document {
-  id                  String          @id @default(cuid())
-  matterId            String
-  tenantId            String
-  uploadedById        String?
-  filename            String
-  mimeType            String
-  storagePath         String          // Supabase Storage path
-  sizeBytes           Int
-  version             Int             @default(1)
-  parentVersionId     String?
-  signatureType       SignatureType   @default(NONE)
-  signatureStatus     SignatureStatus?
-  signatureProvider   SignatureProvider?
-  signatureMetadata   Json?           // Certificado, timestamp, cadeia validação
-  ltaPreserved        Boolean         @default(false) // Long Term Archival
-  tags                String[]
-  metadata            Json            @default("{}")
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
+  id                String             @id @default(cuid())
+  matterId          String
+  tenantId          String
+  uploadedById      String?
+  filename          String
+  mimeType          String
+  storagePath       String // Supabase Storage path
+  sizeBytes         Int
+  version           Int                @default(1)
+  parentVersionId   String?
+  signatureType     SignatureType      @default(NONE)
+  signatureStatus   SignatureStatus?
+  signatureProvider SignatureProvider?
+  signatureMetadata Json? // Certificado, timestamp, cadeia validação
+  ltaPreserved      Boolean            @default(false) // Long Term Archival
+  tags              String[]
+  metadata          Json               @default("{}")
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
-  matter         Matter    @relation(fields: [matterId], references: [id])
-  tenant         Tenant    @relation(fields: [tenantId], references: [id])
-  parentVersion  Document? @relation("DocumentVersions", fields: [parentVersionId], references: [id])
-  versions       Document[] @relation("DocumentVersions")
+  matter        Matter     @relation(fields: [matterId], references: [id])
+  tenant        Tenant     @relation(fields: [tenantId], references: [id])
+  parentVersion Document?  @relation("DocumentVersions", fields: [parentVersionId], references: [id])
+  versions      Document[] @relation("DocumentVersions")
 
+  @@index([tenantId])
   @@map("documents")
 }
 
@@ -162,22 +166,23 @@ model Document {
 // TIME TRACKING — Horas faturáveis por matter
 // ============================================================
 model TimeEntry {
-  id           String    @id @default(cuid())
+  id           String   @id @default(cuid())
   matterId     String
   userId       String
-  tenantId     String    // Redundante mas útil para RLS
+  tenantId     String // Redundante mas útil para RLS
   description  String
-  hours        Decimal   @db.Decimal(5, 2)
-  ratePerHour  Decimal?  @db.Decimal(10, 2)
-  billable     Boolean   @default(true)
-  activityDate DateTime  @db.Date
+  hours        Decimal  @db.Decimal(5, 2)
+  ratePerHour  Decimal? @db.Decimal(10, 2)
+  billable     Boolean  @default(true)
+  activityDate DateTime @db.Date
   invoiceId    String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  matter  Matter  @relation(fields: [matterId], references: [id])
-  user    User    @relation(fields: [userId], references: [id])
+  matter Matter @relation(fields: [matterId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
+  @@index([tenantId])
   @@map("time_entries")
 }
 
@@ -204,6 +209,7 @@ model Invoice {
   client Client @relation(fields: [clientId], references: [id])
   tenant Tenant @relation(fields: [tenantId], references: [id])
 
+  @@index([tenantId])
   @@map("invoices")
 }
 
@@ -231,6 +237,7 @@ model Task {
   createdBy  User   @relation("TaskCreator", fields: [createdById], references: [id])
   tenant     Tenant @relation(fields: [tenantId], references: [id])
 
+  @@index([tenantId])
   @@map("tasks")
 }
 
@@ -238,18 +245,19 @@ model Task {
 // MENSAGENS encriptadas — comunicação com clientes
 // ============================================================
 model Message {
-  id               String   @id @default(cuid())
+  id               String    @id @default(cuid())
   matterId         String
   senderId         String
   tenantId         String
-  contentEncrypted String   // AES-256
+  contentEncrypted String // AES-256
   readAt           DateTime?
-  createdAt        DateTime @default(now())
+  createdAt        DateTime  @default(now())
 
   matter Matter @relation(fields: [matterId], references: [id])
   sender User   @relation(fields: [senderId], references: [id])
   tenant Tenant @relation(fields: [tenantId], references: [id])
 
+  @@index([tenantId])
   @@map("messages")
 }
 
@@ -272,6 +280,7 @@ model AuditLog {
   tenant Tenant @relation(fields: [tenantId], references: [id])
   user   User?  @relation(fields: [userId], references: [id])
 
+  @@index([tenantId])
   @@map("audit_logs")
 }
 
@@ -280,7 +289,7 @@ model AuditLog {
 // ============================================================
 model LegalDocument {
   id          String            @id @default(cuid())
-  source      String            // dados.gov.pt | dre.pt | manual
+  source      String // dados.gov.pt | dre.pt | manual
   type        LegalDocumentType
   title       String
   reference   String?

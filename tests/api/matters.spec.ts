@@ -84,4 +84,21 @@ test.describe.serial('Matters API', () => {
         const response = await request.get('/api/v1/matters');
         expect(response.status()).toBe(401);
     });
+
+    test('Isolamento RLS: Impedir leitura de um Matter de outro Tenant', async ({ request }) => {
+        // 1. Criar um contexto de escritório/advogado invasor (Tenant B)
+        const hackerCtx = await setupTestContext();
+
+        // 2. Tentar Ler o processo criado pelo Tenant A
+        const response = await request.get(`/api/v1/matters/${matterId}`, {
+            headers: { 'Authorization': `Bearer ${hackerCtx.token}` }
+        });
+
+        // A API, respaldada pelo Prisma Client RLS Extension e Postgres RLS, 
+        // agirá como se a linha não existisse. Portanto, traduz-se num 404 Not Found.
+        expect([403, 404]).toContain(response.status());
+
+        // 3. Limpeza do invasor
+        await cleanupTestContext(hackerCtx);
+    });
 });
