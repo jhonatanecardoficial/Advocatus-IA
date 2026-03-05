@@ -5,7 +5,6 @@ import * as bcrypt from 'bcryptjs'
 import { JwtService } from '@nestjs/jwt'
 import { RegisterDto } from './dto/register.dto'
 import { LoginDto } from './dto/login.dto'
-import { PrismaClient } from '@prisma/client'
 
 @Injectable()
 export class AuthService {
@@ -58,7 +57,7 @@ export class AuthService {
         const tenantSlug = dto.tenantName.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.floor(Math.random() * 10000);
 
         // Criar Tenant e User na mesma transacção
-        const user = await this.prisma.$transaction(async (tx: PrismaClient) => {
+        const user = await this.prisma.$transaction(async (tx) => {
             const tenant = await tx.tenant.create({
                 data: {
                     name: dto.tenantName,

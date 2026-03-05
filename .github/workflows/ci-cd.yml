@@ -45,6 +45,7 @@ jobs:
       run: pnpm --filter @advocatus/api exec prisma db push
       env:
         DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        DIRECT_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
     - name: Lint code
       run: pnpm lint
