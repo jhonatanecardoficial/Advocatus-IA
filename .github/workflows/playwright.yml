@@ -44,6 +44,7 @@ jobs:
       run: pnpm --filter @advocatus/api exec prisma db push
       env:
         DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        DIRECT_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
     - name: Create .env.test file
       run: |
@@ -51,6 +52,7 @@ jobs:
         echo "TEST_DB_URL=\"postgresql://postgres:postgres@127.0.0.1:54322/postgres\"" >> .env.test
         echo "TEST_JWT_SECRET=\"super-secret-jwt-token-with-at-least-32-characters-long\"" >> .env.test
         echo "DATABASE_URL=\"postgresql://postgres:postgres@127.0.0.1:54322/postgres\"" >> .env.test
+        echo "DIRECT_URL=\"postgresql://postgres:postgres@127.0.0.1:54322/postgres\"" >> .env.test
 
     - name: Install Playwright Browsers
       run: pnpm exec playwright install --with-deps
