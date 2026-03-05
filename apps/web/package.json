@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev --turbopack -p 3001",
+        "dev": "next dev -p 3001",
         "build": "next build",
         "start": "next start -p 3001",
         "lint": "next lint",
@@ -12,6 +12,7 @@
     "dependencies": {
         "@advocatus/types": "workspace:*",
         "@advocatus/ui": "workspace:*",
+        "@hookform/resolvers": "^5.2.2",
         "@supabase/ssr": "^0.5.2",
         "@supabase/supabase-js": "^2.48.1",
         "@tanstack/react-query": "^5.64.2",
@@ -30,12 +31,12 @@
     },
     "devDependencies": {
         "@advocatus/config-tsconfig": "workspace:*",
-        "@tailwindcss/postcss": "^4.0.6",
+        "@tailwindcss/postcss": "^4.2.1",
         "@types/react": "^19.0.7",
         "@types/react-dom": "^19.0.3",
         "eslint": "^9.18.0",
         "eslint-config-next": "^15.2.0",
-        "postcss": "^8.5.1",
+        "postcss": "^8.5.8",
         "tailwindcss": "^4.0.6",
         "typescript": "^5.7.3"
     }

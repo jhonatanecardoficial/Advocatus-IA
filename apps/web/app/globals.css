@@ -1,9 +1,7 @@
 @import "tailwindcss";
 
 /* === Design Tokens — Advocatus IA === */
-/* Palavra-chave da marca: "Confiança Estrutural" */
-:root {
-  /* Cores primárias */
+@theme {
   --color-navy: #0f1d3a;
   --color-navy-800: #1a2e54;
   --color-navy-700: #24406e;
@@ -11,23 +9,19 @@
   --color-navy-100: #e8eef8;
   --color-navy-50: #f4f7fb;
 
-  /* Acento: Amber/Gold — Justiça, valor, premium */
   --color-amber: #d4a853;
   --color-amber-600: #b8882a;
   --color-amber-400: #e8c278;
   --color-amber-100: #fdf5e0;
 
-  /* Ação: Signal Green — confirmação, aprovação */
   --color-green: #1a7f5a;
   --color-green-600: #156b4c;
   --color-green-100: #e8f5f0;
 
-  /* Alerta: Deep Red — urgência, prazo */
   --color-red: #c0392b;
   --color-red-600: #a93226;
   --color-red-100: #fdecea;
 
-  /* Neutros */
   --color-slate-900: #0f172a;
   --color-slate-700: #334155;
   --color-slate-500: #64748b;
@@ -36,16 +30,13 @@
   --color-slate-50: #f8fafc;
   --color-white: #ffffff;
 
-  /* Tipografia */
-  --font-display: var(--font-playfair), Georgia, 'Times New Roman', serif;
+  --font-display: var(--font-playfair), Georgia, "Times New Roman", serif;
   --font-body: var(--font-inter), system-ui, -apple-system, sans-serif;
 
-  /* Espaçamento */
   --radius-sharp: 2px;
   --radius-sm: 4px;
   --radius-md: 6px;
 
-  /* Sombras */
   --shadow-card: 0 1px 3px 0 rgb(15 29 58 / 0.08), 0 1px 2px -1px rgb(15 29 58 / 0.08);
   --shadow-elevated: 0 4px 6px -1px rgb(15 29 58 / 0.1), 0 2px 4px -2px rgb(15 29 58 / 0.1);
 }
@@ -88,13 +79,16 @@ h4 {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--color-slate-100);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--color-slate-300);
   border-radius: var(--radius-sharp);
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-navy-600);
 }
@@ -107,13 +101,27 @@ h4 {
 
 /* === Animações base === */
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(16px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .animate-fade-in {

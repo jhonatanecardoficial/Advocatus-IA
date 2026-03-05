@@ -11,6 +11,7 @@ import {
 } from '@nestjs/platform-fastify'
 import { AppModule } from './app.module'
 import { Catch, ArgumentsHost, HttpException, HttpStatus, ExceptionFilter } from '@nestjs/common';
+import fastifyCookie from '@fastify/cookie';
 
 @Catch()
 class AllExceptionsFilter implements ExceptionFilter {
@@ -38,6 +39,11 @@ async function bootstrap() {
 
     // Injetar o Pino Logger como logger global do Nest
     app.useLogger(app.get(Logger));
+
+    // Register fastify-cookie
+    await app.register(fastifyCookie, {
+        secret: process.env.COOKIE_SECRET || 'advocatus-secure-cookie-secret',
+    });
 
     // Prefixo global de API
     app.setGlobalPrefix('api/v1')

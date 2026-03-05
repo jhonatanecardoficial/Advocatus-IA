@@ -28,8 +28,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         config: ConfigService,
         private readonly prisma: PrismaService,
     ) {
+        const extractors = [
+            ExtractJwt.fromAuthHeaderAsBearerToken(),
+            (req: any) => {
+                let token = null;
+                if (req && req.cookies) {
+                    token = req.cookies['accessToken'];
+                }
+                return token;
+            },
+        ];
+
         super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            jwtFromRequest: ExtractJwt.fromExtractors(extractors),
             ignoreExpiration: false,
             // Supabase JWT secret — JWT_SECRET no env
             secretOrKey: config.getOrThrow<string>('SUPABASE_JWT_SECRET'),
