@@ -60,6 +60,27 @@ test.describe.serial('Clients API', () => {
         expect(data.id).toBe(clientId);
     });
 
+    test('Atualizar Cliente (PUT /clients/:id)', async ({ request }) => {
+        const updatedName = 'João Silva Jr.';
+        const response = await request.put(`/api/v1/clients/${clientId}`, {
+            headers: { 'Authorization': `Bearer ${ctx.token}` },
+            data: { name: updatedName },
+        });
+        expect(response.status()).toBe(200);
+        const data = await response.json();
+        expect(data.name).toBe(updatedName);
+    });
+
+    test('Conflict check retorna sem conflitos para cliente existente', async ({ request }) => {
+        const response = await request.post('/api/v1/clients/conflict-check', {
+            headers: { 'Authorization': `Bearer ${ctx.token}` },
+            data: { nif: Math.random().toString() }, // random nif para não bater
+        });
+        expect(response.status()).toBe(200);
+        const data = await response.json();
+        expect(data.hasConflicts).toBe(false);
+    });
+
     test('Erro 404 ao consultar Cliente inexistente', async ({ request }) => {
         const response = await request.get('/api/v1/clients/00000000-0000-0000-0000-000000000000', {
             headers: { 'Authorization': `Bearer ${ctx.token}` }
