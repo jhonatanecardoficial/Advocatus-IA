@@ -120,6 +120,16 @@ When user's prompt is NOT in English:
 2. Identify dependent files
 3. Update ALL affected files together
 
+### 🌿 Git Workflow & Branching (MANDATORY)
+
+**NEVER commit or code directly on the `main` branch.**
+
+1. **Always** create and checkout to a new branch before writing any code:
+   - `feature/[nome-da-feature]` para novas funcionalidades.
+   - `fix/[nome-do-bug]` para correções.
+2. Todo o desenvolvimento tem de ser feito em branches dedicadas.
+3. **Mandatory Testing Before Committing:** Sempre execute e valide os testes localmente (`npm test`, lint, etc.) ANTES de submeter um commit ou realizar push. Erros devem ser corrigidos primeiro.
+
 ### 🗺️ System Map Read
 
 > 🔴 **MANDATORY:** Read `ARCHITECTURE.md` at session start to understand Agents, Skills, and Scripts.

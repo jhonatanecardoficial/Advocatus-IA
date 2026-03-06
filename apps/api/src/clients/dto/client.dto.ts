@@ -23,6 +23,16 @@ export const ClientFiltersSchema = z.object({
     perPage: z.coerce.number().int().min(1).max(100).default(20),
 })
 
+export const ConflictCheckSchema = z.object({
+    name: z.string().optional(),
+    nif: z.string().optional(),
+    email: z.string().email('Email inválido').optional(),
+    phone: z.string().optional(),
+}).refine(data => data.name || data.nif || data.email || data.phone, {
+    message: "Pelo menos um critério de pesquisa (name, nif, email, phone) deve ser fornecido.",
+})
+
 export type CreateClientDto = z.infer<typeof CreateClientSchema>
 export type UpdateClientDto = z.infer<typeof UpdateClientSchema>
 export type ClientFiltersDto = z.infer<typeof ClientFiltersSchema>
+export type ConflictCheckDto = z.infer<typeof ConflictCheckSchema>
