@@ -12,20 +12,6 @@ export function TopNav() {
                             ADVOCATUS<span className="text-amber-500">.</span>IA
                         </span>
                     </Link>
-                    <nav className="hidden md:flex items-center gap-8 mt-1">
-                        <Link href="/dashboard" className="text-xs font-bold text-amber-500 transition-colors uppercase tracking-widest relative after:absolute after:-bottom-5 after:left-0 after:h-1 after:w-full after:bg-amber-500" suppressHydrationWarning>
-                            Painel
-                        </Link>
-                        <Link href="/matters" className="text-xs font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-widest" suppressHydrationWarning>
-                            Processos
-                        </Link>
-                        <Link href="/clients" className="text-xs font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-widest" suppressHydrationWarning>
-                            Clientes
-                        </Link>
-                        <Link href="/reports" className="text-xs font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-widest" suppressHydrationWarning>
-                            Relatórios
-                        </Link>
-                    </nav>
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="hidden md:flex flex-col items-end mr-4">

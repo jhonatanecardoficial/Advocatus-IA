@@ -85,6 +85,42 @@ test.describe.serial('Matters API', () => {
         expect(response.status()).toBe(401);
     });
 
+    test('Atualizar um Matter (PUT /matters/:id)', async ({ request }) => {
+        const newTitle = 'Processo Civil de Dívida - Atualizado';
+        const response = await request.put(`/api/v1/matters/${matterId}`, {
+            headers: { 'Authorization': `Bearer ${ctx.token}` },
+            data: {
+                title: newTitle,
+                status: 'SUSPENSO'
+            }
+        });
+
+        expect(response.status()).toBe(200);
+        const data = await response.json();
+        expect(data.title).toBe(newTitle);
+        expect(data.status).toBe('SUSPENSO');
+    });
+
+    test('Deletar um Matter (DELETE /matters/:id)', async ({ request }) => {
+        // Criar um novo matter para deletar
+        const createRes = await request.post('/api/v1/matters', {
+            headers: { 'Authorization': `Bearer ${ctx.token}` },
+            data: {
+                title: "Processo para deletar",
+                status: "ATIVO",
+                clientId
+            }
+        });
+        const toDeleteId = (await createRes.json()).id;
+
+        // Deletar
+        const deleteRes = await request.delete(`/api/v1/matters/${toDeleteId}`, {
+            headers: { 'Authorization': `Bearer ${ctx.token}` }
+        });
+
+        expect([200, 204]).toContain(deleteRes.status());
+    });
+
     test('Isolamento RLS: Impedir leitura de um Matter de outro Tenant', async ({ request }) => {
         // 1. Criar um contexto de escritório/advogado invasor (Tenant B)
         const hackerCtx = await setupTestContext();
