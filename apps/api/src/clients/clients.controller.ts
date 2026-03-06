@@ -23,9 +23,11 @@ import {
     CreateClientSchema,
     UpdateClientSchema,
     ClientFiltersSchema,
+    ConflictCheckSchema,
     CreateClientDto,
     UpdateClientDto,
     ClientFiltersDto,
+    ConflictCheckDto,
 } from './dto/client.dto'
 
 @Controller('clients')
@@ -39,6 +41,14 @@ export class ClientsController {
     @UsePipes(new ZodValidationPipe(CreateClientSchema))
     create(@CurrentUser() user: RequestUser, @Body() dto: CreateClientDto) {
         return this.clientsService.create(user.tenantId, dto);
+    }
+
+    @Post('conflict-check')
+    @Roles('SECRETARIA', 'ADVOGADO', 'SOCIO', 'ADMIN')
+    @HttpCode(HttpStatus.OK)
+    @UsePipes(new ZodValidationPipe(ConflictCheckSchema))
+    conflictCheck(@CurrentUser() user: RequestUser, @Body() dto: ConflictCheckDto) {
+        return this.clientsService.conflictCheck(user.tenantId, dto);
     }
 
     @Get()

@@ -41,62 +41,65 @@
   --shadow-elevated: 0 4px 6px -1px rgb(15 29 58 / 0.1), 0 2px 4px -2px rgb(15 29 58 / 0.1);
 }
 
-/* === Reset e Base === */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+@layer base {
 
-html {
-  font-size: 16px;
-  -webkit-text-size-adjust: 100%;
-  scroll-behavior: smooth;
-}
+  /* === Reset e Base === */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-body {
-  font-family: var(--font-body);
-  background-color: var(--color-slate-50);
-  color: var(--color-slate-900);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
 
-/* === Tipografia === */
-h1,
-h2,
-h3,
-h4 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  line-height: 1.2;
-  color: var(--color-navy);
-}
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-slate-50);
+    color: var(--color-slate-900);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-/* === Scrollbar customizada === */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+  /* === Tipografia === */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--color-navy);
+  }
 
-::-webkit-scrollbar-track {
-  background: var(--color-slate-100);
-}
+  /* === Scrollbar customizada === */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: var(--color-slate-300);
-  border-radius: var(--radius-sharp);
-}
+  ::-webkit-scrollbar-track {
+    background: var(--color-slate-100);
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-navy-600);
-}
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-slate-300);
+    border-radius: var(--radius-sharp);
+  }
 
-/* === Focus ring acessível === */
-:focus-visible {
-  outline: 2px solid var(--color-amber);
-  outline-offset: 2px;
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-navy-600);
+  }
+
+  /* === Focus ring acessível === */
+  :focus-visible {
+    outline: 2px solid var(--color-amber);
+    outline-offset: 2px;
+  }
 }
 
 /* === Animações base === */
@@ -138,6 +141,7 @@ h4 {
     opacity: 0;
     transform: translateY(-8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -145,9 +149,12 @@ h4 {
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
@@ -157,6 +164,7 @@ h4 {
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }

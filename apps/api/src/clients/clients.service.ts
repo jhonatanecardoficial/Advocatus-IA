@@ -4,7 +4,7 @@ import {
     ConflictException,
 } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
-import { CreateClientDto, UpdateClientDto, ClientFiltersDto } from './dto/client.dto'
+import { CreateClientDto, UpdateClientDto, ClientFiltersDto, ConflictCheckDto } from './dto/client.dto'
 
 @Injectable()
 export class ClientsService {
@@ -34,6 +34,46 @@ export class ClientsService {
                 gdprConsentAt: dto.gdprConsent ? new Date() : null,
             },
         })
+    }
+
+    async conflictCheck(tenantId: string, dto: ConflictCheckDto) {
+        const conditions = []
+
+        if (dto.name) {
+            conditions.push({ name: { contains: dto.name, mode: 'insensitive' as const } })
+        }
+        if (dto.nif) {
+            conditions.push({ nif: dto.nif })
+        }
+        if (dto.email) {
+            conditions.push({ email: { equals: dto.email, mode: 'insensitive' as const } })
+        }
+        if (dto.phone) {
+            conditions.push({ phone: { contains: dto.phone } })
+        }
+
+        const potentialConflicts = await this.prisma.client.findMany({
+            where: {
+                tenantId,
+                OR: conditions,
+            },
+            select: {
+                id: true,
+                name: true,
+                type: true,
+                nif: true,
+                email: true,
+                phone: true,
+                createdAt: true,
+                _count: { select: { matters: true } },
+            },
+            take: 20, // Limite para não sobrecarregar
+        })
+
+        return {
+            hasConflicts: potentialConflicts.length > 0,
+            conflicts: potentialConflicts,
+        }
     }
 
     async findAll(tenantId: string, filters: ClientFiltersDto) {
