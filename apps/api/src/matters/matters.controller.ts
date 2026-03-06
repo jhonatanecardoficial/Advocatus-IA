@@ -3,6 +3,7 @@ import {
     Get,
     Post,
     Put,
+    Delete,
     Param,
     Body,
     Query,
@@ -59,5 +60,16 @@ export class MattersController {
         @Body() dto: UpdateMatterDto,
     ) {
         return this.mattersService.update(user.tenantId, id, dto)
+    }
+
+    @Delete(':id')
+    @Roles('SOCIO', 'ADMIN')
+    remove(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+        return this.mattersService.remove(user.tenantId, id)
+    }
+
+    @Get(':id/timeline')
+    getTimeline(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+        return this.mattersService.getTimeline(user.tenantId, id)
     }
 }

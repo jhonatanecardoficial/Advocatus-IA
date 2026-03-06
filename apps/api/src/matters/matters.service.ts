@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateMatterDto, UpdateMatterDto, MatterFiltersDto } from './dto/matter.dto'
 
@@ -118,5 +118,92 @@ export class MattersService {
                 closedAt: dto.status === 'ENCERRADO' ? new Date() : undefined,
             },
         })
+    }
+
+    async remove(tenantId: string, id: string) {
+        const matter = await this.findOne(tenantId, id)
+
+        const dependenciesCount = await this.prisma.matter.findUnique({
+            where: { id },
+            select: {
+                _count: { select: { documents: true, tasks: true, timeEntries: true, invoices: true } }
+            }
+        });
+
+        if (!dependenciesCount) {
+            throw new NotFoundException('Processo não encontrado.');
+        }
+
+        const { documents, tasks, timeEntries, invoices } = dependenciesCount._count;
+        if (documents > 0 || tasks > 0 || timeEntries > 0 || invoices > 0) {
+            throw new ConflictException('Não é possível eliminar o processo, pois possui registos associados (documentos, tarefas, horas ou faturas).')
+        }
+
+        await this.prisma.matter.delete({ where: { id } })
+        return { message: `Processo '${matter.title}' eliminado com sucesso.` }
+    }
+
+    async getTimeline(tenantId: string, id: string) {
+        // Garantir que o matter existe e pertence ao tenant
+        await this.findOne(tenantId, id);
+
+        const [tasks, documents, timeEntries, auditLogs] = await Promise.all([
+            this.prisma.task.findMany({
+                where: { matterId: id, tenantId },
+                select: { id: true, title: true, type: true, createdAt: true, completedAt: true, createdBy: { select: { name: true } } }
+            }),
+            this.prisma.document.findMany({
+                where: { matterId: id, tenantId },
+                select: { id: true, filename: true, createdAt: true, uploadedById: true }
+            }),
+            this.prisma.timeEntry.findMany({
+                where: { matterId: id, tenantId },
+                select: { id: true, description: true, hours: true, activityDate: true, createdAt: true, user: { select: { name: true } } }
+            }),
+            this.prisma.auditLog.findMany({
+                where: { resourceId: id, resourceType: 'Matter', tenantId },
+                select: { id: true, action: true, timestamp: true, user: { select: { name: true } } }
+            })
+        ]);
+
+        const timeline = [
+            ...tasks.map(t => ({
+                id: `task_create_${t.id}`,
+                type: 'TASK_CREATED',
+                title: `Tarefa Mapeada: ${t.title}`,
+                date: t.createdAt as Date,
+                user: t.createdBy?.name
+            })),
+            ...tasks.filter(t => t.completedAt).map(t => ({
+                id: `task_complete_${t.id}`,
+                type: 'TASK_COMPLETED',
+                title: `Tarefa Concluída: ${t.title}`,
+                date: t.completedAt as Date,
+                user: t.createdBy?.name
+            })),
+            ...documents.map(d => ({
+                id: `doc_${d.id}`,
+                type: 'DOCUMENT_UPLOADED',
+                title: `Documento Adicionado: ${d.filename}`,
+                date: d.createdAt as Date,
+                user: null
+            })),
+            ...timeEntries.map(te => ({
+                id: `time_${te.id}`,
+                type: 'TIME_ENTRY',
+                title: `Registo de Tempo: ${te.hours}h - ${te.description}`,
+                date: te.activityDate as Date,
+                user: te.user?.name
+            })),
+            ...auditLogs.map(a => ({
+                id: `audit_${a.id}`,
+                type: 'AUDIT_LOG',
+                title: `Ação no Processo: ${a.action}`,
+                date: a.timestamp as Date,
+                user: a.user?.name
+            }))
+        ];
+
+        return timeline.sort((a, b) => b.date.getTime() - a.date.getTime());
     }
 }

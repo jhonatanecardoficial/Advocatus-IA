@@ -51,7 +51,7 @@ export class AuthController {
     async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: FastifyReply) {
         const { user, token } = await this.authService.register(dto);
         this.setAuthCookie(res, token);
-        return { message: 'Conta criada com sucesso', user };
+        return { message: 'Conta criada com sucesso', user, access_token: token };
     }
 
     /**
@@ -63,7 +63,7 @@ export class AuthController {
     async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: FastifyReply) {
         const { user, token } = await this.authService.login(dto);
         this.setAuthCookie(res, token);
-        return { message: 'Login com sucesso', user };
+        return { message: 'Login com sucesso', user, access_token: token };
     }
 
     /**

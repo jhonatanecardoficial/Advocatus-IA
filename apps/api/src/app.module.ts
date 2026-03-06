@@ -8,6 +8,7 @@ import { TenantsModule } from './tenants/tenants.module';
 import { ClientsModule } from './clients/clients.module';
 import { MattersModule } from './matters/matters.module';
 import { TasksModule } from './tasks/tasks.module';
+import { DocumentsModule } from './documents/documents.module';
 
 @Module({
     imports: [
@@ -40,7 +41,8 @@ import { TasksModule } from './tasks/tasks.module';
         ClientsModule,
         MattersModule,
         TasksModule,
-        // TODO Fase 1 seguinte: DocumentsModule, TimeTrackingModule, BillingModule
+        DocumentsModule,
+        // TODO Fase 1 seguinte: TimeTrackingModule, BillingModule
         // TODO Fase 2: AiModule, NotificationsModule, SignaturesModule
         // TODO Fase 3: ReportsModule, JurimetricsModule, ClientPortalModule
     ],
