@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "dev": "next dev -p 3001",
-        "build": "next build",
+        "build": "cross-env NEXT_DISABLE_SWC_WORKER=1 next build",
         "start": "next start -p 3001",
         "lint": "next lint",
         "type-check": "tsc --noEmit"
@@ -33,6 +33,7 @@
     "devDependencies": {
         "@advocatus/config-tsconfig": "workspace:*",
         "@tailwindcss/postcss": "^4.2.1",
+        "cross-env": "^7.0.3",
         "@types/react": "^19.0.7",
         "@types/react-dom": "^19.0.3",
         "eslint": "^9.18.0",
