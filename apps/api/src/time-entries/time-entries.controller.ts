@@ -6,7 +6,6 @@ import {
   Delete,
   Param,
   Body,
-  Query,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -28,6 +27,7 @@ const CreateTimeEntrySchema = z.object({
   rate_per_hour: z.number().optional(),
   billable: z.boolean().optional(),
   activity_date: z.string().datetime().or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
+  task_id: z.string().cuid().optional(),
 });
 
 const UpdateTimeEntrySchema = z.object({
@@ -36,19 +36,20 @@ const UpdateTimeEntrySchema = z.object({
   rate_per_hour: z.number().optional(),
   billable: z.boolean().optional(),
   activity_date: z.string().datetime().or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).optional(),
+  task_id: z.string().cuid().optional(),
 });
 
 @Controller('time-entries')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class TimeEntriesController {
-  constructor(private readonly timeEntriesService: TimeEntriesService) {}
+  constructor(private readonly timeEntriesService: TimeEntriesService) { }
 
   @Post()
   @Roles('ADVOGADO', 'SECRETARIA', 'SOCIO', 'ADMIN')
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ZodValidationPipe(CreateTimeEntrySchema))
   create(@CurrentUser() user: RequestUser, @Body() dto: CreateTimeEntryDto) {
-    return this.timeEntriesService.create(user.tenantId, user.sub, dto);
+    return this.timeEntriesService.create(user.tenantId, user.id, dto);
   }
 
   @Get('matter/:matterId')

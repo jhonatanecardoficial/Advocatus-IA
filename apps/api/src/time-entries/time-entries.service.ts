@@ -9,6 +9,7 @@ export interface CreateTimeEntryDto {
   rate_per_hour?: number;
   billable?: boolean;
   activity_date: string; // ISO date string
+  task_id?: string;
 }
 
 export interface UpdateTimeEntryDto {
@@ -17,11 +18,12 @@ export interface UpdateTimeEntryDto {
   rate_per_hour?: number;
   billable?: boolean;
   activity_date?: string;
+  task_id?: string;
 }
 
 @Injectable()
 export class TimeEntriesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(tenantId: string, userId: string, dto: CreateTimeEntryDto) {
     // Validar que o matter pertence ao tenant
@@ -47,6 +49,7 @@ export class TimeEntriesService {
         ratePerHour: dto.rate_per_hour ? new Decimal(dto.rate_per_hour) : null,
         billable: dto.billable ?? true,
         activityDate: new Date(dto.activity_date),
+        taskId: dto.task_id || null,
       },
     });
   }
@@ -59,7 +62,10 @@ export class TimeEntriesService {
 
     return this.prisma.timeEntry.findMany({
       where: { matterId, tenantId },
-      include: { user: { select: { id: true, name: true, email: true } } },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        task: { select: { id: true, title: true } }
+      },
       orderBy: { activityDate: 'desc' },
     });
   }
@@ -88,12 +94,13 @@ export class TimeEntriesService {
         ...(dto.rate_per_hour && { ratePerHour: new Decimal(dto.rate_per_hour) }),
         ...(dto.billable !== undefined && { billable: dto.billable }),
         ...(dto.activity_date && { activityDate: new Date(dto.activity_date) }),
+        ...(dto.task_id && { taskId: dto.task_id }),
       },
     });
   }
 
   async delete(tenantId: string, id: string) {
-    const entry = await this.findOne(tenantId, id);
+    await this.findOne(tenantId, id);
 
     await this.prisma.timeEntry.delete({ where: { id } });
     return { message: `Registo de tempo eliminado com sucesso.` };
