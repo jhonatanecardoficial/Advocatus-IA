@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Clock, FileText, Calendar, Wallet } from 'lucide-react';
 import TimeTracker from './TimeTracker';
 import ExpenseTracker from './ExpenseTracker';
+import InvoiceDraftPanel from './InvoiceDraftPanel';
 
 interface Matter {
   id: string;
@@ -70,7 +71,7 @@ const generateMockTimeline = (matter: Matter) => [
 export default function MatterDetail({ matter: initialMatter }: Props) {
   const [matter, setMatter] = useState(initialMatter);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'timeline' | 'fees' | 'expenses'>('timeline');
+  const [activeTab, setActiveTab] = useState<'timeline' | 'fees' | 'expenses' | 'billing'>('timeline');
   const [form, setForm] = useState({
     title: initialMatter.title,
     type: initialMatter.type,
@@ -380,6 +381,12 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
               >
                 Despesas
               </button>
+              <button
+                onClick={() => setActiveTab('billing')}
+                className={`flex-1 py-4 px-6 text-sm font-bold uppercase tracking-widest transition-colors ${activeTab === 'billing' ? 'bg-white text-navy border-b-2 border-white -mb-0.5' : 'text-slate-400 hover:text-navy'}`}
+              >
+                Faturação
+              </button>
             </div>
 
             <div className="p-6">
@@ -412,6 +419,12 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
               {activeTab === 'expenses' && (
                 <div className="animate-in fade-in duration-500">
                   <ExpenseTracker matterId={matter.id} />
+                </div>
+              )}
+
+              {activeTab === 'billing' && (
+                <div className="animate-in fade-in duration-500">
+                  <InvoiceDraftPanel matterId={matter.id} />
                 </div>
               )}
             </div>

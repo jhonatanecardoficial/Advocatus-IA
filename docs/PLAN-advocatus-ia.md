@@ -745,3 +745,10 @@ python .agent/skills/webapp-testing/scripts/playwright_runner.py http://localhos
 
 *Criado por: `orchestrator` + `project-planner` + `backend-specialist` + `frontend-specialist` + `security-auditor` + `database-architect` + `product-owner`*
 *Última atualização: Março 2026*
+
+## Task Status Update (2026-03-07)
+
+| Task | Status | Branch |
+|------|--------|--------|
+| Task 008 — Time Tracking + Faturação | Done | `feature/task-008-billing-mvp` |
+| Task 009 — Sistema de Notificações & Prazos | Planned | `feature/task-009-notifications-deadlines` |
