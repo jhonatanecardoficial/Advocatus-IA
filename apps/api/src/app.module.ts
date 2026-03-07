@@ -9,6 +9,8 @@ import { ClientsModule } from './clients/clients.module';
 import { MattersModule } from './matters/matters.module';
 import { TasksModule } from './tasks/tasks.module';
 import { DocumentsModule } from './documents/documents.module';
+import { TimeEntriesModule } from './time-entries/time-entries.module';
+import { ExpensesModule } from './expenses/expenses.module';
 
 @Module({
     imports: [
@@ -42,7 +44,9 @@ import { DocumentsModule } from './documents/documents.module';
         MattersModule,
         TasksModule,
         DocumentsModule,
-        // TODO Fase 1 seguinte: TimeTrackingModule, BillingModule
+        TimeEntriesModule,
+        ExpensesModule,
+        // TODO Fase 1 seguinte: BillingModule
         // TODO Fase 2: AiModule, NotificationsModule, SignaturesModule
         // TODO Fase 3: ReportsModule, JurimetricsModule, ClientPortalModule
     ],

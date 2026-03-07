@@ -33,6 +33,7 @@ model Tenant {
   invoices  Invoice[]
   messages  Message[]
   auditLogs AuditLog[]
+  expenses  Expense[]
 
   @@map("tenants")
 }
@@ -62,6 +63,7 @@ model User {
   timeEntries   TimeEntry[]
   auditLogs     AuditLog[]
   sentMessages  Message[]
+  expenses      Expense[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -124,6 +126,7 @@ model Matter {
   timeEntries TimeEntry[]
   invoices    Invoice[]
   messages    Message[]
+  expenses    Expense[]
 
   @@index([tenantId])
   @@map("matters")
@@ -176,14 +179,43 @@ model TimeEntry {
   billable     Boolean  @default(true)
   activityDate DateTime @db.Date
   invoiceId    String?
+  taskId       String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   matter Matter @relation(fields: [matterId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
+  task   Task?  @relation(fields: [taskId], references: [id])
 
   @@index([tenantId])
   @@map("time_entries")
+}
+
+// ============================================================
+// DESPESAS — Custos adicionais do processo
+// ============================================================
+model Expense {
+  id           String          @id @default(cuid())
+  tenantId     String
+  matterId     String
+  userId       String
+  taskId       String?
+  description  String
+  category     ExpenseCategory @default(OUTRO)
+  amount       Decimal         @db.Decimal(10, 2)
+  date         DateTime        @db.Date
+  billable     Boolean         @default(true)
+  invoiceId    String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  matter Matter @relation(fields: [matterId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  task   Task?  @relation(fields: [taskId], references: [id])
+
+  @@index([tenantId])
+  @@map("expenses")
 }
 
 // ============================================================
@@ -236,6 +268,8 @@ model Task {
   assignedTo User?  @relation("TaskAssignee", fields: [assignedToId], references: [id])
   createdBy  User   @relation("TaskCreator", fields: [createdById], references: [id])
   tenant     Tenant @relation(fields: [tenantId], references: [id])
+  timeEntries TimeEntry[]
+  expenses    Expense[]
 
   @@index([tenantId])
   @@map("tasks")
@@ -399,5 +433,13 @@ enum LegalDocumentType {
   ACORDAO
   RESOLUCAO
   PORTARIA
+  OUTRO
+}
+
+enum ExpenseCategory {
+  DESLOCACAO
+  TAXA_JUSTICA
+  FOTOCOPIAS
+  CORREIO
   OUTRO
 }

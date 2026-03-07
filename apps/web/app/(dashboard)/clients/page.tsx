@@ -1,4 +1,4 @@
-import { Users, Plus, Search, MapPin, Phone, Mail, ArrowRight } from "lucide-react";
+import { Users, Plus, Search, Phone, Mail, ArrowRight } from "lucide-react";
 import { cookies } from "next/headers";
 import Link from "next/link";
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 
 interface Matter {
@@ -56,10 +57,10 @@ export default function ClientDetail({ client: initialClient }: Props) {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const res = await fetch(`${API_URL}/clients/${client.id}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : undefined,
-        },
+          'Authorization': token ? `Bearer ${token}` : '',
+        } as Record<string, string>,
         body: JSON.stringify(form),
       });
       if (!res.ok) throw new Error('Falha ao atualizar');
@@ -87,10 +88,10 @@ export default function ClientDetail({ client: initialClient }: Props) {
       };
       const res = await fetch(`${API_URL}/clients/conflict-check`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : undefined,
-        },
+          'Authorization': token ? `Bearer ${token}` : '',
+        } as Record<string, string>,
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('Falha no conflict check');
@@ -224,11 +225,10 @@ export default function ClientDetail({ client: initialClient }: Props) {
         ) : (
           <div className="space-y-2">
             <div className="flex flex-wrap gap-4">
-              <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 border ${
-                client.tipo === 'SINGULAR'
-                  ? 'border-navy text-navy bg-slate-50'
-                  : 'border-amber-600 text-amber-800 bg-amber-50'
-              }`}>{client.tipo}</span>
+              <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 border ${client.tipo === 'SINGULAR'
+                ? 'border-navy text-navy bg-slate-50'
+                : 'border-amber-600 text-amber-800 bg-amber-50'
+                }`}>{client.tipo}</span>
             </div>
             <h2 className="text-2xl font-display font-bold text-navy">{client.nome}</h2>
             <p className="font-mono text-sm text-slate-500">NIF: {client.nif}</p>
@@ -245,7 +245,7 @@ export default function ClientDetail({ client: initialClient }: Props) {
               <p className="font-mono text-sm text-slate-500">Notas: {client.notes}</p>
             )}
             <p className="font-mono text-xs text-slate-400">
-              GDPR consent: {client.gdprConsentAt ? new Date(client.gdprConsentAt).toLocaleDateString() : 'não' }
+              GDPR consent: {client.gdprConsentAt ? new Date(client.gdprConsentAt).toLocaleDateString() : 'não'}
             </p>
           </div>
         )}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Clock, Play, Pause, X, Plus } from 'lucide-react';
+import { Play, Pause, X, Plus } from 'lucide-react';
 
 interface TimeEntry {
   id: string;
@@ -11,6 +11,12 @@ interface TimeEntry {
   rate_per_hour?: number | null;
   billable: boolean;
   activity_date: string;
+  taskId?: string | null;
+}
+
+interface Task {
+  id: string;
+  title: string;
 }
 
 interface TimeTrackerProps {
@@ -20,14 +26,35 @@ interface TimeTrackerProps {
   onEntriesChange?: (entries: TimeEntry[]) => void;
 }
 
-export default function TimeTracker({ matterId, totalHours = 0, entries = [], onEntriesChange }: TimeTrackerProps) {
+export default function TimeTracker({ matterId, entries = [], onEntriesChange }: TimeTrackerProps) {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [description, setDescription] = useState('');
   const [ratePerHour, setRatePerHour] = useState<number>(150);
   const [isBillable, setIsBillable] = useState(true);
+  const [taskId, setTaskId] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [allEntries, setAllEntries] = useState<TimeEntry[]>(entries);
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    async function loadTasks() {
+      try {
+        const token = localStorage.getItem('access_token');
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+        const res = await fetch(`${API_URL}/tasks?matterId=${matterId}`, {
+          headers: { Authorization: token ? `Bearer ${token}` : '' } as Record<string, string>,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setTasks(data);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar tarefas:', err);
+      }
+    }
+    if (matterId) loadTasks();
+  }, [matterId]);
 
   // Timer logic
   useEffect(() => {
@@ -70,8 +97,8 @@ export default function TimeTracker({ matterId, totalHours = 0, entries = [], on
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : undefined,
-        },
+          'Authorization': token ? `Bearer ${token}` : '',
+        } as Record<string, string>,
         body: JSON.stringify({
           matter_id: matterId,
           description: description.trim(),
@@ -79,6 +106,7 @@ export default function TimeTracker({ matterId, totalHours = 0, entries = [], on
           rate_per_hour: ratePerHour,
           billable: isBillable,
           activity_date: new Date().toISOString().split('T')[0],
+          task_id: taskId || undefined,
         }),
       });
 
@@ -108,8 +136,8 @@ export default function TimeTracker({ matterId, totalHours = 0, entries = [], on
       const res = await fetch(`${API_URL}/time-entries/${id}`, {
         method: 'DELETE',
         headers: {
-          Authorization: token ? `Bearer ${token}` : undefined,
-        },
+          'Authorization': token ? `Bearer ${token}` : '',
+        } as Record<string, string>,
       });
 
       if (!res.ok) throw new Error('Falha ao eliminar');
@@ -190,6 +218,20 @@ export default function TimeTracker({ matterId, totalHours = 0, entries = [], on
               <span className="text-xs font-bold uppercase text-navy">Faturável</span>
             </label>
           </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold uppercase text-navy mb-2">Tarefa (Opcional)</label>
+          <select
+            value={taskId}
+            onChange={(e) => setTaskId(e.target.value)}
+            className="w-full border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:border-navy"
+          >
+            <option value="">Nenhuma tarefa</option>
+            {tasks.map((task) => (
+              <option key={task.id} value={task.id}>{task.title}</option>
+            ))}
+          </select>
         </div>
 
         <button

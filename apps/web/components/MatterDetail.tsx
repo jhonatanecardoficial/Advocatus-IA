@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Clock, FileText, AlertCircle, CheckCircle2, Calendar } from 'lucide-react';
+import { Clock, FileText, Calendar, Wallet } from 'lucide-react';
 import TimeTracker from './TimeTracker';
+import ExpenseTracker from './ExpenseTracker';
 
 interface Matter {
   id: string;
@@ -54,21 +55,22 @@ const generateMockTimeline = (matter: Matter) => [
   },
   ...(matter.deadline_at
     ? [
-        {
-          id: '4',
-          type: 'deadline',
-          title: 'Prazo definido',
-          description: `Prazo processual até ${new Date(matter.deadline_at).toLocaleDateString('pt-PT')}`,
-          timestamp: new Date(new Date(matter.createdAt).getTime() + 259200000),
-          icon: 'calendar',
-        },
-      ]
+      {
+        id: '4',
+        type: 'deadline',
+        title: 'Prazo definido',
+        description: `Prazo processual até ${new Date(matter.deadline_at).toLocaleDateString('pt-PT')}`,
+        timestamp: new Date(new Date(matter.createdAt).getTime() + 259200000),
+        icon: 'calendar',
+      },
+    ]
     : []),
 ];
 
 export default function MatterDetail({ matter: initialMatter }: Props) {
   const [matter, setMatter] = useState(initialMatter);
   const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'timeline' | 'fees' | 'expenses'>('timeline');
   const [form, setForm] = useState({
     title: initialMatter.title,
     type: initialMatter.type,
@@ -80,7 +82,35 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
     deadline_at: initialMatter.deadline_at || '',
   });
   const [loading, setLoading] = useState(false);
+  const [summaries, setSummaries] = useState({ total_hours: 0, total_expenses: 0 });
   const timeline = useMemo(() => generateMockTimeline(matter), [matter]);
+
+  useEffect(() => {
+    async function loadSummaries() {
+      try {
+        const token = localStorage.getItem('access_token');
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+        const headers = { Authorization: token ? `Bearer ${token}` : '' } as Record<string, string>;
+
+        const [hoursRes, expRes] = await Promise.all([
+          fetch(`${API_URL}/time-entries/matter/${matter.id}/summary`, { headers }),
+          fetch(`${API_URL}/expenses/matter/${matter.id}/summary`, { headers }),
+        ]);
+
+        if (hoursRes.ok && expRes.ok) {
+          const hData = await hoursRes.json();
+          const eData = await expRes.json();
+          setSummaries({
+            total_hours: hData.total_hours || 0,
+            total_expenses: eData.total_amount || 0,
+          });
+        }
+      } catch (err) {
+        console.error('Erro ao carregar resumos:', err);
+      }
+    }
+    if (matter.id) loadSummaries();
+  }, [matter.id]);
 
   const statusColors: Record<string, { bg: string; text: string; border: string }> = {
     ATIVO: { bg: 'bg-green-50', text: 'text-green-800', border: 'border-green-300' },
@@ -105,8 +135,8 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : undefined,
-        },
+          'Authorization': token ? `Bearer ${token}` : '',
+        } as Record<string, string>,
         body: JSON.stringify(form),
       });
       if (!res.ok) throw new Error('Falha ao atualizar');
@@ -329,25 +359,61 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
             )}
           </div>
 
-          {/* Timeline */}
-          <div className="bg-white border-2 border-navy p-6">
-            <h2 className="text-lg font-bold text-navy mb-6 uppercase tracking-widest">Linha do tempo</h2>
-            <div className="space-y-4">
-              {timeline.map((event, idx) => (
-                <div key={event.id} className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-navy text-white rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">
-                      {idx + 1}
+          {/* Timeline & Financial Tabs */}
+          <div className="bg-white border-2 border-navy overflow-hidden">
+            <div className="flex border-b-2 border-navy bg-slate-50">
+              <button
+                onClick={() => setActiveTab('timeline')}
+                className={`flex-1 py-4 px-6 text-sm font-bold uppercase tracking-widest transition-colors ${activeTab === 'timeline' ? 'bg-white text-navy border-b-2 border-white -mb-0.5' : 'text-slate-400 hover:text-navy'}`}
+              >
+                Linha do Tempo
+              </button>
+              <button
+                onClick={() => setActiveTab('fees')}
+                className={`flex-1 py-4 px-6 text-sm font-bold uppercase tracking-widest transition-colors ${activeTab === 'fees' ? 'bg-white text-navy border-b-2 border-white -mb-0.5' : 'text-slate-400 hover:text-navy'}`}
+              >
+                Honorários
+              </button>
+              <button
+                onClick={() => setActiveTab('expenses')}
+                className={`flex-1 py-4 px-6 text-sm font-bold uppercase tracking-widest transition-colors ${activeTab === 'expenses' ? 'bg-white text-navy border-b-2 border-white -mb-0.5' : 'text-slate-400 hover:text-navy'}`}
+              >
+                Despesas
+              </button>
+            </div>
+
+            <div className="p-6">
+              {activeTab === 'timeline' && (
+                <div className="space-y-4">
+                  {timeline.map((event, idx) => (
+                    <div key={event.id} className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="w-8 h-8 bg-navy text-white rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">
+                          {idx + 1}
+                        </div>
+                        {idx < timeline.length - 1 && <div className="w-1 bg-slate-200 flex-grow my-2 h-12" />}
+                      </div>
+                      <div className="pb-4">
+                        <p className="text-sm font-bold text-navy">{event.title}</p>
+                        <p className="text-xs text-slate-500 mt-1">{event.description}</p>
+                        <p className="text-xs text-slate-400 mt-1">{event.timestamp.toLocaleDateString('pt-PT')}</p>
+                      </div>
                     </div>
-                    {idx < timeline.length - 1 && <div className="w-1 bg-slate-200 flex-grow my-2 h-12" />}
-                  </div>
-                  <div className="pb-4">
-                    <p className="text-sm font-bold text-navy">{event.title}</p>
-                    <p className="text-xs text-slate-500 mt-1">{event.description}</p>
-                    <p className="text-xs text-slate-400 mt-1">{event.timestamp.toLocaleDateString('pt-PT')}</p>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              )}
+
+              {activeTab === 'fees' && (
+                <div className="animate-in fade-in duration-500">
+                  <TimeTracker matterId={matter.id} />
+                </div>
+              )}
+
+              {activeTab === 'expenses' && (
+                <div className="animate-in fade-in duration-500">
+                  <ExpenseTracker matterId={matter.id} />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -365,6 +431,20 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
             </div>
           )}
 
+          {/* Resumo Financeiro na Sidebar */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-white border-2 border-navy p-3 text-center">
+              <Clock className="w-4 h-4 text-navy mx-auto mb-1" />
+              <p className="text-[10px] font-bold uppercase text-navy opacity-60">Horas</p>
+              <p className="text-lg font-black text-navy">{summaries.total_hours.toFixed(1)}h</p>
+            </div>
+            <div className="bg-white border-2 border-navy p-3 text-center">
+              <Wallet className="w-4 h-4 text-navy mx-auto mb-1" />
+              <p className="text-[10px] font-bold uppercase text-navy opacity-60">Custos</p>
+              <p className="text-lg font-black text-navy">€{summaries.total_expenses.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+            </div>
+          </div>
+
           {/* Documentos */}
           <div className="bg-white border-2 border-navy p-4">
             <div className="flex items-center gap-2 mb-3">
@@ -377,8 +457,6 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
             </button>
           </div>
 
-          {/* Tempo registado */}
-          <TimeTracker matterId={matter.id} />
 
           {/* Informações */}
           <div className="bg-slate-50 border-2 border-slate-300 p-4">
