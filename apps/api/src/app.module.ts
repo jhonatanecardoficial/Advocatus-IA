@@ -13,6 +13,7 @@ import { TimeEntriesModule } from './time-entries/time-entries.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { BillingModule } from './billing/billing.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
     imports: [
@@ -50,6 +51,7 @@ import { NotificationsModule } from './notifications/notifications.module';
         ExpensesModule,
         BillingModule,
         NotificationsModule,
+        AiModule,
         // TODO Fase 2: AiModule, SignaturesModule
         // TODO Fase 3: ReportsModule, JurimetricsModule, ClientPortalModule
     ],
