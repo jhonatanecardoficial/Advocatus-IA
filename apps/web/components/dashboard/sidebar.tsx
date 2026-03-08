@@ -1,19 +1,20 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { LayoutDashboard, FileText, Users, Calendar, Settings, ChevronLeft, ChevronRight, LogOut, Search } from 'lucide-react'
+import { LayoutDashboard, FileText, Users, Calendar, Settings, ChevronLeft, ChevronRight, LogOut, Search, Wallet } from 'lucide-react'
 
 export function Sidebar() {
     const [isExpanded, setIsExpanded] = useState(true)
 
     const navItems = [
-        { icon: LayoutDashboard, label: 'Painel Central', href: '/dashboard' },
-        { icon: FileText, label: 'Processos', href: '/matters' },
-        { icon: Users, label: 'Cadastro de Clientes', href: '/clients' },
-        { icon: Search, label: 'Pesquisa Jurídica IA', href: '/ai-search' },
-        { icon: Calendar, label: 'Prazos & Agenda', href: '/calendar' },
-        { icon: Settings, label: 'Definições do Escritório', href: '/settings' },
+        { icon: LayoutDashboard, label: 'Painel Central', href: '/app' },
+        { icon: FileText, label: 'Processos', href: '/app/matters' },
+        { icon: Users, label: 'Cadastro de Clientes', href: '/app/clients' },
+        { icon: Wallet, label: 'Faturação', href: '/app/billing' },
+        { icon: Search, label: 'Pesquisa Jurídica IA', href: '/app/ai-search' },
+        { icon: Calendar, label: 'Prazos & Agenda', href: '/app/calendar' },
+        { icon: Settings, label: 'Definições do Escritório', href: '/app/settings' },
     ]
 
     return (
@@ -80,13 +81,15 @@ export function Sidebar() {
                 >
                     <LogOut size={20} className="flex-shrink-0" />
                     {isExpanded && <span className="ml-4 font-medium text-sm">Terminar Sessão</span>}
-                </Link>
+                </Link >
                 {isExpanded && (
                     <div className="mt-4 px-2 text-xs text-slate-500 font-mono">
                         Build v1.0.0-pilot
                     </div>
-                )}
-            </div>
-        </div>
+                )
+                }
+            </div >
+        </div >
     )
 }
+

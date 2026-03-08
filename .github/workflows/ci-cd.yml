@@ -54,13 +54,21 @@ jobs:
       run: pnpm build
 
     - name: Run unit tests
-      run: pnpm test
+      run: pnpm test:unit
+
+    - name: Create .env.test file
+      run: |
+        echo "API_PORT=4000" > .env.test
+        echo "TEST_DB_URL=\"postgresql://postgres:postgres@127.0.0.1:54322/postgres\"" >> .env.test
+        echo "TEST_JWT_SECRET=\"super-secret-jwt-token-with-at-least-32-characters-long\"" >> .env.test
+        echo "DATABASE_URL=\"postgresql://postgres:postgres@127.0.0.1:54322/postgres\"" >> .env.test
+        echo "DIRECT_URL=\"postgresql://postgres:postgres@127.0.0.1:54322/postgres\"" >> .env.test
 
     - name: Setup Playwright browsers
       run: pnpm exec playwright install --with-deps
 
-    - name: Run Playwright tests
-      run: pnpm exec playwright test
+    - name: Run Playwright API tests
+      run: pnpm test:api
       env:
         CI: true
         SUPABASE_JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
