@@ -2,12 +2,17 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+<<<<<<< HEAD
 import { LayoutDashboard, FileText, Users, Calendar, Settings, ChevronLeft, ChevronRight, LogOut, Search, Wallet } from 'lucide-react'
+=======
+import { LayoutDashboard, FileText, Users, Calendar, Settings, ChevronLeft, ChevronRight, LogOut, Search } from 'lucide-react'
+>>>>>>> origin/main
 
 export function Sidebar() {
     const [isExpanded, setIsExpanded] = useState(true)
 
     const navItems = [
+<<<<<<< HEAD
         { icon: LayoutDashboard, label: 'Painel Central', href: '/dashboard' },
         { icon: FileText, label: 'Processos', href: '/matters' },
         { icon: Users, label: 'Cadastro de Clientes', href: '/clients' },
@@ -15,6 +20,14 @@ export function Sidebar() {
         { icon: Search, label: 'Pesquisa JurÃ­dica IA', href: '/ai-search' },
         { icon: Calendar, label: 'Prazos & Agenda', href: '/calendar' },
         { icon: Settings, label: 'DefiniÃ§Ãµes do EscritÃ³rio', href: '/settings' },
+=======
+        { icon: LayoutDashboard, label: 'Painel Central', href: '/app' },
+        { icon: FileText, label: 'Processos', href: '/app/matters' },
+        { icon: Users, label: 'Cadastro de Clientes', href: '/app/clients' },
+        { icon: Search, label: 'Pesquisa Jurídica IA', href: '/app/ai-search' },
+        { icon: Calendar, label: 'Prazos & Agenda', href: '/app/calendar' },
+        { icon: Settings, label: 'Definições do Escritório', href: '/app/settings' },
+>>>>>>> origin/main
     ]
 
     return (
@@ -80,7 +93,11 @@ export function Sidebar() {
                     className={`flex items-center ${isExpanded ? 'px-2' : 'justify-center'} py-2 text-slate-400 hover:text-white transition-colors`}
                 >
                     <LogOut size={20} className="flex-shrink-0" />
+<<<<<<< HEAD
                     {isExpanded && <span className="ml-4 font-medium text-sm">Terminar SessÃ£o</span>}
+=======
+                    {isExpanded && <span className="ml-4 font-medium text-sm">Terminar Sessão</span>}
+>>>>>>> origin/main
                 </Link>
                 {isExpanded && (
                     <div className="mt-4 px-2 text-xs text-slate-500 font-mono">
