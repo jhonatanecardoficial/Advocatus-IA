@@ -328,6 +328,7 @@ model LegalDocument {
   title       String
   reference   String?
   content     String            @db.Text
+  embedding   Unsupported("vector(1536)")?
   publishedAt DateTime?
   url         String?
   ingestedAt  DateTime          @default(now())

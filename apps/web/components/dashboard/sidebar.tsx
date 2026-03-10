@@ -8,13 +8,13 @@ export function Sidebar() {
     const [isExpanded, setIsExpanded] = useState(true)
 
     const navItems = [
-        { icon: LayoutDashboard, label: 'Painel Central', href: '/app' },
-        { icon: FileText, label: 'Processos', href: '/app/matters' },
-        { icon: Users, label: 'Cadastro de Clientes', href: '/app/clients' },
-        { icon: Wallet, label: 'Faturação', href: '/app/billing' },
-        { icon: Search, label: 'Pesquisa Jurídica IA', href: '/app/ai-search' },
-        { icon: Calendar, label: 'Prazos & Agenda', href: '/app/calendar' },
-        { icon: Settings, label: 'Definições do Escritório', href: '/app/settings' },
+        { icon: LayoutDashboard, label: 'Painel Central', href: '/dashboard' },
+        { icon: FileText, label: 'Processos', href: '/matters' },
+        { icon: Users, label: 'Cadastro de Clientes', href: '/clients' },
+        { icon: Wallet, label: 'Faturação', href: '/billing' },
+        { icon: Search, label: 'Pesquisa Jurídica IA', href: '/ai-search' },
+        { icon: Calendar, label: 'Prazos & Agenda', href: '/dashboard' },
+        { icon: Settings, label: 'Definições do Escritório', href: '/dashboard' },
     ]
 
     return (
