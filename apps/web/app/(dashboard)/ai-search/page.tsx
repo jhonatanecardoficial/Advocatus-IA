@@ -62,9 +62,9 @@ export default function AiSearchPage() {
 
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: data.results && data.results.length > 0
+                content: data.answer || (data.results && data.results.length > 0
                     ? `Encontrei ${data.results.length} referências relevantes para a sua pesquisa no Diário da República e bases de jurisprudência.`
-                    : 'Não encontrei resultados específicos para essa consulta nas bases legais oficiais.',
+                    : 'Não encontrei resultados específicos para essa consulta nas bases legais oficiais.'),
                 results: data.results || []
             }])
         } catch (err) {
@@ -129,22 +129,27 @@ export default function AiSearchPage() {
                                 {msg.results && msg.results.length > 0 && (
                                     <div className="grid grid-cols-1 gap-3">
                                         {msg.results.map((result) => (
-                                            <div key={result.id} className="p-4 border-l-4 border-amber bg-slate-50 border-r border-t border-b border-slate-200">
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{result.source} • {result.type}</span>
-                                                    <span className="text-[10px] bg-amber/20 text-amber-800 px-2 py-0.5 font-bold">SIMILARIDADE: {(result.similarity * 100).toFixed(0)}%</span>
+                                            <div key={result.id} className="group p-5 border-l-4 border-amber bg-slate-50 border-r border-t border-b border-slate-200 hover:shadow-md transition-all">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div className="flex gap-2">
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#0F1D3A] bg-amber/30 px-2 py-0.5">{result.source}</span>
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 bg-slate-200/50 px-2 py-0.5">{result.type}</span>
+                                                    </div>
+                                                    <span className="text-[10px] text-slate-400 font-mono">CONFIDÊNCIA: {(result.similarity * 100).toFixed(0)}%</span>
                                                 </div>
-                                                <h4 className="font-display font-bold text-sm text-[#0F1D3A] mb-1">{result.title}</h4>
-                                                <p className="text-xs text-slate-600 line-clamp-3 mb-3">{result.content}</p>
+                                                <h4 className="font-display font-bold text-base text-[#0F1D3A] mb-2 group-hover:text-amber transition-colors">{result.title}</h4>
+                                                <p className="text-sm text-slate-600 leading-relaxed mb-4">{result.content}</p>
                                                 {result.url && (
-                                                    <a
-                                                        href={result.url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-[10px] font-bold text-amber-600 flex items-center gap-1 hover:underline"
-                                                    >
-                                                        VER NO DRE.PT <ExternalLink size={10} />
-                                                    </a>
+                                                    <div className="flex justify-end border-t border-slate-200 pt-3">
+                                                        <a
+                                                            href={result.url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-[11px] font-bold text-[#0F1D3A] flex items-center gap-2 hover:text-amber transition-colors"
+                                                        >
+                                                            CONSULTAR FONTE OFICIAL <ExternalLink size={12} />
+                                                        </a>
+                                                    </div>
                                                 )}
                                             </div>
                                         ))}

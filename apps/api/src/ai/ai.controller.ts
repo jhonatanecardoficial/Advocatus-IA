@@ -12,7 +12,10 @@ export class AiController {
         if (!query) {
             return { results: [], message: 'A query é obrigatória.' };
         }
-        const results = await this.aiService.searchLegalDocuments(query);
-        return { results };
+        const response = await this.aiService.searchLegalDocuments(query);
+        return {
+            results: response.results,
+            answer: response.answer
+        };
     }
 }
