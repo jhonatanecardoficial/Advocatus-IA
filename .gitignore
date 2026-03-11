@@ -1,0 +1,68 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+.pnpm-store
+
+# testing
+/coverage
+/.playwright-mcp
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
+
+# next.js
+/.next/
+/out/
+
+# turbo
+.turbo
+
+# production
+/build
+/dist
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# test artifacts/logs
+*.log
+*.txt
+!README.md
+!docs/**/*.txt
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# temp/scratch
+/tmp
+/bra-sections
+/web_info_summaries
+/report_sections
+/prompts_tests
+/test-results
+/playwright-report
+/test-results
+/seed_error.txt
+/compilation_errors.txt
+/test-report*.txt
