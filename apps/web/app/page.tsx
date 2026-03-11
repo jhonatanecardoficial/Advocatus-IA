@@ -9,10 +9,13 @@ export default function LandingPage() {
             {/* Top Navigation */}
             <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/50">
                 <div className="max-w-7xl mx-auto px-6 md:px-12 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-navy flex items-center justify-center text-amber font-display font-bold shadow-sm">A</div>
-                        <span className="font-display text-2xl font-bold text-navy hidden sm:inline tracking-tight">Advocatus IA</span>
-                    </div>
+                    <button 
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                        className="flex items-center gap-3 group cursor-pointer"
+                    >
+                        <div className="w-10 h-10 bg-navy flex items-center justify-center text-amber font-display font-bold shadow-sm group-hover:scale-110 transition-transform">A</div>
+                        <span className="font-display text-2xl font-bold text-navy hidden sm:inline tracking-tight group-hover:text-amber-600 transition-colors">Advocatus IA</span>
+                    </button>
                     <div className="flex items-center gap-6">
                         <Link href="/login" className="text-slate-600 hover:text-navy transition font-medium">
                             Portal do Cliente
