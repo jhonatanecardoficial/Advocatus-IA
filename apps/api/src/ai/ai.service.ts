@@ -33,7 +33,7 @@ export class AiService implements OnModuleInit {
 
     async generateEmbedding(text: string): Promise<number[]> {
         if (this.provider === 'gemini' && this.genAI) {
-            const model = this.genAI.getGenerativeModel({ model: 'embedding-001' });
+            const model = this.genAI.getGenerativeModel({ model: 'gemini-embedding-001' });
             const result = await model.embedContent(text);
             return result.embedding.values;
         }

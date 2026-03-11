@@ -1,6 +1,7 @@
-import { Briefcase, Plus, Search, Filter } from "lucide-react";
+import { Briefcase, Search, Filter } from "lucide-react";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import AddMatterModal from "@/components/AddMatterModal";
 
 interface Matter {
     id: string;
@@ -78,9 +79,7 @@ export default async function MattersPage() {
                     </p>
                 </div>
                 <div className="flex gap-4">
-                    <button className="bg-navy text-white px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-amber-600 transition-colors border-2 border-navy flex items-center gap-2">
-                        <Plus className="h-4 w-4" /> Novo Processo
-                    </button>
+                    <AddMatterModal />
                 </div>
             </div>
 
@@ -158,9 +157,7 @@ export default async function MattersPage() {
                         <p className="font-body text-sm mt-1 mb-6 text-center max-w-md">
                             Comece por criar um novo processo para organizá-lo e rastreá-lo.
                         </p>
-                        <button className="bg-navy text-white px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-amber-600 transition-colors border-2 border-navy flex items-center gap-2">
-                            <Plus className="h-4 w-4" /> Novo Processo
-                        </button>
+                        <AddMatterModal />
                     </div>
                 )}
             </div>

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Search, Send, Sparkles, AlertCircle, ExternalLink, Bot, User } from 'lucide-react'
+import { aiSearchAction } from '@/app/actions/ai'
 
 interface SearchResult {
     id: string
@@ -42,23 +43,9 @@ export default function AiSearchPage() {
         setLoading(true)
 
         try {
-            // API call to our backend. Assuming base path /api/v1 prefix as configured in auth.ts
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1"
+            const data = await aiSearchAction(userQuery)
 
-            const res = await fetch(`${API_URL}/ai/search`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Note: access_token usually stored in cookies in this project
-                    // But for client components, we might need to handle it or use a server action
-                    // Since it's a client component, we'll try to get from document.cookie or use a proxy
-                },
-                body: JSON.stringify({ query: userQuery })
-            })
-
-            if (!res.ok) throw new Error('Falha na pesquisa')
-
-            const data = await res.json()
+            if (data.error) throw new Error(data.error)
 
             setMessages(prev => [...prev, {
                 role: 'assistant',
@@ -67,8 +54,8 @@ export default function AiSearchPage() {
                     : 'Não encontrei resultados específicos para essa consulta nas bases legais oficiais.'),
                 results: data.results || []
             }])
-        } catch (err) {
-            setMessages(prev => [...prev, { role: 'assistant', content: 'Desculpe, ocorreu um erro ao processar a sua pesquisa IA. Por favor, tente novamente.' }])
+        } catch (err: any) {
+            setMessages(prev => [...prev, { role: 'assistant', content: err.message || 'Desculpe, ocorreu um erro ao processar a sua pesquisa IA. Por favor, tente novamente.' }])
         } finally {
             setLoading(false)
         }

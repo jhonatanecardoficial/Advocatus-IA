@@ -1,5 +1,6 @@
 import { ArrowUpRight, Scale, Users, Clock, AlertTriangle } from "lucide-react";
 import { cookies } from "next/headers";
+import AddMatterModal from "@/components/AddMatterModal";
 
 async function fetchDashboardData() {
     const cookieStore = await cookies();
@@ -22,7 +23,11 @@ async function fetchDashboardData() {
         ]);
 
         const user = meRes.ok ? (await meRes.json()).data : null;
-        const matters = mattersRes.ok ? await mattersRes.json() : [];
+        let matters = [];
+        if (mattersRes.ok) {
+            const mattersData = await mattersRes.json();
+            matters = mattersData.data || [];
+        }
 
         return { user, matters };
     } catch (e) {
@@ -46,9 +51,7 @@ export default async function DashboardPage() {
                     </p>
                 </div>
                 <div className="flex gap-4">
-                    <button className="bg-navy text-white px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-amber-600 transition-colors border-2 border-navy">
-                        Novo Caso
-                    </button>
+                    <AddMatterModal />
                     <button className="bg-transparent text-navy px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-slate-200 transition-colors border-2 border-navy">
                         Gerar Relatório
                     </button>
@@ -141,45 +144,34 @@ export default async function DashboardPage() {
                                 </tr>
                             </thead>
                             <tbody className="font-mono text-sm">
-                                <tr className="border-b-2 border-navy hover:bg-slate-100 transition-colors group">
-                                    <td className="py-4 px-4 border-r border-navy-200">
-                                        <div className="font-bold text-navy group-hover:text-amber-600 transition-colors">PROC-2023-0894</div>
-                                        <div className="text-xs text-slate-500 font-sans mt-1">Martins & Associados Lda.</div>
-                                    </td>
-                                    <td className="py-4 px-4 text-slate-600 border-r border-navy-200">Tribunal Tributário</td>
-                                    <td className="py-4 px-4 border-r border-navy-200">
-                                        <span className="inline-block px-2 py-1 bg-amber-100 text-amber-800 text-xs font-bold uppercase tracking-wider border border-amber-300">A aguardar</span>
-                                    </td>
-                                    <td className="py-4 px-4 text-right">
-                                        <button className="text-navy hover:text-amber-600 underline underline-offset-4 font-bold">Abrir</button>
-                                    </td>
-                                </tr>
-                                <tr className="border-b-2 border-navy hover:bg-slate-100 transition-colors group">
-                                    <td className="py-4 px-4 border-r border-navy-200">
-                                        <div className="font-bold text-navy group-hover:text-amber-600 transition-colors">PROC-2024-0012</div>
-                                        <div className="text-xs text-slate-500 font-sans mt-1">João Manuel da Silva</div>
-                                    </td>
-                                    <td className="py-4 px-4 text-slate-600 border-r border-navy-200">Tribunal de Trabalho</td>
-                                    <td className="py-4 px-4 border-r border-navy-200">
-                                        <span className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-bold uppercase tracking-wider border border-green-300">Em Curso</span>
-                                    </td>
-                                    <td className="py-4 px-4 text-right">
-                                        <button className="text-navy hover:text-amber-600 underline underline-offset-4 font-bold">Abrir</button>
-                                    </td>
-                                </tr>
-                                <tr className="border-b-2 border-navy hover:bg-slate-100 transition-colors group">
-                                    <td className="py-4 px-4 border-r border-navy-200">
-                                        <div className="font-bold text-navy group-hover:text-amber-600 transition-colors">PROC-2023-5591</div>
-                                        <div className="text-xs text-slate-500 font-sans mt-1">Iberia Tech Solutions</div>
-                                    </td>
-                                    <td className="py-4 px-4 text-slate-600 border-r border-navy-200">Tribunal Cível</td>
-                                    <td className="py-4 px-4 border-r border-navy-200">
-                                        <span className="inline-block px-2 py-1 bg-red-100 text-red-800 text-xs font-bold uppercase tracking-wider border border-red-300">Prazo Curto</span>
-                                    </td>
-                                    <td className="py-4 px-4 text-right">
-                                        <button className="text-navy hover:text-amber-600 underline underline-offset-4 font-bold">Abrir</button>
-                                    </td>
-                                </tr>
+                                {matters.length > 0 ? (
+                                    matters.slice(0, 5).map((matter: any) => (
+                                        <tr key={matter.id} className="border-b-2 border-navy hover:bg-slate-100 transition-colors group">
+                                            <td className="py-4 px-4 border-r border-navy-200">
+                                                <div className="font-bold text-navy group-hover:text-amber-600 transition-colors">
+                                                    {matter.courtReference || matter.id.substring(0, 8)}
+                                                </div>
+                                                <div className="text-xs text-slate-500 font-sans mt-1">{matter.client?.name || "Sem Cliente"}</div>
+                                            </td>
+                                            <td className="py-4 px-4 text-slate-600 border-r border-navy-200">{matter.type}</td>
+                                            <td className="py-4 px-4 border-r border-navy-200">
+                                                <span className={`inline-block px-2 py-1 text-xs font-bold uppercase tracking-wider border ${matter.status === 'ATIVO' ? 'bg-green-100 text-green-800 border-green-300' : 'bg-amber-100 text-amber-800 border-amber-300'}`}>
+                                                    {matter.status}
+                                                </span>
+                                            </td>
+                                            <td className="py-4 px-4 text-right">
+                                                <button className="text-navy hover:text-amber-600 underline underline-offset-4 font-bold">Abrir</button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr className="border-b-2 border-navy invisible"></tr>
+                                )}
+                                {matters.length === 0 && (
+                                    <tr className="border-b-2 border-navy hover:bg-slate-100 transition-colors group">
+                                        <td colSpan={4} className="py-4 px-4 text-center text-slate-400">Nenhum processo recente encontrado.</td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>

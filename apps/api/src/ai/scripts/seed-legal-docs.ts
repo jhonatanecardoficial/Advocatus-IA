@@ -1,15 +1,14 @@
 import { PrismaClient } from '@prisma/client';
-import OpenAI from 'openai';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Load .env from root
-dotenv.config({ path: join(__dirname, '../../../../../.env') });
+// Load .env from apps/api
+dotenv.config({ path: join(__dirname, '../../../.env') });
 
 const prisma = new PrismaClient();
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const model = genAI.getGenerativeModel({ model: 'gemini-embedding-001' });
 
 const legalDocs = [
     {
@@ -55,48 +54,40 @@ const legalDocs = [
 ];
 
 async function seed() {
-    console.log('🚀 Iniciando ingestão de documentos legais...');
+    console.log(`🚀 Iniciando ingestão com embeddings via Gemini (gemini-embedding-001)`);
 
     for (const doc of legalDocs) {
         console.log(`📄 Processando: ${doc.title}`);
 
-        let embedding: number[];
-
+        const id = `seed-${doc.reference.replace(/\s+/g, '-').replace(/\./g, '').toLowerCase()}`;
+        
+        // Generate embedding
+        let embedding = null;
         try {
-            if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY.includes('...')) {
-                throw new Error('Placeholder key');
-            }
-            // Generate real embedding
-            const response = await openai.embeddings.create({
-                model: 'text-embedding-3-small',
-                input: doc.content,
-            });
-            embedding = response.data[0].embedding;
-        } catch (e) {
-            console.warn(`⚠️ Usando mock para embedding de ${doc.title} (OpenAI indisponível)`);
-            embedding = Array.from({ length: 1536 }, () => Math.random() * 2 - 1);
+            const result = await model.embedContent(doc.content);
+            embedding = result.embedding.values;
+        } catch (e: any) {
+            console.error(`❌ Erro ao gerar embedding para ${doc.title}:`, e.message);
         }
 
-        const vectorString = `[${embedding.join(',')}]`;
+        const vectorString = embedding ? `[${embedding.join(',')}]` : null;
 
-        // Insert using queryRaw (because of vector type)
         await prisma.$executeRawUnsafe(`
-      INSERT INTO legal_documents (id, title, source, type, content, reference, url, embedding, "ingestedAt", "updatedAt")
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8::vector, NOW(), NOW())
-      ON CONFLICT (id) DO UPDATE SET
-        content = EXCLUDED.content,
-        embedding = EXCLUDED.embedding,
-        "updatedAt" = NOW()
-    `,
-            // Generate a deterministic ID or use a random one
-            `seed-${doc.reference.replace(/\s+/g, '-').toLowerCase()}`,
+            INSERT INTO legal_documents (id, title, source, type, content, reference, url, embedding, "ingestedAt", "updatedAt")
+            VALUES ($1, $2, $3, $4::"LegalDocumentType", $5, $6, $7, ${vectorString ? "$8::vector" : "NULL"}, NOW(), NOW())
+            ON CONFLICT (id) DO UPDATE SET
+                content = EXCLUDED.content,
+                embedding = EXCLUDED.embedding,
+                "updatedAt" = NOW()
+        `,
+            id,
             doc.title,
             doc.source,
             doc.type,
             doc.content,
             doc.reference,
             doc.url,
-            vectorString
+            ...(vectorString ? [vectorString] : [])
         );
     }
 

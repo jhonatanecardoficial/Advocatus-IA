@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+﻿import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
 import { ConfigService } from '@nestjs/config'
@@ -33,7 +33,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             (req: any) => {
                 let token = null;
                 if (req && req.cookies) {
-                    token = req.cookies['accessToken'];
+                    // Try both common cookie names for consistency
+                    token = req.cookies['access_token'] || req.cookies['accessToken'];
                 }
                 return token;
             },
@@ -42,15 +43,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         super({
             jwtFromRequest: ExtractJwt.fromExtractors(extractors),
             ignoreExpiration: false,
-            // Supabase JWT secret — JWT_SECRET no env
+            // Supabase JWT secret â€” JWT_SECRET no env
             secretOrKey: config.getOrThrow<string>('SUPABASE_JWT_SECRET'),
         })
     }
 
     async validate(payload: JwtPayload): Promise<RequestUser> {
-        // Buscar o utilizador na nossa DB pelo supabaseUserId
-        const user = await this.prisma.user.findUnique({
-            where: { supabaseUserId: payload.sub },
+        // Buscar o utilizador na nossa DB pelo ID (local) ou pelo supabaseUserId (Supabase)
+        const user = await this.prisma.user.findFirst({
+            where: {
+                OR: [
+                    { id: payload.sub },
+                    { supabaseUserId: payload.sub }
+                ]
+            },
             select: {
                 id: true,
                 email: true,
@@ -63,7 +69,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         })
 
         if (!user) {
-            throw new UnauthorizedException('Utilizador não encontrado ou sem acesso.')
+            // Token may be valid but user row is missing (e.g. DB reset).
+            throw new UnauthorizedException('Sessao invalida. Inicie sessao novamente.')
         }
 
         return {
@@ -72,8 +79,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             name: user.name,
             role: user.role,
             tenantId: user.tenantId,
-            supabaseUserId: user.supabaseUserId!,
+            supabaseUserId: user.supabaseUserId || '',
             mfaEnabled: user.mfaEnabled,
         }
     }
 }
+
+

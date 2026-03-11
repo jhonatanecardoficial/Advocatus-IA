@@ -2,10 +2,11 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Clock, FileText, Calendar, Wallet } from 'lucide-react';
+import { Clock, FileText, Calendar, Wallet, Upload } from 'lucide-react';
 import TimeTracker from './TimeTracker';
 import ExpenseTracker from './ExpenseTracker';
 import InvoiceDraftPanel from './InvoiceDraftPanel';
+import UploadDocumentModal from './UploadDocumentModal';
 
 interface Matter {
   id: string;
@@ -464,9 +465,7 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
               <h3 className="text-sm font-bold uppercase text-navy">Documentos</h3>
             </div>
             <p className="text-xs text-slate-500">Nenhum documento anexado ainda</p>
-            <button className="mt-3 w-full px-3 py-2 text-xs font-bold uppercase tracking-widest bg-navy text-white hover:bg-amber-600 transition-colors">
-              Anexar documentos
-            </button>
+            <UploadDocumentModal matterId={matter.id} />
           </div>
 
 
