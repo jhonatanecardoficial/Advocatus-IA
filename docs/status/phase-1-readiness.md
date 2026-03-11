@@ -26,12 +26,15 @@ pnpm test:web
 |---|---|---|---|
 | 004 | API de Clientes + Conflict Check | Done | Covered by API tests in `tests/api`. |
 | 005 | API de Matters/Processos | Done | Core endpoints available and tested. |
-| 006 | Gestão Documental | In Progress | Not fully present on `main`; tracked in feature branches. |
-| 007 | UI Dashboard + Matters | In Progress | Landing/dashboard flows exist; E2E web remains opt-in. |
-| 008 | Time Tracking + Faturação | Blocked (next) | Planned in `feature/task-008-billing-mvp`. |
-| 009 | Notificações & Prazos | Blocked (next) | Planned in `feature/task-009-notifications-deadlines`. |
+| 006 | Gestão Documental | Done | Integrated via `UploadDocumentModal` in Matters. |
+| 007 | UI Dashboard + Matters | Done | Landing/dashboard/matters/clients flow completed. |
+| 011 | Pesquisa IA (RAG) | Done | Integrated with Gemini 1.5 Flash + Supabase Vector. |
+| 012 | Logout & Logo Nav | Done | Confirmation modal + dynamic logo logic implemented. |
+| 013 | Proforma Generator | Done | Merged and validated in PR #7. |
+| --- | Console & Hydration Fixes | **In Progress** | Fixing duplicate keys and browser extension hydration errors. |
 
 ## Notes for PR Review
 
-- Impact on existing paused PRs: **none** (isolated branch from `main`).
-- CI target for this branch: lint + build + unit + API tests.
+- Current Branch: `fix/console-errors-and-hydration` (Phase 1 stabilization).
+- CI target: lint + build + unit + API tests.
+- Status: **90% Readiness**. Remaining fixes in Console/Hydration.
