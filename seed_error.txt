@@ -1,0 +1,53 @@
+﻿npx : Error: PrismaClientValidationError: 
+No linha:1 caractere:78
++ ... 27.0.0.1:5432/advocatus"; npx tsx apps/api/seed-pilot.ts 
+2>&1 | Out-F ...
++                               
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: PrismaClient 
+   ValidationError: :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Invalid `prisma.tenant.create()` invocation in
+C:\Users\E\Desktop\Ecard\Projeto IA\Advocatus 
+IA\apps\api\seed-pilot.ts:13:42
+
+  10 // Check if tenant already exists
+  11 let tenant = await prisma.tenant.findFirst({ where: { name: 
+'Escritorio Piloto' } });
+  12 if (!tenant) {
+ÔåÆ 13     tenant = await prisma.tenant.create({
+           data: {
+             name: "Escritorio Piloto",
+             plan: "TRIAL",
+                   ~~~~~~~
+             slug: "escritorio-piloto"
+           }
+         })
+
+Invalid value for argument `plan`. Expected TenantPlan.
+    at throwValidationException 
+(C:\Users\E\Desktop\Ecard\Projeto IA\Advocatus IA\node_modules\.p
+npm\@prisma+client@6.19.2_prism_6b2b1af085fe6797f5a5ea830937a8e3\
+node_modules\@prisma\client\src\runtime\core\errorRendering\throw
+ValidationException.ts:45:9)
+    at ei.handleRequestError (C:\Users\E\Desktop\Ecard\Projeto 
+IA\Advocatus IA\node_modules\.pnpm\@prisma+client@6.19.2_prism_6b
+2b1af085fe6797f5a5ea830937a8e3\node_modules\@prisma\client\src\ru
+ntime\RequestHandler.ts:202:7)
+    at ei.handleAndLogRequestError 
+(C:\Users\E\Desktop\Ecard\Projeto IA\Advocatus IA\node_modules\.p
+npm\@prisma+client@6.19.2_prism_6b2b1af085fe6797f5a5ea830937a8e3\
+node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (C:\Users\E\Desktop\Ecard\Projeto IA\Advocatus 
+IA\node_modules\.pnpm\@prisma+client@6.19.2_prism_6b2b1af085fe679
+7f5a5ea830937a8e3\node_modules\@prisma\client\src\runtime\Request
+Handler.ts:143:12)
+    at async a (C:\Users\E\Desktop\Ecard\Projeto IA\Advocatus IA\
+node_modules\.pnpm\@prisma+client@6.19.2_prism_6b2b1af085fe6797f5
+a5ea830937a8e3\node_modules\@prisma\client\src\runtime\getPrismaC
+lient.ts:833:24)
+    at async main (C:\Users\E\Desktop\Ecard\Projeto IA\Advocatus 
+IA\apps\api\seed-pilot.ts:13:22) {
+  clientVersion: '6.19.2'
+}
