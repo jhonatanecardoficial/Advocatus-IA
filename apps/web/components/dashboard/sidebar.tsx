@@ -37,6 +37,7 @@ export function Sidebar() {
                     href="/dashboard"
                     onClick={handleLogoClick}
                     className="flex-1 flex items-center h-full group transition-all"
+                    suppressHydrationWarning
                 >
                     {isExpanded && (
                         <div className="flex items-center gap-3 overflow-hidden">
@@ -68,16 +69,13 @@ export function Sidebar() {
 
                     return (
                         <Link
-                            key={item.href}
+                            key={item.label}
                             href={item.href}
-                            className={`flex items-center ${isExpanded ? 'px-6' : 'justify-center'} py-3 transition-all group relative
-                                ${isActive ? 'bg-[#1a2b4c] text-white' : 'text-slate-400 hover:text-white hover:bg-[#1a2b4c]/50'}
-                                ${isAiSearch ? 'hover:text-amber' : ''}`}
+                            className={`flex items-center ${isExpanded ? 'px-6' : 'justify-center'} py-3 transition-all group relative ${isActive ? 'bg-[#1a2b4c] text-white' : 'text-slate-400 hover:text-white hover:bg-[#1a2b4c]/50'} ${isAiSearch ? 'hover:text-amber' : ''}`}
                             title={!isExpanded ? item.label : ''}
                         >
                             {/* Active indicator bar - left edge */}
-                            <div className={`absolute left-0 top-0 bottom-0 w-1 bg-amber transition-all duration-300
-                                ${isActive ? 'scale-y-100' : 'scale-y-0 group-hover:scale-y-100'}`}></div>
+                            <div className={`absolute left-0 top-0 bottom-0 w-1 bg-amber transition-all duration-300 ${isActive ? 'scale-y-100' : 'scale-y-0 group-hover:scale-y-100'}`}></div>
 
                             <Icon size={18} className={`flex-shrink-0 transition-transform group-hover:scale-110 ${isActive ? 'text-amber' : ''}`} />
 
