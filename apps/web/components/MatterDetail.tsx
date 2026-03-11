@@ -7,6 +7,7 @@ import TimeTracker from './TimeTracker';
 import ExpenseTracker from './ExpenseTracker';
 import InvoiceDraftPanel from './InvoiceDraftPanel';
 import UploadDocumentModal from './UploadDocumentModal';
+import AddTaskModal from './AddTaskModal';
 
 interface Matter {
   id: string;
@@ -466,6 +467,7 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
             </div>
             <p className="text-xs text-slate-500">Nenhum documento anexado ainda</p>
             <UploadDocumentModal matterId={matter.id} />
+            <AddTaskModal matterId={matter.id} />
           </div>
 
 
