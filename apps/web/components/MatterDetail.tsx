@@ -489,9 +489,13 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
             <div className="space-y-2 text-xs">
               <div>
                 <span className="text-slate-600">Cliente:</span>
-                <Link href={`/clients/${matter.client_id}`} className="block text-amber-500 hover:underline">
-                  Ver cliente
-                </Link>
+                {matter.client_id ? (
+                  <Link href={`/clients/${matter.client_id}`} className="block text-amber-500 hover:underline font-bold">
+                    Ver detalhes do cliente
+                  </Link>
+                ) : (
+                  <p className="text-red-400 italic">ID do cliente não encontrado</p>
+                )}
               </div>
               <div>
                 <span className="text-slate-600">Criado:</span>

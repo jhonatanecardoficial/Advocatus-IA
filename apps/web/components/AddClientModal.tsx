@@ -184,24 +184,28 @@ export default function AddClientModal() {
                                     <div className="relative group">
                                         <button
                                             type="button"
-                                            onClick={handleConflictCheck}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handleConflictCheck();
+                                            }}
                                             disabled={checkingConflict}
-                                            className="w-full py-2 text-[10px] font-bold uppercase tracking-widest border-2 border-amber-500 text-amber-600 hover:bg-amber-50 transition-colors flex items-center justify-center gap-2"
+                                            className="w-full py-2 text-[10px] font-bold uppercase tracking-widest border-2 border-amber-500 text-amber-600 hover:bg-amber-50 transition-colors flex items-center justify-center gap-2 relative z-10"
                                         >
                                             <Shield size={14} />
                                             {checkingConflict ? 'A Verificar...' : 'Verificar Conflitos de Interesse'}
                                         </button>
                                         
-                                        {/* Tooltip on Hover */}
-                                        <div className="absolute bottom-full left-0 mb-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-[60] w-full">
-                                            <div className="bg-navy text-white text-[10px] p-3 shadow-xl border border-amber-500 flex items-start gap-2">
+                                        {/* Tooltip on Hover - Forced visibility with higher z-index and fixed positioning context */}
+                                        <div className="absolute bottom-full left-0 mb-3 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-300 z-[100] w-72 pointer-events-none">
+                                            <div className="bg-navy text-white text-[10px] p-3 shadow-[4px_4px_0px_#D4A853] border border-amber-500 flex items-start gap-2 leading-relaxed">
                                                 <Info size={14} className="shrink-0 text-amber mt-0.5" />
                                                 <span>
-                                                    <strong>Porquê verificar?</strong> Esta ferramenta cruza os dados do potencial cliente com as partes contrárias de todos os processos ativos no escritório, garantindo que não existe conflito de interesses ético ou legal antes da aceitação do caso.
+                                                    <strong className="text-amber block mb-1">CONTROLO DE ÉTICA</strong>
+                                                    Esta ferramenta cruza o nome e NIF com as partes contrárias de todos os processos ativos no escritório para evitar conflitos éticos.
                                                 </span>
                                             </div>
                                             {/* Arrow */}
-                                            <div className="w-2 h-2 bg-navy border-r border-b border-amber-500 rotate-45 mx-auto -mt-1"></div>
+                                            <div className="w-3 h-3 bg-navy border-r border-b border-amber-500 rotate-45 ml-6 -mt-1.5 shadow-sm"></div>
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-2 mt-2 p-2 bg-slate-50 border border-slate-200 text-[10px] text-slate-500 italic md:hidden">
