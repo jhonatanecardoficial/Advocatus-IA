@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowUpRight, Scale, Users, Clock, AlertTriangle } from "lucide-react";
 import { cookies } from "next/headers";
 import AddMatterModal from "@/components/AddMatterModal";
@@ -6,12 +7,12 @@ async function fetchDashboardData() {
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
 
-    if (!token) return { user: null, matters: [] };
+    if (!token) return { user: null, matters: [], metrics: null };
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
 
     try {
-        const [meRes, mattersRes] = await Promise.all([
+        const [meRes, mattersRes, metricsRes] = await Promise.all([
             fetch(`${API_URL}/auth/me`, {
                 headers: { Authorization: `Bearer ${token}` },
                 cache: "no-store",
@@ -19,24 +20,25 @@ async function fetchDashboardData() {
             fetch(`${API_URL}/matters`, {
                 headers: { Authorization: `Bearer ${token}` },
                 cache: "no-store",
+            }),
+            fetch(`${API_URL}/reports/dashboard-metrics`, {
+                headers: { Authorization: `Bearer ${token}` },
+                cache: "no-store",
             })
         ]);
 
         const user = meRes.ok ? (await meRes.json()).data : null;
-        let matters = [];
-        if (mattersRes.ok) {
-            const mattersData = await mattersRes.json();
-            matters = mattersData.data || [];
-        }
+        const matters = mattersRes.ok ? (await mattersRes.json()).data || [] : [];
+        const metrics = metricsRes.ok ? (await metricsRes.json()).data : null;
 
-        return { user, matters };
+        return { user, matters, metrics };
     } catch (e) {
-        return { user: null, matters: [] };
+        return { user: null, matters: [], metrics: null };
     }
 }
 
 export default async function DashboardPage() {
-    const { user, matters } = await fetchDashboardData();
+    const { user, matters, metrics } = await fetchDashboardData();
 
     return (
         <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
@@ -68,9 +70,9 @@ export default async function DashboardPage() {
                     </div>
                     <div>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-6xl font-display font-black text-navy tracking-tighter">{matters?.length || 0}</span>
+                            <span className="text-6xl font-display font-black text-navy tracking-tighter">{metrics?.activeMatters ?? 0}</span>
                             <span className="text-sm font-bold text-green-600 flex items-center">
-                                <ArrowUpRight className="h-3 w-3 mr-1" /> Ativos
+                                <ArrowUpRight className="h-3 w-3 mr-1" /> Em curso
                             </span>
                         </div>
                     </div>
@@ -79,14 +81,16 @@ export default async function DashboardPage() {
                 {/* Metric 2 */}
                 <div className="p-6 border-b-2 md:border-b-0 md:border-r-2 lg:border-r-2 border-navy flex flex-col justify-between group hover:bg-slate-50 transition-colors">
                     <div className="flex items-start justify-between mb-8">
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Audiências (7 dias)</span>
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Agenda (7 dias)</span>
                         <Clock className="h-5 w-5 text-amber-600 opacity-80" />
                     </div>
                     <div>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-6xl font-display font-black text-navy tracking-tighter">08</span>
+                            <span className="text-6xl font-display font-black text-navy tracking-tighter">
+                                {String(metrics?.upcomingTasks ?? 0).padStart(2, '0')}
+                            </span>
                             <span className="text-sm font-bold text-navy flex items-center">
-                                3 urgentes
+                                Tarefas Pendentes
                             </span>
                         </div>
                     </div>
@@ -95,12 +99,14 @@ export default async function DashboardPage() {
                 {/* Metric 3 */}
                 <div className="p-6 border-b-2 lg:border-b-0 lg:border-r-2 border-navy flex flex-col justify-between group hover:bg-red-50 transition-colors">
                     <div className="flex items-start justify-between mb-8">
-                        <span className="text-xs font-bold text-red-600 uppercase tracking-widest">Prazos Fatais</span>
+                        <span className="text-xs font-bold text-red-600 uppercase tracking-widest">Prazos de Risco</span>
                         <AlertTriangle className="h-5 w-5 text-red-600 opacity-80" />
                     </div>
                     <div>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-6xl font-display font-black text-red-600 tracking-tighter">03</span>
+                            <span className="text-6xl font-display font-black text-red-600 tracking-tighter">
+                                {String(metrics?.fatalDeadlines ?? 0).padStart(2, '0')}
+                            </span>
                             <span className="text-sm font-bold text-red-600 flex items-center">
                                 Expira &lt; 48h
                             </span>
@@ -116,7 +122,9 @@ export default async function DashboardPage() {
                     </div>
                     <div>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-6xl font-display font-black text-navy tracking-tighter">24</span>
+                            <span className="text-6xl font-display font-black text-navy tracking-tighter">
+                                {String(metrics?.newClients ?? 0).padStart(2, '0')}
+                            </span>
                             <span className="text-sm font-bold text-slate-500 flex items-center">
                                 Mês Atual
                             </span>
@@ -160,7 +168,9 @@ export default async function DashboardPage() {
                                                 </span>
                                             </td>
                                             <td className="py-4 px-4 text-right">
-                                                <button className="text-navy hover:text-amber-600 underline underline-offset-4 font-bold">Abrir</button>
+                                                <Link href={`/matters/${matter.id}`} className="text-navy hover:text-amber-600 underline underline-offset-4 font-bold inline-block">
+                                                    Abrir
+                                                </Link>
                                             </td>
                                         </tr>
                                     ))

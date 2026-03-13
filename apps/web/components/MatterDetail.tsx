@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { Clock, FileText, Calendar, Wallet } from 'lucide-react';
 import TimeTracker from './TimeTracker';
@@ -488,9 +489,9 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
             <div className="space-y-2 text-xs">
               <div>
                 <span className="text-slate-600">Cliente:</span>
-                <a href={`/clients/${matter.client_id}`} className="block text-amber-500 hover:underline">
+                <Link href={`/clients/${matter.client_id}`} className="block text-amber-500 hover:underline">
                   Ver cliente
-                </a>
+                </Link>
               </div>
               <div>
                 <span className="text-slate-600">Criado:</span>

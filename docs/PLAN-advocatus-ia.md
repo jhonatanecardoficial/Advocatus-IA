@@ -1,4 +1,4 @@
-﻿# PLAN-advocatus-ia.md
+# PLAN-advocatus-ia.md
 # Advocatus IA â€” Plano de ImplementaÃ§Ã£o Completo
 
 > **Agentes Ativos:** `project-planner` Â· `backend-specialist` Â· `frontend-specialist` Â· `security-auditor` Â· `database-architect` Â· `product-owner`
@@ -438,8 +438,11 @@ tools: [
 | P1 | GestÃ£o de Tarefas + Prazos + NotificaÃ§Ãµes email | `backend-specialist` | MÃ©dia |
 | P2 | Time Tracking bÃ¡sico | `backend-specialist` | Baixa |
 | P2 | GeraÃ§Ã£o de Faturas (draft) | `backend-specialist` | MÃ©dia |
-| P2 | Portal do Cliente (read-only) | `frontend-specialist` | MÃ©dia |
+| 013 | Portal do Cliente | Concluído | 2026-03-12 |
+| 014 | Debugging & Estabilidade | Concluído | 2026-03-12 |
+| 015 | Configurações & Relatórios | Concluído | 2026-03-13 |
 
+**Última Atualização:** 13 de Março de 2026
 **CritÃ©rio de saÃ­da do MVP:** 10 clientes pagantes ativos por 30 dias consecutivos.
 
 ---
@@ -745,7 +748,7 @@ python .agent/skills/webapp-testing/scripts/playwright_runner.py http://localhos
 
 *Criado por: `orchestrator` + `project-planner` + `backend-specialist` + `frontend-specialist` + `security-auditor` + `database-architect` + `product-owner`*
 *Ãšltima atualizaÃ§Ã£o: MarÃ§o 2026*
-## Task Status Update (2026-03-07)
+## Task Status Update (2026-03-13)
 
 | Task | Status | Branch |
 |------|--------|--------|
@@ -753,3 +756,10 @@ python .agent/skills/webapp-testing/scripts/playwright_runner.py http://localhos
 | Task 007 — UI Dashboard + Matters | Done | `feature/phase1-integration` |
 | Task 008 — Time Tracking + Faturação | Done | `feature/phase1-integration` |
 | Task 009 — Sistema de Notificações & Prazos | Done | `feature/phase1-integration` |
+| Task 011 — Pesquisa IA (RAG) | Done | `feature/ai-search-v2` |
+| Task 013 — Gerador de Proformas | Done | `feature/proforma-generator` |
+| Task 015 — Bugfixing & UX Refinements | Done | `feature/ux-refinements-and-bugfixes` |
+
+## Últimas Atualizações
+- **Março 2026**: Correção de links quebrados, persistência do time tracker e melhoria na estabilidade da geração de tokens para o portal do cliente.
+| Task 014 — Portal do Cliente | Done | `main` |

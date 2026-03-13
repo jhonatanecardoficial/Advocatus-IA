@@ -45,4 +45,12 @@ export class TenantsService {
             },
         })
     }
+
+    /** Atualiza dados do escritório */
+    async update(id: string, data: any) {
+        return this.prisma.tenant.update({
+            where: { id },
+            data,
+        })
+    }
 }

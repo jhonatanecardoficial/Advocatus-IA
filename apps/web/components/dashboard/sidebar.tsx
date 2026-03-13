@@ -17,8 +17,8 @@ export function Sidebar() {
         { icon: Users, label: 'Cadastro de Clientes', href: '/clients' },
         { icon: Wallet, label: 'Faturação', href: '/billing' },
         { icon: Search, label: 'Pesquisa Jurídica IA', href: '/ai-search' },
-        { icon: Calendar, label: 'Prazos & Agenda', href: '/dashboard' },
-        { icon: Settings, label: 'Definições do Escritório', href: '/dashboard' },
+        { icon: Calendar, label: 'Prazos & Agenda', href: '/dashboard' }, // Links para o dashboard por enquanto
+        { icon: Settings, label: 'Definições do Escritório', href: '/settings' },
     ]
 
     const isDashboard = pathname === '/dashboard'

@@ -56,14 +56,50 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
     if (matterId) loadTasks();
   }, [matterId]);
 
-  // Timer logic
+  // Timer logic with persistence
+  useEffect(() => {
+    const savedTimer = localStorage.getItem(`timer_${matterId}`);
+    if (savedTimer) {
+      const { seconds: savedSeconds, isRunning, lastUpdated, description: savedDesc } = JSON.parse(savedTimer);
+      setDescription(savedDesc || '');
+      
+      if (isRunning) {
+        const elapsedSinceLastUpdate = Math.floor((Date.now() - lastUpdated) / 1000);
+        setSeconds(savedSeconds + elapsedSinceLastUpdate);
+        setIsTimerRunning(true);
+      } else {
+        setSeconds(savedSeconds);
+      }
+    }
+  }, [matterId]);
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isTimerRunning) {
-      interval = setInterval(() => setSeconds((s) => s + 1), 1000);
+      interval = setInterval(() => {
+        setSeconds((s) => {
+          const newSeconds = s + 1;
+          // Persist state every second while running
+          localStorage.setItem(`timer_${matterId}`, JSON.stringify({
+            seconds: newSeconds,
+            isRunning: true,
+            lastUpdated: Date.now(),
+            description
+          }));
+          return newSeconds;
+        });
+      }, 1000);
+    } else {
+      // Persist state when stopped
+      localStorage.setItem(`timer_${matterId}`, JSON.stringify({
+        seconds,
+        isRunning: false,
+        lastUpdated: Date.now(),
+        description
+      }));
     }
     return () => clearInterval(interval);
-  }, [isTimerRunning]);
+  }, [isTimerRunning, matterId, description, seconds]);
 
   function formatTime(sec: number) {
     const h = Math.floor(sec / 3600);
@@ -117,6 +153,7 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
       onEntriesChange?.([newEntry, ...allEntries]);
 
       // Reset
+      localStorage.removeItem(`timer_${matterId}`);
       setSeconds(0);
       setDescription('');
       setIsTimerRunning(false);

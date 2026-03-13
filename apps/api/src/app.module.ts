@@ -16,6 +16,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { AiModule } from './ai/ai.module';
 import { AuditModule } from './audit/audit.module';
 import { PortalModule } from './portal/portal.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
     imports: [
@@ -56,8 +57,9 @@ import { PortalModule } from './portal/portal.module';
         AiModule,
         AuditModule,
         PortalModule,
+        ReportsModule,
         // TODO Fase 2: SignaturesModule
-        // TODO Fase 3: ReportsModule, JurimetricsModule
+        // TODO Fase 3: JurimetricsModule
     ],
 })
 export class AppModule { }

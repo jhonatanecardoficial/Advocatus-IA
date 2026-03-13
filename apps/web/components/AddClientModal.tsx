@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { Plus, X, User, Briefcase, Hash, Mail, Phone } from 'lucide-react';
-import { createClientAction } from '@/app/actions/clients';
+import { Plus, X, User, Briefcase, Hash, Mail, Phone, Shield, AlertTriangle, Info } from 'lucide-react';
+import { createClientAction, checkConflictAction } from '@/app/actions/clients';
 import { toast } from 'sonner';
 
 export default function AddClientModal() {
@@ -16,6 +16,35 @@ export default function AddClientModal() {
         telefone: '',
     });
 
+    const [conflictResults, setConflictResults] = useState<any[]>([]);
+    const [checkingConflict, setCheckingConflict] = useState(false);
+
+    const handleConflictCheck = async () => {
+        if (!form.nome || !form.nif) {
+            toast.error('Preencha o nome e o NIF para verificar conflitos.');
+            return;
+        }
+
+        setCheckingConflict(true);
+        try {
+            const result = await checkConflictAction({ nome: form.nome, nif: form.nif });
+            if (result.error) {
+                toast.error(result.error);
+            } else {
+                setConflictResults(result.data || []);
+                if (result.count === 0) {
+                    toast.success('Nenhum conflito direto encontrado.');
+                } else {
+                    toast.warning(`Encontrados ${result.count} possíveis conflitos.`);
+                }
+            }
+        } catch (err) {
+            toast.error('Erro ao verificar conflitos.');
+        } finally {
+            setCheckingConflict(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -28,6 +57,7 @@ export default function AddClientModal() {
                 toast.success('Cliente criado com sucesso!');
                 setIsOpen(false);
                 setForm({ nome: '', nif: '', tipo: 'SINGULAR', email: '', telefone: '' });
+                setConflictResults([]);
             }
         } catch (err) {
             toast.error('Erro ao conectar ao servidor');
@@ -149,6 +179,40 @@ export default function AddClientModal() {
                                         />
                                     </div>
                                 </div>
+
+                                <div className="pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleConflictCheck}
+                                        disabled={checkingConflict}
+                                        className="w-full py-2 text-[10px] font-bold uppercase tracking-widest border-2 border-amber-500 text-amber-600 hover:bg-amber-50 transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <Shield size={14} />
+                                        {checkingConflict ? 'A Verificar...' : 'Verificar Conflitos de Interesse'}
+                                    </button>
+                                    <div className="flex items-start gap-2 mt-2 p-2 bg-slate-50 border border-slate-200 text-[10px] text-slate-500 italic">
+                                        <Info size={14} className="shrink-0 text-navy mt-0.5" />
+                                        <span>
+                                            <strong>O que é isto?</strong> Verifica se o cliente já consta como parte contrária em outros processos do escritório, prevenindo impedimentos éticos e legais.
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {conflictResults.length > 0 && (
+                                    <div className="p-4 bg-red-50 border-2 border-red-600 animate-in slide-in-from-top-2">
+                                        <div className="flex items-center gap-2 text-red-600 font-bold text-xs uppercase mb-2">
+                                            <AlertTriangle size={14} />
+                                            Atenção: Conflitos Potenciais
+                                        </div>
+                                        <div className="space-y-2">
+                                            {conflictResults.map((conflict: any, idx: number) => (
+                                                <div key={idx} className="text-[10px] font-mono text-navy border-b border-red-200 pb-1 last:border-0">
+                                                    PROC: {conflict.courtReference || conflict.id} - Parte Contraria: {conflict.opposingParty}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="pt-4 border-t-2 border-slate-100 flex gap-4">

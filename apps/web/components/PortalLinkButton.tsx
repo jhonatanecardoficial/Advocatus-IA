@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Link2, Loader2, Check } from "lucide-react";
+import { generatePortalLinkAction } from "@/app/actions/portal";
 
 interface Props {
   matterId: string;
@@ -15,29 +16,32 @@ export default function PortalLinkButton({ matterId }: Props) {
   const generateLink = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
+      const result = await generatePortalLinkAction(matterId);
       
-      const res = await fetch(`${API_URL}/portal/matters/${matterId}/generate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": token ? `Bearer ${token}` : "",
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error("Não foi possível gerar o link do portal");
+      if (result.error) {
+        toast.error(result.error);
+        return;
       }
 
-      const rawData = await res.json();
+      const rawData = result.data;
       const data = rawData.data || rawData; // Support both wrapped and unwrapped response
 
       // Construir o URL completo
-      const fullUrl = `${window.location.origin}${data.url}`;
+      const portalPath = data.url || (rawData.url); // Handle different response formats
+      const fullUrl = `${window.location.origin}${portalPath}`;
       
-      // Copiar para o clipboard
-      await navigator.clipboard.writeText(fullUrl);
+      // Copiar para o clipboard com fallback
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(fullUrl);
+      } else {
+        // Fallback para browsers antigos ou contextos não seguros
+        const textArea = document.createElement("textarea");
+        textArea.value = fullUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
       
       setCopied(true);
       toast.success("Link do portal copiado para a área de transferência!");
