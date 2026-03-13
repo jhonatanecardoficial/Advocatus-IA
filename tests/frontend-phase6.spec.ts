@@ -57,12 +57,12 @@ test.describe('Phase 6: Landing Page & Frontend Flow', () => {
     test.describe('Navigation & Responsiveness', () => {
         test('should navigate to login page', async ({ page }) => {
             await page.locator('a:has-text("Entrar")').click()
-            await expect(page).toHaveURL(/\\/login/)
+            await expect(page).toHaveURL(/.*\/login/)
         })
 
         test('should navigate to register page', async ({ page }) => {
             await page.locator('a:has-text("Começar Grátis")').first().click()
-            await expect(page).toHaveURL(/\\/register/)
+            await expect(page).toHaveURL(/.*\/register/)
         })
 
         test('should be responsive on mobile (375px)', async ({ page }) => {
@@ -130,7 +130,7 @@ test.describe('Phase 6: Landing Page & Frontend Flow', () => {
 
             // 2. Click Começar Grátis from hero
             await page.locator('a:has-text("Começar Agora")').click()
-            await expect(page).toHaveURL(/\\/register/)
+            await expect(page).toHaveURL(/.*\/register/)
 
             // 3. Register flow (basic check)
             const registerForm = page.locator('form')

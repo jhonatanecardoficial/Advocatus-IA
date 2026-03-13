@@ -38,8 +38,9 @@ async function fetchMatter(id: string): Promise<Matter | null> {
   }
 }
 
-export default async function MatterPage({ params }: { params: { id: string } }) {
-  const matter = await fetchMatter(params.id);
+export default async function MatterPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const matter = await fetchMatter(id);
 
   if (!matter) {
     return (

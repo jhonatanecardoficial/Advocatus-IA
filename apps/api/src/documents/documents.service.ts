@@ -100,4 +100,19 @@ export class DocumentsService {
             filename: document.filename,
         }
     }
+
+    async toggleShare(tenantId: string, id: string, isSharedWithClient: boolean) {
+        const document = await this.prisma.document.findFirst({
+            where: { id, tenantId },
+        })
+
+        if (!document) {
+            throw new NotFoundException('Documento não encontrado.')
+        }
+
+        return this.prisma.document.update({
+            where: { id },
+            data: { isSharedWithClient },
+        })
+    }
 }

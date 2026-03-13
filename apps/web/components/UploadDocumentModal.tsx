@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from 'react';
-import { Upload, X, FileText, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, X, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { uploadDocumentAction } from '@/app/actions/documents';
 import { toast } from 'sonner';
 

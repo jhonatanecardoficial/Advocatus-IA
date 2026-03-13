@@ -2,6 +2,7 @@ import {
     Controller,
     Get,
     Post,
+    Patch,
     Param,
     Body,
     UseGuards,
@@ -48,5 +49,15 @@ export class DocumentsController {
     @Roles('SECRETARIA', 'ADVOGADO', 'SOCIO', 'ADMIN', 'CLIENTE')
     getDownloadUrl(@CurrentUser() user: RequestUser, @Param('id') id: string) {
         return this.documentsService.getDownloadUrl(user.tenantId, id)
+    }
+
+    @Patch(':id/share')
+    @Roles('ADVOGADO', 'SOCIO', 'ADMIN')
+    toggleShare(
+        @CurrentUser() user: RequestUser,
+        @Param('id') id: string,
+        @Body('isSharedWithClient') isSharedWithClient: boolean,
+    ) {
+        return this.documentsService.toggleShare(user.tenantId, id, isSharedWithClient)
     }
 }

@@ -19,12 +19,12 @@ class AllExceptionsFilter implements ExceptionFilter {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse();
         const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
-        console.error('API ERROR 500:', exception);
+        console.error('API ERROR:', exception);
         response.status(status).send({
             statusCode: status,
             message: exception?.message || 'Internal server error',
-            params: exception?.response,
-            stack: exception?.stack
+            error: exception?.response || exception,
+            stack: process.env.NODE_ENV !== 'production' ? exception?.stack : undefined
         });
     }
 }
