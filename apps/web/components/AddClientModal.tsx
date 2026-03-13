@@ -181,20 +181,32 @@ export default function AddClientModal() {
                                 </div>
 
                                 <div className="pt-2">
-                                    <button
-                                        type="button"
-                                        onClick={handleConflictCheck}
-                                        disabled={checkingConflict}
-                                        className="w-full py-2 text-[10px] font-bold uppercase tracking-widest border-2 border-amber-500 text-amber-600 hover:bg-amber-50 transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <Shield size={14} />
-                                        {checkingConflict ? 'A Verificar...' : 'Verificar Conflitos de Interesse'}
-                                    </button>
-                                    <div className="flex items-start gap-2 mt-2 p-2 bg-slate-50 border border-slate-200 text-[10px] text-slate-500 italic">
-                                        <Info size={14} className="shrink-0 text-navy mt-0.5" />
-                                        <span>
-                                            <strong>O que é isto?</strong> Verifica se o cliente já consta como parte contrária em outros processos do escritório, prevenindo impedimentos éticos e legais.
-                                        </span>
+                                    <div className="relative group">
+                                        <button
+                                            type="button"
+                                            onClick={handleConflictCheck}
+                                            disabled={checkingConflict}
+                                            className="w-full py-2 text-[10px] font-bold uppercase tracking-widest border-2 border-amber-500 text-amber-600 hover:bg-amber-50 transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <Shield size={14} />
+                                            {checkingConflict ? 'A Verificar...' : 'Verificar Conflitos de Interesse'}
+                                        </button>
+                                        
+                                        {/* Tooltip on Hover */}
+                                        <div className="absolute bottom-full left-0 mb-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-[60] w-full">
+                                            <div className="bg-navy text-white text-[10px] p-3 shadow-xl border border-amber-500 flex items-start gap-2">
+                                                <Info size={14} className="shrink-0 text-amber mt-0.5" />
+                                                <span>
+                                                    <strong>Porquê verificar?</strong> Esta ferramenta cruza os dados do potencial cliente com as partes contrárias de todos os processos ativos no escritório, garantindo que não existe conflito de interesses ético ou legal antes da aceitação do caso.
+                                                </span>
+                                            </div>
+                                            {/* Arrow */}
+                                            <div className="w-2 h-2 bg-navy border-r border-b border-amber-500 rotate-45 mx-auto -mt-1"></div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-2 mt-2 p-2 bg-slate-50 border border-slate-200 text-[10px] text-slate-500 italic md:hidden">
+                                        <Info size={12} className="shrink-0 text-navy mt-0.5" />
+                                        <span>Dica: Verifica impedimentos éticos antes de registar.</span>
                                     </div>
                                 </div>
 

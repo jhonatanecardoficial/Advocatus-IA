@@ -30,24 +30,47 @@ export default function PortalLinkButton({ matterId }: Props) {
       const portalPath = data.url || (rawData.url); // Handle different response formats
       const fullUrl = `${window.location.origin}${portalPath}`;
       
-      // Copiar para o clipboard com fallback
-      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(fullUrl);
+      // Copiar para o clipboard com redundância
+      const copyToClipboard = async (text: string) => {
+        try {
+          if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+            return true;
+          }
+        } catch (err) {
+          console.error("Clipboard API failed, falling back", err);
+        }
+        
+        // Fallback robusto
+        try {
+          const textArea = document.createElement("textarea");
+          textArea.value = text;
+          // Prevenção de scroll indesejado
+          textArea.style.position = "fixed";
+          textArea.style.left = "-9999px";
+          textArea.style.top = "0";
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          const successful = document.execCommand("copy");
+          document.body.removeChild(textArea);
+          return successful;
+        } catch (err) {
+          console.error("Fallback copy failed", err);
+          return false;
+        }
+      };
+
+      const success = await copyToClipboard(fullUrl);
+      
+      if (success) {
+        setCopied(true);
+        toast.success("Link do portal copiado!");
+        // Reset state after 5 seconds instead of 3
+        setTimeout(() => setCopied(false), 5000);
       } else {
-        // Fallback para browsers antigos ou contextos não seguros
-        const textArea = document.createElement("textarea");
-        textArea.value = fullUrl;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
+        toast.error("Não foi possível copiar o link automaticamente. Tente outra vez.");
       }
-      
-      setCopied(true);
-      toast.success("Link do portal copiado para a área de transferência!");
-      
-      // Reset copied state
-      setTimeout(() => setCopied(false), 3000);
       
     } catch (error) {
       console.error(error);

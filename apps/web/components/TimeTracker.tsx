@@ -35,8 +35,11 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
   const [taskId, setTaskId] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [allEntries, setAllEntries] = useState<TimeEntry[]>(entries);
+  // State for initial load completion
+  const [isLoaded, setIsLoaded] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
 
+  // Load tasks
   useEffect(() => {
     async function loadTasks() {
       try {
@@ -56,50 +59,53 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
     if (matterId) loadTasks();
   }, [matterId]);
 
-  // Timer logic with persistence
+  // 1. Initial Load from LocalStorage
   useEffect(() => {
     const savedTimer = localStorage.getItem(`timer_${matterId}`);
     if (savedTimer) {
-      const { seconds: savedSeconds, isRunning, lastUpdated, description: savedDesc } = JSON.parse(savedTimer);
-      setDescription(savedDesc || '');
-      
-      if (isRunning) {
-        const elapsedSinceLastUpdate = Math.floor((Date.now() - lastUpdated) / 1000);
-        setSeconds(savedSeconds + elapsedSinceLastUpdate);
-        setIsTimerRunning(true);
-      } else {
-        setSeconds(savedSeconds);
+      try {
+        const { seconds: savedSeconds, isRunning, lastUpdated, description: savedDesc } = JSON.parse(savedTimer);
+        setDescription(savedDesc || '');
+        
+        if (isRunning && lastUpdated) {
+          const elapsedSinceLastUpdate = Math.floor((Date.now() - lastUpdated) / 1000);
+          setSeconds(savedSeconds + elapsedSinceLastUpdate);
+          setIsTimerRunning(true);
+        } else {
+          setSeconds(savedSeconds || 0);
+          setIsTimerRunning(false);
+        }
+      } catch (e) {
+        console.error("Erro ao carregar timer do localStorage", e);
       }
     }
+    setIsLoaded(true);
   }, [matterId]);
 
+  // 2. Timer Interval Logic
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isTimerRunning) {
       interval = setInterval(() => {
-        setSeconds((s) => {
-          const newSeconds = s + 1;
-          // Persist state every second while running
-          localStorage.setItem(`timer_${matterId}`, JSON.stringify({
-            seconds: newSeconds,
-            isRunning: true,
-            lastUpdated: Date.now(),
-            description
-          }));
-          return newSeconds;
-        });
+        setSeconds((s) => s + 1);
       }, 1000);
-    } else {
-      // Persist state when stopped
-      localStorage.setItem(`timer_${matterId}`, JSON.stringify({
-        seconds,
-        isRunning: false,
-        lastUpdated: Date.now(),
-        description
-      }));
     }
     return () => clearInterval(interval);
-  }, [isTimerRunning, matterId, description, seconds]);
+  }, [isTimerRunning]);
+
+  // 3. Persistent Save Logic (Runs whenever relevant state changes, but only after initial load)
+  useEffect(() => {
+    if (!isLoaded) return;
+    
+    const timerData = {
+      seconds,
+      isRunning: isTimerRunning,
+      lastUpdated: Date.now(),
+      description
+    };
+    
+    localStorage.setItem(`timer_${matterId}`, JSON.stringify(timerData));
+  }, [seconds, isTimerRunning, description, matterId, isLoaded]);
 
   function formatTime(sec: number) {
     const h = Math.floor(sec / 3600);
