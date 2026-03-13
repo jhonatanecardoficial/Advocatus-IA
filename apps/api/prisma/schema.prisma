@@ -25,15 +25,16 @@ model Tenant {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  users     User[]
-  clients   Client[]
-  matters   Matter[]
-  documents Document[]
-  tasks     Task[]
-  invoices  Invoice[]
-  messages  Message[]
-  auditLogs AuditLog[]
-  expenses  Expense[]
+  users          User[]
+  clients        Client[]
+  matters        Matter[]
+  documents      Document[]
+  tasks          Task[]
+  invoices       Invoice[]
+  messages       Message[]
+  auditLogs      AuditLog[]
+  expenses       Expense[]
+  portalAccesses PortalAccess[]
 
   @@map("tenants")
 }
@@ -57,13 +58,14 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  tenant        Tenant      @relation(fields: [tenantId], references: [id])
-  assignedTasks Task[]      @relation("TaskAssignee")
-  createdTasks  Task[]      @relation("TaskCreator")
-  timeEntries   TimeEntry[]
-  auditLogs     AuditLog[]
-  sentMessages  Message[]
-  expenses      Expense[]
+  tenant             Tenant         @relation(fields: [tenantId], references: [id])
+  assignedTasks      Task[]         @relation("TaskAssignee")
+  createdTasks       Task[]         @relation("TaskCreator")
+  timeEntries        TimeEntry[]
+  auditLogs          AuditLog[]
+  sentMessages       Message[]
+  expenses           Expense[]
+  createdPortalLinks PortalAccess[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -119,14 +121,15 @@ model Matter {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
-  tenant      Tenant      @relation(fields: [tenantId], references: [id])
-  client      Client      @relation(fields: [clientId], references: [id])
-  documents   Document[]
-  tasks       Task[]
-  timeEntries TimeEntry[]
-  invoices    Invoice[]
-  messages    Message[]
-  expenses    Expense[]
+  tenant         Tenant         @relation(fields: [tenantId], references: [id])
+  client         Client         @relation(fields: [clientId], references: [id])
+  documents      Document[]
+  tasks          Task[]
+  timeEntries    TimeEntry[]
+  invoices       Invoice[]
+  messages       Message[]
+  expenses       Expense[]
+  portalAccesses PortalAccess[]
 
   @@index([tenantId])
   @@map("matters")
@@ -136,25 +139,26 @@ model Matter {
 // DOCUMENTOS com versionamento e assinatura digital eIDAS
 // ============================================================
 model Document {
-  id                String             @id @default(cuid())
-  matterId          String
-  tenantId          String
-  uploadedById      String?
-  filename          String
-  mimeType          String
-  storagePath       String // Supabase Storage path
-  sizeBytes         Int
-  version           Int                @default(1)
-  parentVersionId   String?
-  signatureType     SignatureType      @default(NONE)
-  signatureStatus   SignatureStatus?
-  signatureProvider SignatureProvider?
-  signatureMetadata Json? // Certificado, timestamp, cadeia validação
-  ltaPreserved      Boolean            @default(false) // Long Term Archival
-  tags              String[]
-  metadata          Json               @default("{}")
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  id                 String             @id @default(cuid())
+  matterId           String
+  tenantId           String
+  uploadedById       String?
+  filename           String
+  mimeType           String
+  storagePath        String // Supabase Storage path
+  sizeBytes          Int
+  version            Int                @default(1)
+  parentVersionId    String?
+  signatureType      SignatureType      @default(NONE)
+  signatureStatus    SignatureStatus?
+  signatureProvider  SignatureProvider?
+  signatureMetadata  Json? // Certificado, timestamp, cadeia validação
+  ltaPreserved       Boolean            @default(false) // Long Term Archival
+  isSharedWithClient Boolean            @default(false) // Visibilidade no portal do cliente
+  tags               String[]
+  metadata           Json               @default("{}")
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 
   matter        Matter     @relation(fields: [matterId], references: [id])
   tenant        Tenant     @relation(fields: [tenantId], references: [id])
@@ -195,19 +199,19 @@ model TimeEntry {
 // DESPESAS — Custos adicionais do processo
 // ============================================================
 model Expense {
-  id           String          @id @default(cuid())
-  tenantId     String
-  matterId     String
-  userId       String
-  taskId       String?
-  description  String
-  category     ExpenseCategory @default(OUTRO)
-  amount       Decimal         @db.Decimal(10, 2)
-  date         DateTime        @db.Date
-  billable     Boolean         @default(true)
-  invoiceId    String?
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  id          String          @id @default(cuid())
+  tenantId    String
+  matterId    String
+  userId      String
+  taskId      String?
+  description String
+  category    ExpenseCategory @default(OUTRO)
+  amount      Decimal         @db.Decimal(10, 2)
+  date        DateTime        @db.Date
+  billable    Boolean         @default(true)
+  invoiceId   String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
   matter Matter @relation(fields: [matterId], references: [id])
@@ -264,10 +268,10 @@ model Task {
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
-  matter     Matter @relation(fields: [matterId], references: [id])
-  assignedTo User?  @relation("TaskAssignee", fields: [assignedToId], references: [id])
-  createdBy  User   @relation("TaskCreator", fields: [createdById], references: [id])
-  tenant     Tenant @relation(fields: [tenantId], references: [id])
+  matter      Matter      @relation(fields: [matterId], references: [id])
+  assignedTo  User?       @relation("TaskAssignee", fields: [assignedToId], references: [id])
+  createdBy   User        @relation("TaskCreator", fields: [createdById], references: [id])
+  tenant      Tenant      @relation(fields: [tenantId], references: [id])
   timeEntries TimeEntry[]
   expenses    Expense[]
 
@@ -281,14 +285,15 @@ model Task {
 model Message {
   id               String    @id @default(cuid())
   matterId         String
-  senderId         String
+  senderId         String?
   tenantId         String
   contentEncrypted String // AES-256
   readAt           DateTime?
+  isFromClient     Boolean   @default(false)
   createdAt        DateTime  @default(now())
 
   matter Matter @relation(fields: [matterId], references: [id])
-  sender User   @relation(fields: [senderId], references: [id])
+  sender User?  @relation(fields: [senderId], references: [id])
   tenant Tenant @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
@@ -322,19 +327,42 @@ model AuditLog {
 // BASE DE CONHECIMENTO LEGAL — para RAG/IA
 // ============================================================
 model LegalDocument {
-  id          String            @id @default(cuid())
+  id          String                       @id @default(cuid())
   source      String // dados.gov.pt | dre.pt | manual
   type        LegalDocumentType
   title       String
   reference   String?
-  content     String            @db.Text
+  content     String                       @db.Text
   embedding   Unsupported("vector(1536)")?
   publishedAt DateTime?
   url         String?
-  ingestedAt  DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  ingestedAt  DateTime                     @default(now())
+  updatedAt   DateTime                     @updatedAt
 
   @@map("legal_documents")
+}
+
+// ============================================================
+// PORTAL DE ACESSO — Links seguros para clientes
+// ============================================================
+model PortalAccess {
+  id        String   @id @default(cuid())
+  tenantId  String
+  matterId  String
+  token     String   @unique
+  expiresAt DateTime
+  isActive  Boolean  @default(true)
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  matter Matter @relation(fields: [matterId], references: [id])
+  user   User   @relation(fields: [createdBy], references: [id])
+
+  @@index([tenantId])
+  @@index([token])
+  @@map("portal_accesses")
 }
 
 // ============================================================

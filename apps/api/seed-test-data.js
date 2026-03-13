@@ -48,6 +48,13 @@ async function main() {
     } else if (action === 'delete') {
         // Usar SQL raw para evitar conflito de nomes p.client vs PrismaClient
         await p.$executeRawUnsafe(`DELETE FROM "audit_logs" WHERE "tenantId" = $1`, tenantId);
+        await p.$executeRawUnsafe(`DELETE FROM "time_entries" WHERE "tenantId" = $1`, tenantId);
+        await p.$executeRawUnsafe(`DELETE FROM "expenses" WHERE "tenantId" = $1`, tenantId);
+        await p.$executeRawUnsafe(`DELETE FROM "invoices" WHERE "tenantId" = $1`, tenantId);
+        await p.$executeRawUnsafe(`DELETE FROM "tasks" WHERE "tenantId" = $1`, tenantId);
+        await p.$executeRawUnsafe(`DELETE FROM "portal_accesses" WHERE "tenantId" = $1`, tenantId);
+        await p.$executeRawUnsafe(`DELETE FROM "messages" WHERE "tenantId" = $1`, tenantId);
+        await p.$executeRawUnsafe(`DELETE FROM "documents" WHERE "tenantId" = $1`, tenantId);
         await p.$executeRawUnsafe(`DELETE FROM "matters" WHERE "tenantId" = $1`, tenantId);
         await p.$executeRawUnsafe(`DELETE FROM "clients" WHERE "tenantId" = $1`, tenantId);
         await p.$executeRawUnsafe(`DELETE FROM "users" WHERE "tenantId" = $1`, tenantId);

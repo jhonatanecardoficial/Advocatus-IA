@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Plus, X, Calendar, FileText, AlertCircle, Clock } from 'lucide-react';
+import { Plus, X, Calendar, FileText, Clock } from 'lucide-react';
 import { createTaskAction } from '@/app/actions/tasks';
 import { toast } from 'sonner';
 

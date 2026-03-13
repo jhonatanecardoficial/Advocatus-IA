@@ -2,12 +2,14 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Clock, FileText, Calendar, Wallet, Upload } from 'lucide-react';
+import { Clock, FileText, Calendar, Wallet } from 'lucide-react';
 import TimeTracker from './TimeTracker';
 import ExpenseTracker from './ExpenseTracker';
 import InvoiceDraftPanel from './InvoiceDraftPanel';
 import UploadDocumentModal from './UploadDocumentModal';
 import AddTaskModal from './AddTaskModal';
+import PortalLinkButton from './PortalLinkButton';
+import DocumentListPanel from './DocumentListPanel';
 
 interface Matter {
   id: string;
@@ -24,6 +26,13 @@ interface Matter {
   client_id: string;
   responsible_id?: string | null;
   createdAt: string;
+  documents?: {
+    id: string;
+    filename: string;
+    mimeType: string;
+    isSharedWithClient?: boolean;
+    createdAt: string;
+  }[];
 }
 
 interface Props {
@@ -465,7 +474,9 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
               <FileText className="w-4 h-4 text-navy" />
               <h3 className="text-sm font-bold uppercase text-navy">Documentos</h3>
             </div>
-            <p className="text-xs text-slate-500">Nenhum documento anexado ainda</p>
+            
+            <DocumentListPanel matterId={matter.id} documents={matter.documents || []} />
+            
             <UploadDocumentModal matterId={matter.id} />
             <AddTaskModal matterId={matter.id} />
           </div>
@@ -486,6 +497,8 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
                 <p className="text-slate-500">{new Date(matter.createdAt).toLocaleDateString('pt-PT')}</p>
               </div>
             </div>
+            
+            <PortalLinkButton matterId={matter.id} />
           </div>
         </div>
       </div>

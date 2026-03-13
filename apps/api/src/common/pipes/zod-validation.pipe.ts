@@ -9,14 +9,16 @@ export class ZodValidationPipe implements PipeTransform {
     constructor(private readonly schema: ZodSchema) { }
 
     transform(value: unknown, metadata?: ArgumentMetadata) {
-        // Ignora a validação para decorators custom (como o @CurrentUser)
-        if (metadata && !['body', 'query', 'param'].includes(metadata.type)) {
+        // Validar apenas o body por predefinição. Se quisermos validar query ou params
+        // deveremos usar o pipe explicitamente no decorador: @Query(new ZodValidationPipe(...))
+        if (metadata && metadata.type !== 'body') {
             return value;
         }
 
         const result = this.schema.safeParse(value)
 
         if (!result.success) {
+            console.error("ZodValidationPipe failure:", { value, type: metadata?.type, errors: result.error.errors });
             const errors = result.error.errors.map((e) => ({
                 field: e.path.join('.'),
                 message: e.message,
