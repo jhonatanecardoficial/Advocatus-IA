@@ -14,7 +14,8 @@ interface Matter {
   deadline_at?: string | null;
   opened_at?: string | null;
   closed_at?: string | null;
-  client_id: string;
+  clientId: string;
+  client_id?: string;
   responsible_id?: string | null;
   createdAt: string;
 }

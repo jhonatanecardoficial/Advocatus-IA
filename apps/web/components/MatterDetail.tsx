@@ -24,7 +24,8 @@ interface Matter {
   deadline_at?: string | null;
   opened_at?: string | null;
   closed_at?: string | null;
-  client_id: string;
+  client_id?: string;
+  clientId?: string;
   responsible_id?: string | null;
   createdAt: string;
   documents?: {
@@ -489,8 +490,8 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
             <div className="space-y-2 text-xs">
               <div>
                 <span className="text-slate-600">Cliente:</span>
-                {matter.client_id ? (
-                  <Link href={`/clients/${matter.client_id}`} className="block text-amber-500 hover:underline font-bold">
+                {(matter.clientId || (matter as any).client_id) ? (
+                  <Link href={`/clients/${matter.clientId || (matter as any).client_id}`} className="block text-amber-500 hover:underline font-bold">
                     Ver detalhes do cliente
                   </Link>
                 ) : (

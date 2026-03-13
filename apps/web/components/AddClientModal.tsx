@@ -195,17 +195,17 @@ export default function AddClientModal() {
                                             {checkingConflict ? 'A Verificar...' : 'Verificar Conflitos de Interesse'}
                                         </button>
                                         
-                                        {/* Tooltip on Hover - Forced visibility with higher z-index and fixed positioning context */}
-                                        <div className="absolute bottom-full left-0 mb-3 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-300 z-[100] w-72 pointer-events-none">
+                                        {/* Tooltip on Hover - Reoriented to bottom to avoid clipping */}
+                                        <div className="absolute top-full left-0 mt-1 invisible group-hover:visible group-focus-within:visible opacity-0 group-hover:opacity-100 transition-all duration-300 z-[100] w-full pointer-events-none">
                                             <div className="bg-navy text-white text-[10px] p-3 shadow-[4px_4px_0px_#D4A853] border border-amber-500 flex items-start gap-2 leading-relaxed">
                                                 <Info size={14} className="shrink-0 text-amber mt-0.5" />
                                                 <span>
-                                                    <strong className="text-amber block mb-1">CONTROLO DE ÉTICA</strong>
-                                                    Esta ferramenta cruza o nome e NIF com as partes contrárias de todos os processos ativos no escritório para evitar conflitos éticos.
+                                                    <strong className="text-amber block mb-1 uppercase tracking-tighter">Verificação de Conflitos</strong>
+                                                    Cruza Nome e NIF com a base total do escritório para detetar impedimentos éticos antes de registar.
                                                 </span>
                                             </div>
-                                            {/* Arrow */}
-                                            <div className="w-3 h-3 bg-navy border-r border-b border-amber-500 rotate-45 ml-6 -mt-1.5 shadow-sm"></div>
+                                            {/* Arrow - Pointing Up */}
+                                            <div className="w-3 h-3 bg-navy border-l border-t border-amber-500 rotate-45 ml-6 -mb-1.5 absolute -top-1.5"></div>
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-2 mt-2 p-2 bg-slate-50 border border-slate-200 text-[10px] text-slate-500 italic md:hidden">
