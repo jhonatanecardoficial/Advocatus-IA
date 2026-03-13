@@ -1,4 +1,4 @@
-﻿"use server"
+"use server"
 
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
@@ -12,13 +12,20 @@ export async function uploadDocumentAction(formData: FormData) {
 
         if (!token) return { error: "NÃ£o estÃ¡ autenticado." };
 
-        const response = await fetch(`${API_URL}/documents/upload`, {
+        const response = await fetch(`${API_URL}/documents/confirm-upload`, {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${token}`
-                // Note: Don't set Content-Type for FormData, browser/fetch handles it
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
             },
-            body: formData,
+            body: JSON.stringify({
+                matterId: formData.get('matterId'),
+                filename: (formData.get('file') as File).name,
+                mimeType: (formData.get('file') as File).type,
+                sizeBytes: (formData.get('file') as File).size,
+                storagePath: `uploads/${Date.now()}_${(formData.get('file') as File).name.replace(/[^a-zA-Z0-9.-]/g, '_')}`,
+                parentVersionId: formData.get('parentVersionId')
+            }),
             cache: "no-store",
         });
 

@@ -1,14 +1,19 @@
 "use client";
 
 import { useState } from 'react';
-import { FileText, Download, Globe } from 'lucide-react';
+import { FileText, Download, Globe, History, PenTool } from 'lucide-react';
 import { toast } from 'sonner';
+import DocumentHistoryDialog from './DocumentHistoryDialog';
+import UploadDocumentModal from './UploadDocumentModal';
+import SignDocumentModal from './documents/SignDocumentModal';
 
 interface Document {
   id: string;
   filename: string;
   mimeType: string;
   isSharedWithClient?: boolean;
+  signatureStatus?: 'PENDING' | 'SIGNED' | 'REJECTED';
+  signatureType?: 'NONE' | 'SES' | 'AES' | 'QES';
   createdAt: string;
 }
 
@@ -20,6 +25,9 @@ interface Props {
 export default function DocumentListPanel({ matterId, documents: initialDocuments }: Props) {
   const [documents, setDocuments] = useState(initialDocuments || []);
   const [loading, setLoading] = useState<string | null>(null);
+  const [selectedDoc, setSelectedDoc] = useState<{ id: string; filename: string } | null>(null);
+  const [showUploadVersion, setShowUploadVersion] = useState<{ id: string; filename: string } | null>(null);
+  const [showSignModal, setShowSignModal] = useState<{ id: string; filename: string } | null>(null);
 
   const toggleShare = async (docId: string, currentStatus: boolean) => {
     setLoading(docId);
@@ -108,6 +116,20 @@ export default function DocumentListPanel({ matterId, documents: initialDocument
               {doc.isSharedWithClient ? 'Partilhado' : 'Partilhar'}
             </button>
             <button
+              onClick={() => setSelectedDoc({ id: doc.id, filename: doc.filename })}
+              title="Histórico de Versões"
+              className="p-1 text-slate-400 hover:text-amber-500 transition-colors"
+            >
+              <History className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setShowSignModal({ id: doc.id, filename: doc.filename })}
+              title="Solicitar Assinatura"
+              className={`p-1 transition-colors ${doc.signatureStatus === 'SIGNED' ? 'text-emerald-500' : doc.signatureStatus === 'PENDING' ? 'text-amber-500 animate-pulse' : 'text-slate-400 hover:text-navy'}`}
+            >
+              <PenTool className="w-4 h-4" />
+            </button>
+            <button
               onClick={() => handleDownload(doc.id)}
               title="Descarregar"
               className="p-1 text-slate-400 hover:text-navy transition-colors"
@@ -117,6 +139,53 @@ export default function DocumentListPanel({ matterId, documents: initialDocument
           </div>
         </div>
       ))}
+
+      {selectedDoc && (
+        <DocumentHistoryDialog
+          documentId={selectedDoc.id}
+          filename={selectedDoc.filename}
+          onClose={() => setSelectedDoc(null)}
+          onUploadNewVersion={(id) => {
+            setShowUploadVersion({ id, filename: selectedDoc.filename });
+            setSelectedDoc(null);
+          }}
+        />
+      )}
+
+      {showUploadVersion && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white p-2">
+            <UploadDocumentModal 
+              matterId={matterId} 
+              parentVersionId={showUploadVersion.id}
+              buttonText={`Substituir ${showUploadVersion.filename}`}
+              onSuccess={() => {
+                setShowUploadVersion(null);
+                // In a real app we'd refresh the list, but for now toast is enough
+                toast.success("Documento atualizado com sucesso.");
+              }}
+            />
+            <button 
+              onClick={() => setShowUploadVersion(null)}
+              className="mt-2 w-full text-[10px] font-bold uppercase py-1 bg-slate-100 text-slate-500 hover:bg-slate-200"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showSignModal && (
+        <SignDocumentModal
+          documentId={showSignModal.id}
+          filename={showSignModal.filename}
+          onClose={() => setShowSignModal(null)}
+          onSuccess={() => {
+            setShowSignModal(null);
+            toast.success("Solicitação de assinatura enviada!");
+          }}
+        />
+      )}
     </div>
   );
 }

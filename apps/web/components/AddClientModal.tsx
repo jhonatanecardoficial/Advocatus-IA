@@ -189,28 +189,24 @@ export default function AddClientModal() {
                                                 handleConflictCheck();
                                             }}
                                             disabled={checkingConflict}
-                                            className="w-full py-2 text-[10px] font-bold uppercase tracking-widest border-2 border-amber-500 text-amber-600 hover:bg-amber-50 transition-colors flex items-center justify-center gap-2 relative z-10"
+                                            className="w-full py-2 text-[10px] font-bold uppercase tracking-widest border-2 border-amber-500 text-amber-600 hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center gap-2 relative z-10 active:scale-95"
                                         >
                                             <Shield size={14} />
                                             {checkingConflict ? 'A Verificar...' : 'Verificar Conflitos de Interesse'}
                                         </button>
                                         
-                                        {/* Tooltip on Hover - Reoriented to bottom to avoid clipping */}
-                                        <div className="absolute top-full left-0 mt-1 invisible group-hover:visible group-focus-within:visible opacity-0 group-hover:opacity-100 transition-all duration-300 z-[100] w-full pointer-events-none">
-                                            <div className="bg-navy text-white text-[10px] p-3 shadow-[4px_4px_0px_#D4A853] border border-amber-500 flex items-start gap-2 leading-relaxed">
+                                        {/* Improved Tooltip logic */}
+                                        <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-[100] w-full pointer-events-none translate-y-1 group-hover:translate-y-0">
+                                            <div className="bg-navy text-white text-[10px] p-3 shadow-lg border border-amber-500 flex items-start gap-2 leading-relaxed">
                                                 <Info size={14} className="shrink-0 text-amber mt-0.5" />
                                                 <span>
-                                                    <strong className="text-amber block mb-1 uppercase tracking-tighter">Verificação de Conflitos</strong>
+                                                    <strong className="text-amber block mb-1 uppercase tracking-tighter italic">Dica de Segurança</strong>
                                                     Cruza Nome e NIF com a base total do escritório para detetar impedimentos éticos antes de registar.
                                                 </span>
                                             </div>
-                                            {/* Arrow - Pointing Up */}
-                                            <div className="w-3 h-3 bg-navy border-l border-t border-amber-500 rotate-45 ml-6 -mb-1.5 absolute -top-1.5"></div>
+                                            {/* Arrow */}
+                                            <div className="w-2 h-2 bg-navy border-r border-b border-amber-500 rotate-45 ml-6 -mt-1 absolute left-0 bottom-0 -mb-1"></div>
                                         </div>
-                                    </div>
-                                    <div className="flex items-start gap-2 mt-2 p-2 bg-slate-50 border border-slate-200 text-[10px] text-slate-500 italic md:hidden">
-                                        <Info size={12} className="shrink-0 text-navy mt-0.5" />
-                                        <span>Dica: Verifica impedimentos éticos antes de registar.</span>
                                     </div>
                                 </div>
 

@@ -59,53 +59,145 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
     if (matterId) loadTasks();
   }, [matterId]);
 
-  // 1. Initial Load from LocalStorage
+  // Update allEntries if entries prop changes
   useEffect(() => {
-    const savedTimer = localStorage.getItem(`timer_${matterId}`);
-    if (savedTimer) {
-      try {
-        const { seconds: savedSeconds, isRunning, lastUpdated, description: savedDesc } = JSON.parse(savedTimer);
-        setDescription(savedDesc || '');
-        
-        if (isRunning && lastUpdated) {
-          const elapsedSinceLastUpdate = Math.floor((Date.now() - lastUpdated) / 1000);
-          setSeconds(savedSeconds + elapsedSinceLastUpdate);
-          setIsTimerRunning(true);
-        } else {
-          setSeconds(savedSeconds || 0);
-          setIsTimerRunning(false);
-        }
-      } catch (e) {
-        console.error("Erro ao carregar timer do localStorage", e);
-      }
+    if (entries) {
+      setAllEntries(entries);
     }
-    setIsLoaded(true);
+  }, [entries]);
+
+  // 1. Initial Load and Synchronization
+  useEffect(() => {
+    if (!matterId) return;
+    
+    const loadFromStorage = () => {
+      const savedTimer = localStorage.getItem(`timer_${matterId}`);
+      if (savedTimer) {
+        try {
+          const data = JSON.parse(savedTimer);
+          setDescription(data.description || '');
+          setIsBillable(data.isBillable !== undefined ? data.isBillable : true);
+          setRatePerHour(data.ratePerHour || 150);
+          
+          if (data.isRunning && data.startTime) {
+            const elapsed = Math.floor((Date.now() - data.startTime) / 1000);
+            setSeconds((data.accumulatedSeconds || 0) + elapsed);
+            setIsTimerRunning(true);
+          } else {
+            setSeconds(data.accumulatedSeconds || 0);
+            setIsTimerRunning(false);
+          }
+        } catch (e) {
+          console.error("Erro ao carregar timer", e);
+        }
+      }
+      setIsLoaded(true);
+    };
+
+    loadFromStorage();
+
+    // Sync across tabs
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === `timer_${matterId}`) {
+        loadFromStorage();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, [matterId]);
 
-  // 2. Timer Interval Logic
+  // 2. Timer Display Update Logic
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isTimerRunning) {
       interval = setInterval(() => {
-        setSeconds((s) => s + 1);
+        const savedTimer = localStorage.getItem(`timer_${matterId}`);
+        if (savedTimer) {
+          try {
+            const data = JSON.parse(savedTimer);
+            if (data.isRunning && data.startTime) {
+              const elapsed = Math.floor((Date.now() - data.startTime) / 1000);
+              setSeconds((data.accumulatedSeconds || 0) + elapsed);
+            }
+          } catch (e) {
+            setIsTimerRunning(false);
+          }
+        }
       }, 1000);
     }
-    return () => clearInterval(interval);
-  }, [isTimerRunning]);
-
-  // 3. Persistent Save Logic (Runs whenever relevant state changes, but only after initial load)
-  useEffect(() => {
-    if (!isLoaded) return;
-    
-    const timerData = {
-      seconds,
-      isRunning: isTimerRunning,
-      lastUpdated: Date.now(),
-      description
+    return () => {
+      if (interval) clearInterval(interval);
     };
+  }, [isTimerRunning, matterId]);
+
+  // 3. Control Functions
+  const toggleTimer = () => {
+    const now = Date.now();
+    const newIsRunning = !isTimerRunning;
     
-    localStorage.setItem(`timer_${matterId}`, JSON.stringify(timerData));
-  }, [seconds, isTimerRunning, description, matterId, isLoaded]);
+    const savedTimer = localStorage.getItem(`timer_${matterId}`);
+    let data = savedTimer ? JSON.parse(savedTimer) : { accumulatedSeconds: 0 };
+    
+    if (newIsRunning) {
+      // Start
+      data = {
+        ...data,
+        isRunning: true,
+        startTime: now,
+        description,
+        isBillable,
+        ratePerHour,
+        lastUpdated: now
+      };
+    } else {
+      // Pause
+      const elapsed = data.startTime ? Math.floor((now - data.startTime) / 1000) : 0;
+      data = {
+        ...data,
+        isRunning: false,
+        startTime: null,
+        accumulatedSeconds: (data.accumulatedSeconds || 0) + elapsed,
+        lastUpdated: now
+      };
+      setSeconds(data.accumulatedSeconds);
+    }
+    
+    localStorage.setItem(`timer_${matterId}`, JSON.stringify(data));
+    setIsTimerRunning(newIsRunning);
+  };
+
+  const resetTimer = () => {
+    localStorage.removeItem(`timer_${matterId}`);
+    setSeconds(0);
+    setIsTimerRunning(false);
+    setDescription('');
+  };
+
+  // Sync description and other fields to storage when they change
+  useEffect(() => {
+    if (!isLoaded || !matterId) return;
+    const savedTimer = localStorage.getItem(`timer_${matterId}`);
+    if (savedTimer) {
+      try {
+        const data = JSON.parse(savedTimer);
+        localStorage.setItem(`timer_${matterId}`, JSON.stringify({
+          ...data,
+          description,
+          isBillable,
+          ratePerHour
+        }));
+      } catch (e) {}
+    } else {
+       localStorage.setItem(`timer_${matterId}`, JSON.stringify({
+         accumulatedSeconds: 0,
+         isRunning: false,
+         description,
+         isBillable,
+         ratePerHour
+       }));
+    }
+  }, [description, isBillable, ratePerHour, isLoaded, matterId]);
 
   function formatTime(sec: number) {
     const h = Math.floor(sec / 3600);
@@ -207,17 +299,14 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
           <p className="text-amber-300 text-sm mb-4">{getHours(seconds)} horas</p>
           <div className="flex gap-2 justify-center">
             <button
-              onClick={() => setIsTimerRunning(!isTimerRunning)}
+              onClick={toggleTimer}
               className="px-4 py-2 bg-amber-500 text-navy font-bold rounded hover:bg-amber-600 flex items-center gap-2"
             >
               {isTimerRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
               {isTimerRunning ? 'Parar' : 'Iniciar'}
             </button>
             <button
-              onClick={() => {
-                setSeconds(0);
-                setIsTimerRunning(false);
-              }}
+              onClick={resetTimer}
               className="px-4 py-2 bg-slate-600 text-white font-bold rounded hover:bg-slate-700 flex items-center gap-2"
             >
               <X className="w-4 h-4" /> Reset

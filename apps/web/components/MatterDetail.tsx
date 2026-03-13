@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { Clock, FileText, Calendar, Wallet } from 'lucide-react';
+import { Clock, FileText, Calendar, Wallet, User, AlertTriangle } from 'lucide-react';
 import TimeTracker from './TimeTracker';
 import ExpenseTracker from './ExpenseTracker';
 import InvoiceDraftPanel from './InvoiceDraftPanel';
@@ -11,6 +11,7 @@ import UploadDocumentModal from './UploadDocumentModal';
 import AddTaskModal from './AddTaskModal';
 import PortalLinkButton from './PortalLinkButton';
 import DocumentListPanel from './DocumentListPanel';
+import AiDraftButton from './ai/AiDraftButton';
 
 interface Matter {
   id: string;
@@ -472,9 +473,12 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
 
           {/* Documentos */}
           <div className="bg-white border-2 border-navy p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <FileText className="w-4 h-4 text-navy" />
-              <h3 className="text-sm font-bold uppercase text-navy">Documentos</h3>
+            <div className="flex flex-col gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-navy" />
+                <h3 className="text-sm font-bold uppercase text-navy">Documentos</h3>
+              </div>
+              <AiDraftButton matterId={matter.id} />
             </div>
             
             <DocumentListPanel matterId={matter.id} documents={matter.documents || []} />
@@ -489,14 +493,22 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
             <h3 className="text-sm font-bold uppercase text-navy mb-3">Informações</h3>
             <div className="space-y-2 text-xs">
               <div>
-                <span className="text-slate-600">Cliente:</span>
-                {(matter.clientId || (matter as any).client_id) ? (
-                  <Link href={`/clients/${matter.clientId || (matter as any).client_id}`} className="block text-amber-500 hover:underline font-bold">
-                    Ver detalhes do cliente
-                  </Link>
-                ) : (
-                  <p className="text-red-400 italic">ID do cliente não encontrado</p>
-                )}
+                <span className="text-slate-600 block mb-1">Cliente:</span>
+                {(() => {
+                  const cId = matter.clientId || (matter as any).client_id;
+                  if (cId && cId !== "undefined") {
+                    return (
+                      <Link 
+                        href={`/clients/${cId}`} 
+                        className="inline-flex items-center gap-2 text-amber-500 hover:text-amber-600 font-bold transition-all group"
+                      >
+                        <User size={14} className="group-hover:scale-110 transition-transform" />
+                        Ver detalhes do cliente
+                      </Link>
+                    );
+                  }
+                  return <p className="text-red-400 italic flex items-center gap-1"><AlertTriangle size={12} /> Cliente não associado</p>;
+                })()}
               </div>
               <div>
                 <span className="text-slate-600">Criado:</span>

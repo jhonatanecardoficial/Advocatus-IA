@@ -24,10 +24,20 @@ export default function PortalLinkButton({ matterId }: Props) {
       }
 
       const rawData = result.data;
+      if (!rawData) {
+        toast.error("Resposta inválida do servidor.");
+        return;
+      }
+      
       const data = rawData.data || rawData; // Support both wrapped and unwrapped response
 
       // Construir o URL completo
-      const portalPath = data.url || (rawData.url); // Handle different response formats
+      const portalPath = data.url || rawData.url; 
+      if (!portalPath) {
+        toast.error("URL do portal não encontrada.");
+        return;
+      }
+      
       const fullUrl = `${window.location.origin}${portalPath}`;
       
       // Copiar para o clipboard com redundância

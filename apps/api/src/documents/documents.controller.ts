@@ -20,8 +20,10 @@ import { RequestUser } from '../auth/strategies/jwt.strategy'
 import {
     GetUploadUrlSchema,
     ConfirmUploadSchema,
+    RequestSignatureSchema,
     GetUploadUrlDto,
     ConfirmUploadDto,
+    RequestSignatureDto,
 } from './dto/document.dto'
 
 @Controller('documents')
@@ -51,6 +53,12 @@ export class DocumentsController {
         return this.documentsService.getDownloadUrl(user.tenantId, id)
     }
 
+    @Get(':id/history')
+    @Roles('SECRETARIA', 'ADVOGADO', 'SOCIO', 'ADMIN')
+    getVersionHistory(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+        return this.documentsService.getVersionHistory(user.tenantId, id)
+    }
+
     @Patch(':id/share')
     @Roles('ADVOGADO', 'SOCIO', 'ADMIN')
     toggleShare(
@@ -59,5 +67,17 @@ export class DocumentsController {
         @Body('isSharedWithClient') isSharedWithClient: boolean,
     ) {
         return this.documentsService.toggleShare(user.tenantId, id, isSharedWithClient)
+    }
+
+    @Patch(':id/request-signature')
+    @Roles('ADVOGADO', 'SOCIO', 'ADMIN')
+    @UsePipes(new ZodValidationPipe(RequestSignatureSchema))
+    requestSignature(
+        @CurrentUser() user: RequestUser,
+        @Param('id') id: string,
+        @Body() dto: RequestSignatureDto,
+    ) {
+        // Garantir que o ID do param corresponde ao ID do body se necessário, ou apenas usar o param
+        return this.documentsService.requestSignature(user.tenantId, user.id, { ...dto, documentId: id })
     }
 }

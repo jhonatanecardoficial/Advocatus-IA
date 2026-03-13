@@ -7,9 +7,12 @@ import { toast } from 'sonner';
 
 interface UploadDocumentModalProps {
     matterId: string;
+    parentVersionId?: string;
+    buttonText?: string;
+    onSuccess?: () => void;
 }
 
-export default function UploadDocumentModal({ matterId }: UploadDocumentModalProps) {
+export default function UploadDocumentModal({ matterId, parentVersionId, buttonText, onSuccess }: UploadDocumentModalProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [file, setFile] = useState<File | null>(null);
@@ -30,15 +33,17 @@ export default function UploadDocumentModal({ matterId }: UploadDocumentModalPro
         formData.append('file', file);
         formData.append('matterId', matterId);
         formData.append('title', file.name);
+        if (parentVersionId) formData.append('parentVersionId', parentVersionId);
 
         try {
             const result = await uploadDocumentAction(formData);
             if (result.error) {
                 toast.error(result.error);
             } else {
-                toast.success('Documento carregado com sucesso!');
+                toast.success(parentVersionId ? 'Nova versão carregada com sucesso!' : 'Documento carregado com sucesso!');
                 setIsOpen(false);
                 setFile(null);
+                if (onSuccess) onSuccess();
             }
         } catch (err) {
             toast.error('Erro ao conectar ao servidor');
@@ -51,9 +56,9 @@ export default function UploadDocumentModal({ matterId }: UploadDocumentModalPro
         <>
             <button
                 onClick={() => setIsOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-navy text-white text-xs font-bold uppercase tracking-wider hover:bg-amber-600 transition-colors"
+                className={`flex items-center gap-2 px-4 py-2 bg-navy text-white text-xs font-bold uppercase tracking-wider hover:bg-amber-600 transition-colors ${parentVersionId ? 'hidden' : ''}`}
             >
-                <Upload size={14} /> Adicionar Ficheiro
+                <Upload size={14} /> {buttonText || 'Adicionar Ficheiro'}
             </button>
 
             {isOpen && (
@@ -61,8 +66,8 @@ export default function UploadDocumentModal({ matterId }: UploadDocumentModalPro
                     <div className="bg-white border-4 border-navy w-full max-w-md shadow-[8px_8px_0px_#D4A853] animate-in zoom-in-95 duration-200">
                         <div className="bg-navy p-4 flex justify-between items-center">
                             <h2 className="text-white font-display font-black uppercase tracking-widest text-sm flex items-center gap-2">
-                                <Upload size={16} className="text-amber" />
-                                Upload de Documento
+                                <Upload size={16} className="text-amber-400" />
+                                {parentVersionId ? 'Upload de Nova Versão' : 'Upload de Documento'}
                             </h2>
                             <button
                                 onClick={() => setIsOpen(false)}

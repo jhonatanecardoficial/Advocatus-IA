@@ -168,8 +168,12 @@ export default async function DashboardPage() {
                                                 </span>
                                             </td>
                                             <td className="py-4 px-4 text-right">
-                                                <Link href={`/matters/${matter.id}`} className="text-navy hover:text-amber-600 underline underline-offset-4 font-bold inline-block">
+                                                <Link 
+                                                    href={`/matters/${matter.id}`} 
+                                                    className="inline-flex items-center gap-2 px-3 py-1 bg-navy text-white hover:bg-amber-600 transition-colors text-[10px] font-black uppercase tracking-widest"
+                                                >
                                                     Abrir
+                                                    <ArrowUpRight className="h-3 w-3" />
                                                 </Link>
                                             </td>
                                         </tr>
