@@ -14,7 +14,8 @@ interface Matter {
   deadline_at?: string | null;
   opened_at?: string | null;
   closed_at?: string | null;
-  client_id: string;
+  clientId: string;
+  client_id?: string;
   responsible_id?: string | null;
   createdAt: string;
 }
@@ -38,8 +39,9 @@ async function fetchMatter(id: string): Promise<Matter | null> {
   }
 }
 
-export default async function MatterPage({ params }: { params: { id: string } }) {
-  const matter = await fetchMatter(params.id);
+export default async function MatterPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const matter = await fetchMatter(id);
 
   if (!matter) {
     return (

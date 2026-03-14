@@ -39,3 +39,30 @@ export async function createClientAction(data: { nome: string, nif: string, tipo
     }
 }
 
+export async function checkConflictAction(data: { nome: string, nif: string }) {
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get("access_token")?.value;
+
+        if (!token) return { error: "Não está autenticado." };
+
+        const response = await fetch(`${API_URL}/clients/conflict-check`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(data),
+            cache: "no-store",
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { error: errorData?.message || "Erro ao verificar conflito." };
+        }
+
+        return await response.json();
+    } catch (error: any) {
+        return { error: "Não foi possível contactar o servidor Backend." };
+    }
+}

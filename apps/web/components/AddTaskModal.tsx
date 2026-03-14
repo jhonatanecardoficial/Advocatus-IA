@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Plus, X, Calendar, FileText, AlertCircle, Clock } from 'lucide-react';
+import { Plus, X, Calendar, FileText, Clock } from 'lucide-react';
 import { createTaskAction } from '@/app/actions/tasks';
 import { toast } from 'sonner';
 
@@ -54,97 +54,99 @@ export default function AddTaskModal({ matterId, onSuccess }: Props) {
         <>
             <button
                 onClick={() => setIsOpen(true)}
-                className="mt-4 w-full bg-navy text-white px-4 py-2 text-xs font-bold uppercase tracking-widest hover:bg-amber-600 transition-colors border-2 border-navy flex items-center justify-center gap-2"
+                className="btn-premium btn-premium-primary text-[10px] uppercase w-full flex items-center justify-center gap-2"
             >
                 <Plus className="h-4 w-4" /> Adicionar Prazo/Tarefa
             </button>
 
             {isOpen && (
-                <div className="fixed inset-0 bg-navy/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white border-4 border-navy w-full max-w-lg shadow-[8px_8px_0px_#D4A853] animate-in zoom-in-95 duration-200">
-                        <div className="bg-navy p-4 flex justify-between items-center">
-                            <h2 className="text-white font-display font-black uppercase tracking-widest text-lg flex items-center gap-2">
-                                <Clock size={20} className="text-amber" />
+                <div className="fixed inset-0 bg-navy/80 backdrop-blur-xl z-[60] flex items-center justify-center p-4 animate-in fade-in duration-500">
+                    <div className="glass-panel border-white/10 w-full max-w-lg shadow-glow overflow-hidden animate-reveal">
+                        <div className="bg-white/5 p-5 flex justify-between items-center border-b border-white/5">
+                            <h2 className="text-white font-display font-black uppercase tracking-widest text-sm flex items-center gap-3">
+                                <div className="p-2 bg-amber/20 rounded-lg">
+                                    <Clock size={16} className="text-amber" />
+                                </div>
                                 Agendar Prazo / Tarefa
                             </h2>
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="text-white hover:text-amber transition-colors"
+                                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white transition-all"
                             >
-                                <X size={24} />
+                                <X size={20} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                        <form onSubmit={handleSubmit} className="p-8 space-y-6">
                             <div>
-                                <label className="block text-[10px] font-bold uppercase text-navy mb-1 tracking-widest">Título</label>
-                                <div className="relative">
-                                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                <label className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Título da Tarefa</label>
+                                <div className="relative group">
+                                    <FileText className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber transition-colors" size={18} />
                                     <input
                                         required
                                         type="text"
                                         value={form.title}
                                         onChange={(e) => setForm({ ...form, title: e.target.value })}
                                         placeholder="Ex: Entrega de Contestação"
-                                        className="w-full pl-10 pr-4 py-3 border-2 border-slate-200 focus:border-navy outline-none transition-colors font-mono text-sm"
+                                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-600 focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm"
                                     />
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-[10px] font-bold uppercase text-navy mb-1 tracking-widest">Tipo</label>
+                                    <label className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Tipo</label>
                                     <select
                                         required
                                         value={form.type}
                                         onChange={(e) => setForm({ ...form, type: e.target.value })}
-                                        className="w-full px-3 py-3 border-2 border-slate-200 focus:border-navy outline-none transition-colors font-mono text-sm appearance-none bg-white"
+                                        className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm appearance-none cursor-pointer"
                                     >
-                                        <option value="PRAZO">Prazo Processual</option>
-                                        <option value="AUDIENCIA">Audiência</option>
-                                        <option value="DILIGENCIA">Diligência</option>
-                                        <option value="REUNIAO">Reunião</option>
-                                        <option value="OUTRO">Outro</option>
+                                        <option value="PRAZO" className="bg-navy">Prazo Processual</option>
+                                        <option value="AUDIENCIA" className="bg-navy">Audiência</option>
+                                        <option value="DILIGENCIA" className="bg-navy">Diligência</option>
+                                        <option value="REUNIAO" className="bg-navy">Reunião</option>
+                                        <option value="OUTRO" className="bg-navy">Outro</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold uppercase text-navy mb-1 tracking-widest">Prioridade</label>
+                                    <label className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Prioridade</label>
                                     <select
                                         required
                                         value={form.priority}
                                         onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                                        className="w-full px-3 py-3 border-2 border-slate-200 focus:border-navy outline-none transition-colors font-mono text-sm appearance-none bg-white"
+                                        className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm appearance-none cursor-pointer"
                                     >
-                                        <option value="BAIXA">Baixa</option>
-                                        <option value="MEDIA">Média</option>
-                                        <option value="ALTA">Alta</option>
-                                        <option value="CRITICA">Crítica</option>
+                                        <option value="BAIXA" className="bg-navy">Baixa</option>
+                                        <option value="MEDIA" className="bg-navy">Média</option>
+                                        <option value="ALTA" className="bg-navy">Alta</option>
+                                        <option value="CRITICA" className="bg-navy text-red-400">Crítica</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-[10px] font-bold uppercase text-navy mb-1 tracking-widest">Data e Hora Limite</label>
-                                <div className="relative">
-                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                <label className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Prazo Limite</label>
+                                <div className="relative group">
+                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber transition-colors" size={18} />
                                     <input
                                         required
                                         type="datetime-local"
                                         value={form.dueAt}
                                         onChange={(e) => setForm({ ...form, dueAt: e.target.value })}
-                                        className="w-full pl-10 pr-4 py-3 border-2 border-slate-200 focus:border-navy outline-none transition-colors font-mono text-sm"
+                                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white [color-scheme:dark] focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-[10px] font-bold uppercase text-navy mb-1 tracking-widest">Descrição</label>
+                                <label className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Notas Adicionais</label>
                                 <textarea
                                     value={form.description}
                                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                                     rows={3}
-                                    placeholder="Detalhes adicionais..."
-                                    className="w-full px-4 py-3 border-2 border-slate-200 focus:border-navy outline-none transition-colors font-body text-sm resize-none"
+                                    placeholder="Detalhes adicionais sobre a tarefa..."
+                                    className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-600 focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm resize-none"
                                 ></textarea>
                             </div>
 
@@ -152,16 +154,16 @@ export default function AddTaskModal({ matterId, onSuccess }: Props) {
                                 <button
                                     type="button"
                                     onClick={() => setIsOpen(false)}
-                                    className="flex-1 px-4 py-3 text-xs font-bold uppercase tracking-widest text-navy bg-slate-100 hover:bg-slate-200 transition-colors border-2 border-slate-200"
+                                    className="btn-premium btn-premium-outline flex-1 py-4 text-xs font-bold uppercase tracking-widest"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="flex-1 px-4 py-3 text-xs font-bold uppercase tracking-widest bg-navy text-white hover:bg-amber-600 transition-colors disabled:opacity-50"
+                                    className="btn-premium btn-premium-primary flex-1 py-4 text-xs font-bold uppercase tracking-widest disabled:opacity-30"
                                 >
-                                    {loading ? 'A Gravar...' : 'Agendar'}
+                                    {loading ? 'A Gravar...' : 'Agendar Tarefa'}
                                 </button>
                             </div>
                         </form>

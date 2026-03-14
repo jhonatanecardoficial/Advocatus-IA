@@ -13,7 +13,17 @@ export const ConfirmUploadSchema = z.object({
     mimeType: z.string().min(1),
     sizeBytes: z.number().int().positive(),
     storagePath: z.string().min(1),
+    parentVersionId: z.string().cuid().optional(),
+    signatureType: z.enum(['NONE', 'SES', 'AES', 'QES']).optional(),
+    signatureStatus: z.enum(['PENDING', 'SIGNED', 'REJECTED']).optional(),
+})
+
+export const RequestSignatureSchema = z.object({
+    documentId: z.string().cuid(),
+    signatureType: z.enum(['SES', 'AES', 'QES']),
+    signatories: z.array(z.string().email()).optional(), // Para multi-signatários futuramente
 })
 
 export type GetUploadUrlDto = z.infer<typeof GetUploadUrlSchema>
 export type ConfirmUploadDto = z.infer<typeof ConfirmUploadSchema>
+export type RequestSignatureDto = z.infer<typeof RequestSignatureSchema>

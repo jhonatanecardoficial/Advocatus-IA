@@ -1,13 +1,18 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
-import { Clock, FileText, Calendar, Wallet, Upload } from 'lucide-react';
+import { Clock, FileText, Calendar, Wallet, User, AlertTriangle, ArrowLeft, History, DollarSign, Receipt, Info, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import TimeTracker from './TimeTracker';
 import ExpenseTracker from './ExpenseTracker';
 import InvoiceDraftPanel from './InvoiceDraftPanel';
 import UploadDocumentModal from './UploadDocumentModal';
 import AddTaskModal from './AddTaskModal';
+import PortalLinkButton from './PortalLinkButton';
+import DocumentListPanel from './DocumentListPanel';
+import AiDraftButton from './ai/AiDraftButton';
 
 interface Matter {
   id: string;
@@ -21,16 +26,23 @@ interface Matter {
   deadline_at?: string | null;
   opened_at?: string | null;
   closed_at?: string | null;
-  client_id: string;
+  client_id?: string;
+  clientId?: string;
   responsible_id?: string | null;
   createdAt: string;
+  documents?: {
+    id: string;
+    filename: string;
+    mimeType: string;
+    isSharedWithClient?: boolean;
+    createdAt: string;
+  }[];
 }
 
 interface Props {
   matter: Matter;
 }
 
-// Mock data para timeline de eventos
 const generateMockTimeline = (matter: Matter) => [
   {
     id: '1',
@@ -38,7 +50,7 @@ const generateMockTimeline = (matter: Matter) => [
     title: 'Processo criado',
     description: `Processo ${matter.title} foi criado no sistema`,
     timestamp: new Date(matter.createdAt),
-    icon: 'document',
+    icon: <FileText size={14} />,
   },
   {
     id: '2',
@@ -46,7 +58,7 @@ const generateMockTimeline = (matter: Matter) => [
     title: `Status alterado para ${matter.status}`,
     description: 'Mudança de estado do processo',
     timestamp: new Date(new Date(matter.createdAt).getTime() + 86400000),
-    icon: 'status',
+    icon: <Info size={14} />,
   },
   {
     id: '3',
@@ -54,7 +66,7 @@ const generateMockTimeline = (matter: Matter) => [
     title: 'Documento anexado',
     description: 'Petição inicial.pdf foi adicionado',
     timestamp: new Date(new Date(matter.createdAt).getTime() + 172800000),
-    icon: 'file',
+    icon: <FileText size={14} />,
   },
   ...(matter.deadline_at
     ? [
@@ -64,7 +76,7 @@ const generateMockTimeline = (matter: Matter) => [
         title: 'Prazo definido',
         description: `Prazo processual até ${new Date(matter.deadline_at).toLocaleDateString('pt-PT')}`,
         timestamp: new Date(new Date(matter.createdAt).getTime() + 259200000),
-        icon: 'calendar',
+        icon: <Calendar size={14} />,
       },
     ]
     : []),
@@ -115,15 +127,6 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
     if (matter.id) loadSummaries();
   }, [matter.id]);
 
-  const statusColors: Record<string, { bg: string; text: string; border: string }> = {
-    ATIVO: { bg: 'bg-green-50', text: 'text-green-800', border: 'border-green-300' },
-    ENCERRADO: { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-300' },
-    SUSPENSO: { bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-300' },
-    ARQUIVADO: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-400' },
-  };
-
-  const colors = statusColors[matter.status] || statusColors.ATIVO;
-
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
@@ -172,36 +175,82 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
     ARQUIVADO: 'Arquivado',
   };
 
+  const tabs = [
+    { id: 'timeline', label: 'Linha do Tempo', icon: History },
+    { id: 'fees', label: 'Honorários', icon: DollarSign },
+    { id: 'expenses', label: 'Despesas', icon: Receipt },
+    { id: 'billing', label: 'Faturação', icon: Wallet },
+  ] as const;
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-start gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <span className={`text-xs font-bold uppercase tracking-widest px-3 py-1 border rounded ${colors.bg} ${colors.text} ${colors.border}`}>
+    <div className="space-y-8 max-w-[1600px] mx-auto pb-12">
+      {/* breadcrumb navigation */}
+      <motion.div 
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="flex items-center gap-2 text-slate-400"
+      >
+        <Link href="/dashboard" className="hover:text-amber transition-colors flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em]">
+            Painel Central
+        </Link>
+        <span className="text-white/20">/</span>
+        <Link href="/matters" className="hover:text-amber transition-colors flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em]">
+            Processos
+        </Link>
+        <span className="text-white/20">/</span>
+        <span className="text-amber text-[10px] font-black uppercase tracking-[0.2em] opacity-80">Detalhes</span>
+      </motion.div>
+
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start gap-8">
+        <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex-1"
+        >
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg ${
+                matter.status === 'ATIVO' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 
+                matter.status === 'SUSPENSO' ? 'bg-amber/10 text-amber border border-amber/20' : 
+                'bg-red-500/10 text-red-400 border border-red-500/20'
+            }`}>
               {statusLabels[matter.status] || matter.status}
             </span>
-            <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 border border-navy text-navy bg-slate-50">
+            <span className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] bg-white/5 text-white/60 border border-white/10">
               {typeLabels[matter.type] || matter.type}
             </span>
+            {matter.court_reference && (
+                <span className="text-xs font-mono text-amber/60 bg-amber/5 px-3 py-1 rounded border border-amber/10">
+                    {matter.court_reference}
+                </span>
+            )}
           </div>
-          <h1 className="text-4xl font-display font-black text-navy uppercase tracking-tighter leading-tight max-w-2xl">
+          <h1 className="text-6xl font-display font-black text-white uppercase tracking-tighter leading-[0.9] max-w-3xl mb-4">
             {matter.title}
           </h1>
-        </div>
-        <div className="flex gap-2 flex-shrink-0">
+          <p className="text-slate-400 font-medium tracking-wide">
+            Gerencie documentos, tempos, despesas e faturamento associados a este caso processual.
+          </p>
+        </motion.div>
+
+        <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex gap-3 flex-shrink-0"
+        >
           {isEditing ? (
             <>
               <button
                 onClick={() => setIsEditing(false)}
-                className="px-4 py-2 text-sm font-bold uppercase tracking-widest text-navy bg-slate-100 hover:bg-slate-200 transition-colors"
+                className="px-6 py-3 rounded-xl border border-white/10 text-white font-bold text-xs uppercase tracking-widest hover:bg-white/5 transition-all"
               >
                 Cancelar
               </button>
               <button
                 onClick={save}
                 disabled={loading}
-                className="px-4 py-2 text-sm font-bold uppercase tracking-widest bg-navy text-white hover:bg-amber-600 transition-colors disabled:opacity-50"
+                className="px-8 py-3 rounded-xl bg-amber text-navy font-bold text-xs uppercase tracking-widest shadow-xl shadow-amber/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
               >
                 {loading ? 'Gravando...' : 'Salvar'}
               </button>
@@ -209,49 +258,59 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="px-4 py-2 text-sm font-bold uppercase tracking-widest bg-navy text-white hover:bg-amber-600 transition-colors"
+              className="px-8 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-xs uppercase tracking-widest hover:bg-white/10 active:scale-95 transition-all flex items-center gap-2"
             >
-              Editar
+              Editar Detalhes
             </button>
           )}
-        </div>
+        </motion.div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Detalhes */}
-          <div className="bg-white border-2 border-navy p-6">
-            <h2 className="text-lg font-bold text-navy mb-4 uppercase tracking-widest">Detalhes do processo</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left Column - 8/12 */}
+        <div className="lg:col-span-8 space-y-8">
+          {/* Info Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="glass-panel p-8"
+          >
+            <div className="flex items-center gap-3 mb-8">
+                <div className="w-10 h-10 rounded-xl bg-amber/10 flex items-center justify-center text-amber">
+                    <Info size={20} />
+                </div>
+                <h2 className="text-sm font-black text-white uppercase tracking-[0.2em]">Especificações Técnicas</h2>
+            </div>
 
             {isEditing ? (
-              <form className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-navy mb-2">Tipo</label>
+              <form className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Tipo de Processo</label>
                     <select
                       name="type"
                       value={form.type}
                       onChange={handleChange}
-                      className="w-full border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all"
                     >
                       {Object.entries(typeLabels).map(([key, label]) => (
-                        <option key={key} value={key}>
+                        <option key={key} value={key} className="bg-navy">
                           {label}
                         </option>
                       ))}
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-navy mb-2">Estado</label>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Estado Atual</label>
                     <select
                       name="status"
                       value={form.status}
                       onChange={handleChange}
-                      className="w-full border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all"
                     >
                       {Object.entries(statusLabels).map(([key, label]) => (
-                        <option key={key} value={key}>
+                        <option key={key} value={key} className="bg-navy">
                           {label}
                         </option>
                       ))}
@@ -259,234 +318,328 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold uppercase text-navy mb-2">Título</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Título do Processo</label>
                   <input
                     name="title"
                     value={form.title}
                     onChange={handleChange}
-                    className="w-full border border-slate-300 px-3 py-2 text-sm"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-navy mb-2">Referência do tribunal</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Ref. Tribunal</label>
                     <input
                       name="court_reference"
                       value={form.court_reference}
                       onChange={handleChange}
-                      className="w-full border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all"
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-navy mb-2">Referência CITIUS</label>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Ref. CITIUS</label>
                     <input
                       name="citius_reference"
                       value={form.citius_reference}
                       onChange={handleChange}
-                      className="w-full border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-navy mb-2">Parte contrária</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Parte Contrária</label>
                     <input
                       name="opposing_party"
                       value={form.opposing_party}
                       onChange={handleChange}
-                      className="w-full border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all"
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-navy mb-2">Advogado da outra parte</label>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Advogado Contrário</label>
                     <input
                       name="opposing_counsel"
                       value={form.opposing_counsel}
                       onChange={handleChange}
-                      className="w-full border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold uppercase text-navy mb-2">Prazo do processo</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Prazo Processual</label>
                   <input
                     type="datetime-local"
                     name="deadline_at"
                     value={form.deadline_at}
                     onChange={handleChange}
-                    className="w-full border border-slate-300 px-3 py-2 text-sm"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all"
                   />
                 </div>
               </form>
             ) : (
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-slate-600">Tipo:</span>
-                  <span className="text-sm font-mono text-navy">{typeLabels[matter.type] || matter.type}</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                <div className="space-y-6">
+                  <div className="group border-b border-white/5 pb-4">
+                    <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest block mb-2">Tribunal e Sistema</span>
+                    <div className="flex flex-col gap-2">
+                        {matter.court_reference ? (
+                            <span className="text-sm font-mono text-amber flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 bg-amber rounded-full animate-pulse" />
+                                {matter.court_reference}
+                            </span>
+                        ) : (
+                            <span className="text-xs italic text-slate-600">Sem ref. de tribunal</span>
+                        )}
+                        {matter.citius_reference && (
+                            <span className="text-sm font-mono text-slate-300 pl-3.5 border-l border-white/10">
+                                {matter.citius_reference}
+                            </span>
+                        )}
+                    </div>
+                  </div>
+                  
+                  <div className="group">
+                    <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest block mb-2">Contencioso</span>
+                    <div className="space-y-3">
+                        {matter.opposing_party && (
+                            <div className="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5">
+                                <div className="text-xs font-black text-white/40 uppercase">Vs</div>
+                                <span className="text-sm font-bold text-white">{matter.opposing_party}</span>
+                            </div>
+                        )}
+                        {matter.opposing_counsel && (
+                            <div className="flex items-center gap-2 pl-3">
+                                <User size={12} className="text-amber" />
+                                <span className="text-xs font-medium text-slate-400">{matter.opposing_counsel}</span>
+                            </div>
+                        )}
+                    </div>
+                  </div>
                 </div>
-                {matter.court_reference && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-slate-600">Ref. Tribunal:</span>
-                    <span className="text-sm font-mono text-navy">{matter.court_reference}</span>
+
+                <div className="space-y-6">
+                   <div className="group border-b border-white/5 pb-4">
+                        <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest block mb-2">Prazos & Limites</span>
+                        {matter.deadline_at ? (
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-red-500/10 rounded-lg text-red-500">
+                                    <Clock size={18} />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-black text-white">{new Date(matter.deadline_at).toLocaleDateString('pt-PT')}</p>
+                                    <p className="text-[10px] font-bold text-red-400/60 uppercase">Expira em breve</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <span className="text-xs italic text-slate-600">Sem prazos definidos</span>
+                        )}
                   </div>
-                )}
-                {matter.citius_reference && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-slate-600">Ref. CITIUS:</span>
-                    <span className="text-sm font-mono text-navy">{matter.citius_reference}</span>
+
+                  <div className="group">
+                    <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest block mb-2">Associação de Cliente</span>
+                    {(() => {
+                        const cId = matter.clientId || (matter as any).client_id;
+                        if (cId && cId !== "undefined") {
+                            return (
+                                <Link 
+                                    href={`/clients/${cId}`} 
+                                    className="p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all group/link flex items-center justify-between"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-navy border border-white/10 flex items-center justify-center text-[10px] font-black text-amber">
+                                            CL
+                                        </div>
+                                        <span className="text-sm font-bold text-white group-hover/link:text-amber transition-colors">Aceder Perfil Cliente</span>
+                                    </div>
+                                    <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center group-hover/link:bg-amber group-hover/link:text-navy transition-all">
+                                        <ChevronRight size={12} />
+                                    </div>
+                                </Link>
+                            );
+                        }
+                        return (
+                            <div className="flex items-center gap-2 text-red-400/60 italic p-3 border border-red-500/10 rounded-lg bg-red-500/5">
+                                <AlertTriangle size={14} />
+                                <span className="text-xs">Identificação de cliente em falta</span>
+                            </div>
+                        );
+                    })()}
                   </div>
-                )}
-                {matter.opposing_party && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-slate-600">Parte contrária:</span>
-                    <span className="text-sm text-navy">{matter.opposing_party}</span>
-                  </div>
-                )}
-                {matter.opposing_counsel && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-slate-600">Advogado contrário:</span>
-                    <span className="text-sm text-navy">{matter.opposing_counsel}</span>
-                  </div>
-                )}
-                {matter.deadline_at && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-slate-600">Prazo:</span>
-                    <span className="text-sm font-mono text-navy">{new Date(matter.deadline_at).toLocaleDateString('pt-PT')}</span>
-                  </div>
-                )}
+                </div>
               </div>
             )}
-          </div>
+          </motion.div>
 
-          {/* Timeline & Financial Tabs */}
-          <div className="bg-white border-2 border-navy overflow-hidden">
-            <div className="flex border-b-2 border-navy bg-slate-50">
-              <button
-                onClick={() => setActiveTab('timeline')}
-                className={`flex-1 py-4 px-6 text-sm font-bold uppercase tracking-widest transition-colors ${activeTab === 'timeline' ? 'bg-white text-navy border-b-2 border-white -mb-0.5' : 'text-slate-400 hover:text-navy'}`}
-              >
-                Linha do Tempo
-              </button>
-              <button
-                onClick={() => setActiveTab('fees')}
-                className={`flex-1 py-4 px-6 text-sm font-bold uppercase tracking-widest transition-colors ${activeTab === 'fees' ? 'bg-white text-navy border-b-2 border-white -mb-0.5' : 'text-slate-400 hover:text-navy'}`}
-              >
-                Honorários
-              </button>
-              <button
-                onClick={() => setActiveTab('expenses')}
-                className={`flex-1 py-4 px-6 text-sm font-bold uppercase tracking-widest transition-colors ${activeTab === 'expenses' ? 'bg-white text-navy border-b-2 border-white -mb-0.5' : 'text-slate-400 hover:text-navy'}`}
-              >
-                Despesas
-              </button>
-              <button
-                onClick={() => setActiveTab('billing')}
-                className={`flex-1 py-4 px-6 text-sm font-bold uppercase tracking-widest transition-colors ${activeTab === 'billing' ? 'bg-white text-navy border-b-2 border-white -mb-0.5' : 'text-slate-400 hover:text-navy'}`}
-              >
-                Faturação
-              </button>
+          {/* Detailed Tabs Control Section */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="glass-panel overflow-hidden"
+          >
+            <div className="flex flex-wrap border-b border-white/5 bg-white/2 overflow-x-auto no-scrollbar">
+               {tabs.map((tab) => {
+                 const Icon = tab.icon;
+                 const isActive = activeTab === tab.id;
+                 return (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex items-center gap-3 py-5 px-8 text-[11px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${
+                            isActive ? 'text-amber' : 'text-slate-500 hover:text-white hover:bg-white/5'
+                        }`}
+                    >
+                        <Icon size={14} className={isActive ? 'text-amber' : 'opacity-40'} />
+                        {tab.label}
+                        {isActive && (
+                            <motion.div 
+                                layoutId="active-tab-detail"
+                                className="absolute bottom-0 left-0 right-0 h-[3px] bg-amber"
+                            />
+                        )}
+                    </button>
+                 );
+               })}
             </div>
 
-            <div className="p-6">
-              {activeTab === 'timeline' && (
-                <div className="space-y-4">
-                  {timeline.map((event, idx) => (
-                    <div key={event.id} className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className="w-8 h-8 bg-navy text-white rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">
-                          {idx + 1}
+            <div className="p-8">
+              <AnimatePresence mode="wait">
+                <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    {activeTab === 'timeline' && (
+                        <div className="space-y-4">
+                        {timeline.map((event, idx) => (
+                            <div key={event.id} className="flex gap-6 group">
+                            <div className="flex flex-col items-center">
+                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all ${
+                                    idx === 0 ? 'bg-amber text-navy shadow-lg shadow-amber/20' : 'bg-white/5 text-white/40 group-hover:bg-white/10 group-hover:text-amber'
+                                }`}>
+                                    {event.icon}
+                                </div>
+                                {idx < timeline.length - 1 && (
+                                    <div className="w-[2px] bg-white/5 flex-grow my-2 min-h-[40px]" />
+                                )}
+                            </div>
+                            <div className="pb-8 flex-1">
+                                <div className="flex justify-between items-start">
+                                    <p className={`text-sm font-bold ${idx === 0 ? 'text-white' : 'text-slate-300'} group-hover:text-amber transition-colors`}>
+                                        {event.title}
+                                    </p>
+                                    <span className="text-[10px] font-mono text-slate-500 bg-white/2 px-2 py-0.5 rounded">
+                                        {event.timestamp.toLocaleDateString('pt-PT')}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed max-w-xl">
+                                    {event.description}
+                                </p>
+                            </div>
+                            </div>
+                        ))}
                         </div>
-                        {idx < timeline.length - 1 && <div className="w-1 bg-slate-200 flex-grow my-2 h-12" />}
-                      </div>
-                      <div className="pb-4">
-                        <p className="text-sm font-bold text-navy">{event.title}</p>
-                        <p className="text-xs text-slate-500 mt-1">{event.description}</p>
-                        <p className="text-xs text-slate-400 mt-1">{event.timestamp.toLocaleDateString('pt-PT')}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    )}
 
-              {activeTab === 'fees' && (
-                <div className="animate-in fade-in duration-500">
-                  <TimeTracker matterId={matter.id} />
-                </div>
-              )}
-
-              {activeTab === 'expenses' && (
-                <div className="animate-in fade-in duration-500">
-                  <ExpenseTracker matterId={matter.id} />
-                </div>
-              )}
-              {activeTab === 'billing' && (
-                <div className="animate-in fade-in duration-500">
-                  <InvoiceDraftPanel matterId={matter.id} />
-                </div>
-              )}
+                    {activeTab === 'fees' && <TimeTracker matterId={matter.id} />}
+                    {activeTab === 'expenses' && <ExpenseTracker matterId={matter.id} />}
+                    {activeTab === 'billing' && <InvoiceDraftPanel matterId={matter.id} />}
+                </motion.div>
+              </AnimatePresence>
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-4">
-          {/* Prazo */}
-          {matter.deadline_at && (
-            <div className="bg-amber-50 border-2 border-amber-300 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Calendar className="w-4 h-4 text-amber-800" />
-                <h3 className="text-sm font-bold uppercase text-amber-800">Próximo prazo</h3>
+        {/* Right Column - 4/12 (Sidebar Area) */}
+        <div className="lg:col-span-4 space-y-8">
+          {/* Quick Metrics Cards */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4 }}
+            className="grid grid-cols-2 gap-4"
+          >
+            <div className="glass-panel p-6 border-white/10 relative overflow-hidden group">
+              <div className="absolute -right-4 -top-4 text-white/5 group-hover:text-amber/10 transition-colors">
+                  <Clock size={80} />
               </div>
-              <p className="text-xs text-amber-700">{new Date(matter.deadline_at).toLocaleDateString('pt-PT')}</p>
-            </div>
-          )}
-
-          {/* Resumo Financeiro na Sidebar */}
-          <div className="grid grid-cols-2 gap-2">
-            <div className="bg-white border-2 border-navy p-3 text-center">
-              <Clock className="w-4 h-4 text-navy mx-auto mb-1" />
-              <p className="text-[10px] font-bold uppercase text-navy opacity-60">Horas</p>
-              <p className="text-lg font-black text-navy">{summaries.total_hours.toFixed(1)}h</p>
-            </div>
-            <div className="bg-white border-2 border-navy p-3 text-center">
-              <Wallet className="w-4 h-4 text-navy mx-auto mb-1" />
-              <p className="text-[10px] font-bold uppercase text-navy opacity-60">Custos</p>
-              <p className="text-lg font-black text-navy">€{summaries.total_expenses.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
-            </div>
-          </div>
-
-          {/* Documentos */}
-          <div className="bg-white border-2 border-navy p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <FileText className="w-4 h-4 text-navy" />
-              <h3 className="text-sm font-bold uppercase text-navy">Documentos</h3>
-            </div>
-            <p className="text-xs text-slate-500">Nenhum documento anexado ainda</p>
-            <UploadDocumentModal matterId={matter.id} />
-            <AddTaskModal matterId={matter.id} />
-          </div>
-
-
-          {/* Informações */}
-          <div className="bg-slate-50 border-2 border-slate-300 p-4">
-            <h3 className="text-sm font-bold uppercase text-navy mb-3">Informações</h3>
-            <div className="space-y-2 text-xs">
-              <div>
-                <span className="text-slate-600">Cliente:</span>
-                <a href={`/clients/${matter.client_id}`} className="block text-amber-500 hover:underline">
-                  Ver cliente
-                </a>
-              </div>
-              <div>
-                <span className="text-slate-600">Criado:</span>
-                <p className="text-slate-500">{new Date(matter.createdAt).toLocaleDateString('pt-PT')}</p>
+              <Clock className="w-5 h-5 text-amber mb-4" />
+              <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-1">Horas Registadas</p>
+              <div className="flex items-baseline gap-1">
+                  <p className="text-3xl font-black text-white">{summaries.total_hours.toFixed(1)}</p>
+                  <p className="text-xs font-bold text-slate-600">H</p>
               </div>
             </div>
-          </div>
+            <div className="glass-panel p-6 border-white/10 relative overflow-hidden group">
+              <div className="absolute -right-4 -top-4 text-white/5 group-hover:text-green-500/10 transition-colors">
+                  <Wallet size={80} />
+              </div>
+              <Wallet className="w-5 h-5 text-green-400 mb-4" />
+              <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-1">Custos Totais</p>
+              <div className="flex items-baseline gap-1">
+                  <p className="text-3xl font-black text-white">€{summaries.total_expenses.toLocaleString('pt-PT', { minimumFractionDigits: 0 })}</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* AI Toolbox Card */}
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5 }}
+            className="glass-panel p-6 border-amber/20 overflow-hidden relative"
+          >
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+                <div className="animate-spin-slow">
+                    <History size={120} className="text-amber" />
+                </div>
+            </div>
+
+            <div className="flex items-center gap-3 mb-6">
+                <div className="p-2.5 bg-amber rounded-xl text-navy shadow-lg shadow-amber/20">
+                    <FileText size={18} />
+                </div>
+                <div>
+                   <h3 className="text-[11px] font-black uppercase text-white tracking-widest leading-none mb-1">Repositório</h3>
+                   <p className="text-[10px] text-amber/60 font-medium">GESTÃO DE DOCUMENTOS</p>
+                </div>
+            </div>
+            
+            <div className="space-y-4">
+                <AiDraftButton matterId={matter.id} />
+                <div className="h-[1px] bg-white/5 my-2" />
+                <DocumentListPanel matterId={matter.id} documents={matter.documents || []} />
+            </div>
+            
+            <div className="mt-8 grid grid-cols-1 gap-3">
+                <UploadDocumentModal matterId={matter.id} />
+                <AddTaskModal matterId={matter.id} />
+            </div>
+          </motion.div>
+
+          {/* Access Portal */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="glass-panel p-6 border-blue-500/20 bg-blue-500/5 group"
+          >
+             <div className="flex items-center gap-3 mb-4">
+                <User size={18} className="text-blue-400" />
+                <h3 className="text-[11px] font-black uppercase text-blue-400 tracking-widest">Acesso do Cliente</h3>
+             </div>
+             <p className="text-[11px] text-slate-400 leading-relaxed mb-6 font-medium">
+                Gere links de acesso seguro para que o cliente possa acompanhar o estado deste processo em tempo real.
+             </p>
+             <PortalLinkButton matterId={matter.id} />
+          </motion.div>
         </div>
       </div>
     </div>

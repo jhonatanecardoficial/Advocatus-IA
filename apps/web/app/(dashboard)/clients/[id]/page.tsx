@@ -41,8 +41,9 @@ async function fetchClient(id: string): Promise<Client | null> {
   }
 }
 
-export default async function ClientPage({ params }: { params: { id: string } }) {
-  const client = await fetchClient(params.id);
+export default async function ClientPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const client = await fetchClient(id);
   if (!client) {
     return (
       <div className="py-24 text-center">

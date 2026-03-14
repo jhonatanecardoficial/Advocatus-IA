@@ -79,6 +79,7 @@ export class MattersService {
                         mimeType: true,
                         version: true,
                         signatureType: true,
+                        isSharedWithClient: true,
                         createdAt: true,
                     },
                     orderBy: { createdAt: 'desc' },

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { Plus, X, User, Briefcase, Hash, Mail, Phone } from 'lucide-react';
-import { createClientAction } from '@/app/actions/clients';
+import { Plus, X, User, Briefcase, Hash, Mail, Phone, Shield, AlertTriangle, Info, Zap } from 'lucide-react';
+import { createClientAction, checkConflictAction } from '@/app/actions/clients';
 import { toast } from 'sonner';
 
 export default function AddClientModal() {
@@ -16,6 +16,35 @@ export default function AddClientModal() {
         telefone: '',
     });
 
+    const [conflictResults, setConflictResults] = useState<any[]>([]);
+    const [checkingConflict, setCheckingConflict] = useState(false);
+
+    const handleConflictCheck = async () => {
+        if (!form.nome || !form.nif) {
+            toast.error('Preencha o nome e o NIF para verificar conflitos.');
+            return;
+        }
+
+        setCheckingConflict(true);
+        try {
+            const result = await checkConflictAction({ nome: form.nome, nif: form.nif });
+            if (result.error) {
+                toast.error(result.error);
+            } else {
+                setConflictResults(result.data || []);
+                if (result.count === 0) {
+                    toast.success('Nenhum conflito direto encontrado.');
+                } else {
+                    toast.warning(`Encontrados ${result.count} possíveis conflitos.`);
+                }
+            }
+        } catch (err) {
+            toast.error('Erro ao verificar conflitos.');
+        } finally {
+            setCheckingConflict(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -28,6 +57,7 @@ export default function AddClientModal() {
                 toast.success('Cliente criado com sucesso!');
                 setIsOpen(false);
                 setForm({ nome: '', nif: '', tipo: 'SINGULAR', email: '', telefone: '' });
+                setConflictResults([]);
             }
         } catch (err) {
             toast.error('Erro ao conectar ao servidor');
@@ -40,30 +70,37 @@ export default function AddClientModal() {
         <>
             <button
                 onClick={() => setIsOpen(true)}
-                className="bg-navy text-white px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-amber-600 transition-colors border-2 border-navy flex items-center gap-2"
+                className="btn-premium flex items-center gap-2 group animate-reveal"
             >
-                <Plus className="h-4 w-4" /> Novo Cliente
+                <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
+                <span>Novo Cliente</span>
             </button>
 
             {isOpen && (
-                <div className="fixed inset-0 bg-navy/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white border-4 border-navy w-full max-w-xl shadow-[8px_8px_0px_#D4A853] animate-in zoom-in-95 duration-200">
-                        <div className="bg-navy p-4 flex justify-between items-center">
-                            <h2 className="text-white font-display font-black uppercase tracking-widest text-lg flex items-center gap-2">
-                                <Plus size={20} className="text-amber" />
-                                Novo Registo de Entidade
-                            </h2>
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="text-white hover:text-amber transition-colors"
+                <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="glass-panel w-full max-w-xl border border-white/20 shadow-premium flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300 overflow-hidden">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-navy via-navy/90 to-navy/80 p-5 flex justify-between items-center shrink-0 border-b border-white/10">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-amber/10 rounded-lg border border-amber/20">
+                                    <User className="w-5 h-5 text-amber" />
+                                </div>
+                                <div>
+                                    <h3 className="text-white text-sm font-bold uppercase tracking-widest">Nova Entidade</h3>
+                                    <p className="text-[10px] text-white/50 font-medium">Registo e Compliance</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setIsOpen(false)} 
+                                className="p-2 hover:bg-white/10 rounded-full transition-colors group"
                             >
-                                <X size={24} />
+                                <X className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <label className={`flex items-center justify-center gap-2 p-4 border-2 cursor-pointer transition-all ${form.tipo === 'SINGULAR' ? 'border-navy bg-navy/5 text-navy' : 'border-slate-200 text-slate-400 hover:border-navy/30'}`}>
+                        <form onSubmit={handleSubmit} className="p-8 space-y-6 overflow-y-auto custom-scrollbar">
+                            <div className="grid grid-cols-2 gap-3 animate-reveal stagger-1">
+                                <label className={`flex items-center justify-center gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${form.tipo === 'SINGULAR' ? 'border-amber bg-amber/10 shadow-glow' : 'border-white/10 bg-white/5 hover:border-white/20'}`}>
                                     <input
                                         type="radio"
                                         className="hidden"
@@ -72,10 +109,10 @@ export default function AddClientModal() {
                                         checked={form.tipo === 'SINGULAR'}
                                         onChange={() => setForm({ ...form, tipo: 'SINGULAR' })}
                                     />
-                                    <User size={18} />
-                                    <span className="text-xs font-bold uppercase">Pessoa Singular</span>
+                                    <User size={18} className={form.tipo === 'SINGULAR' ? 'text-amber' : 'text-white/40'} />
+                                    <span className={`text-[11px] font-black uppercase tracking-widest ${form.tipo === 'SINGULAR' ? 'text-white' : 'text-white/40'}`}>Pessoa Singular</span>
                                 </label>
-                                <label className={`flex items-center justify-center gap-2 p-4 border-2 cursor-pointer transition-all ${form.tipo === 'COLETIVA' ? 'border-navy bg-navy/5 text-navy' : 'border-slate-200 text-slate-400 hover:border-navy/30'}`}>
+                                <label className={`flex items-center justify-center gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${form.tipo === 'COLETIVA' ? 'border-amber bg-amber/10 shadow-glow' : 'border-white/10 bg-white/5 hover:border-white/20'}`}>
                                     <input
                                         type="radio"
                                         className="hidden"
@@ -84,87 +121,137 @@ export default function AddClientModal() {
                                         checked={form.tipo === 'COLETIVA'}
                                         onChange={() => setForm({ ...form, tipo: 'COLETIVA' })}
                                     />
-                                    <Briefcase size={18} />
-                                    <span className="text-xs font-bold uppercase">Pessoa Coletiva</span>
+                                    <Briefcase size={18} className={form.tipo === 'COLETIVA' ? 'text-amber' : 'text-white/40'} />
+                                    <span className={`text-[11px] font-black uppercase tracking-widest ${form.tipo === 'COLETIVA' ? 'text-white' : 'text-white/40'}`}>Pessoa Coletiva</span>
                                 </label>
                             </div>
 
                             <div className="space-y-4">
-                                <div>
-                                    <label className="block text-[10px] font-bold uppercase text-navy mb-1 ml-1 tracking-widest">Nome Completo / Denominação</label>
-                                    <div className="relative">
-                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                <div className="animate-reveal stagger-2">
+                                    <label className="text-[11px] text-slate-400 uppercase font-bold mb-2 block flex items-center gap-2">
+                                        <Zap className="w-3 h-3 text-navy" />
+                                        Nome Completo / Denominação
+                                    </label>
+                                    <input
+                                        required
+                                        type="text"
+                                        value={form.nome}
+                                        onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                                        placeholder="Ex: João Silva ou Empresa, Lda"
+                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm text-white placeholder:text-white/20"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-reveal stagger-3">
+                                    <div>
+                                        <label className="text-[11px] text-white/40 uppercase font-bold mb-2 block flex items-center gap-2">
+                                            <Hash className="w-3 h-3 text-amber" />
+                                            NIF / NIPC
+                                        </label>
                                         <input
                                             required
                                             type="text"
-                                            value={form.nome}
-                                            onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                                            placeholder="Ex: João Silva ou Empresa, Lda"
-                                            className="w-full pl-10 pr-4 py-3 border-2 border-slate-200 focus:border-navy outline-none transition-colors font-mono text-sm"
+                                            maxLength={9}
+                                            value={form.nif}
+                                            onChange={(e) => setForm({ ...form, nif: e.target.value })}
+                                            placeholder="999 999 999"
+                                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm text-white placeholder:text-white/20"
                                         />
                                     </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase text-navy mb-1 ml-1 tracking-widest">NIF / NIPC</label>
-                                        <div className="relative">
-                                            <Hash className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                            <input
-                                                required
-                                                type="text"
-                                                maxLength={9}
-                                                value={form.nif}
-                                                onChange={(e) => setForm({ ...form, nif: e.target.value })}
-                                                placeholder="999 999 999"
-                                                className="w-full pl-10 pr-4 py-3 border-2 border-slate-200 focus:border-navy outline-none transition-colors font-mono text-sm"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-bold uppercase text-navy mb-1 ml-1 tracking-widest">Telefone</label>
-                                        <div className="relative">
-                                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                            <input
-                                                type="tel"
-                                                value={form.telefone}
-                                                onChange={(e) => setForm({ ...form, telefone: e.target.value })}
-                                                placeholder="+351 9xx xxx xxx"
-                                                className="w-full pl-10 pr-4 py-3 border-2 border-slate-200 focus:border-navy outline-none transition-colors font-mono text-sm"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-[10px] font-bold uppercase text-navy mb-1 ml-1 tracking-widest">Endereço de Email</label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                        <label className="text-[11px] text-white/40 uppercase font-bold mb-2 block flex items-center gap-2">
+                                            <Phone className="w-3 h-3 text-amber" />
+                                            Telefone
+                                        </label>
                                         <input
-                                            type="email"
-                                            value={form.email}
-                                            onChange={(e) => setForm({ ...form, email: e.target.value })}
-                                            placeholder="exemplo@dominio.pt"
-                                            className="w-full pl-10 pr-4 py-3 border-2 border-slate-200 focus:border-navy outline-none transition-colors font-mono text-sm"
+                                            type="tel"
+                                            value={form.telefone}
+                                            onChange={(e) => setForm({ ...form, telefone: e.target.value })}
+                                            placeholder="+351 9xx xxx xxx"
+                                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm text-white placeholder:text-white/20"
                                         />
                                     </div>
                                 </div>
+
+                                <div className="animate-reveal stagger-4">
+                                    <label className="text-[11px] text-white/40 uppercase font-bold mb-2 block flex items-center gap-2">
+                                        <Mail className="w-3 h-3 text-amber" />
+                                        Endereço de Email
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={form.email}
+                                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                        placeholder="exemplo@dominio.pt"
+                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm text-white placeholder:text-white/20"
+                                    />
+                                </div>
+
+                                <div className="pt-2 animate-reveal stagger-5">
+                                    <div className="relative group">
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handleConflictCheck();
+                                            }}
+                                            disabled={checkingConflict}
+                                            className="w-full py-3 text-[10px] font-bold uppercase tracking-widest border border-amber-500/50 text-amber-600 bg-amber-50/50 rounded-xl hover:bg-amber-500 hover:text-white transition-all flex items-center justify-center gap-2 relative z-10 active:scale-[0.98]"
+                                        >
+                                            <Shield size={14} className={checkingConflict ? 'animate-spin' : ''} />
+                                            {checkingConflict ? 'A Verificar...' : 'Verificar Conflitos de Interesse'}
+                                        </button>
+                                        
+                                        <div className="absolute bottom-full left-0 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 z-[100] w-full pointer-events-none translate-y-2 group-hover:translate-y-0">
+                                            <div className="glass-panel p-4 shadow-premium border border-amber/30 flex items-start gap-3 backdrop-blur-xl bg-navy/90">
+                                                <div className="p-1.5 bg-amber/20 rounded-lg">
+                                                    <Info size={14} className="shrink-0 text-amber" />
+                                                </div>
+                                                <div className="leading-tight">
+                                                    <strong className="text-amber block text-[10px] mb-1 uppercase tracking-wider font-black">Prevenção de Risco</strong>
+                                                    <p className="text-[10px] text-white/60 font-medium">Cruza os dados com todos os processos para detetar impedimentos éticos.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {conflictResults.length > 0 && (
+                                    <div className="p-5 bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-2xl animate-in slide-in-from-top-2 duration-300 shadow-sm">
+                                        <div className="flex items-center gap-2 text-red-600 font-bold text-[11px] uppercase mb-3">
+                                            <AlertTriangle size={15} />
+                                            Conflitos Potenciais Encontrados
+                                        </div>
+                                        <div className="space-y-2">
+                                            {conflictResults.map((conflict: any, idx: number) => (
+                                                <div key={idx} className="text-[11px] font-medium text-slate-700 bg-white/50 p-2 rounded-lg border border-red-100">
+                                                    <span className="text-red-600 font-bold">PROC:</span> {conflict.courtReference || conflict.id} — <span className="text-slate-400">vs</span> {conflict.opposingParty}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="pt-4 border-t-2 border-slate-100 flex gap-4">
+                            <div className="pt-6 border-t border-slate-100 flex gap-3 animate-reveal stagger-[6]">
                                 <button
                                     type="button"
                                     onClick={() => setIsOpen(false)}
-                                    className="flex-1 px-4 py-4 text-xs font-bold uppercase tracking-widest text-navy bg-slate-100 hover:bg-slate-200 transition-colors"
+                                    className="flex-1 py-4 text-[11px] font-bold uppercase tracking-widest text-slate-500 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-white hover:border-slate-300 transition-all"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="flex-1 px-4 py-4 text-xs font-bold uppercase tracking-widest bg-navy text-white hover:bg-amber-600 transition-colors disabled:opacity-50"
+                                    className="flex-1 py-4 text-[11px] font-bold uppercase tracking-widest bg-navy text-white rounded-2xl hover:bg-navy/90 hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
-                                    {loading ? 'A Gravar...' : 'Confirmar Registo'}
+                                    {loading ? (
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <Plus className="w-4 h-4" />
+                                    )}
+                                    <span>{loading ? 'A Gravar...' : 'Confirmar Registo'}</span>
                                 </button>
                             </div>
                         </form>

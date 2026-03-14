@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, InternalServerErrorException } from '@ne
 import { ConfigService } from '@nestjs/config'
 import { SupabaseClient, createClient } from '@supabase/supabase-js'
 import { PrismaService } from '../prisma/prisma.service'
-import { GetUploadUrlDto, ConfirmUploadDto } from './dto/document.dto'
+import { GetUploadUrlDto, ConfirmUploadDto, RequestSignatureDto } from './dto/document.dto'
 
 @Injectable()
 export class DocumentsService {
@@ -62,6 +62,37 @@ export class DocumentsService {
 
         if (!matter) throw new NotFoundException('Processo não encontrado.')
 
+        let version = 1;
+        const parentId = dto.parentVersionId;
+
+        if (parentId) {
+            const parentDoc = await this.prisma.document.findFirst({
+                where: { id: parentId, tenantId },
+                select: { version: true, parentVersionId: true }
+            });
+
+            if (!parentDoc) throw new NotFoundException('Documento pai não encontrado.');
+
+            // Se o documento fornecido já for uma versão subordinada, 
+            // devemos subir até à raiz ou usar o pai directo conforme a lógica de árvore
+            // Aqui vamos simplificar: o utilizador envia sempre o ID do documento que quer substituir.
+            
+            // Procurar a versão mais alta para este "tronco" de documentos
+            const latestVersion = await this.prisma.document.findFirst({
+                where: { 
+                    tenantId,
+                    OR: [
+                        { id: parentId },
+                        { parentVersionId: parentId }
+                    ]
+                },
+                orderBy: { version: 'desc' },
+                select: { version: true }
+            });
+
+            version = (latestVersion?.version || 1) + 1;
+        }
+
         // Grava metadados do documento no PostgreSQL
         return this.prisma.document.create({
             data: {
@@ -72,9 +103,58 @@ export class DocumentsService {
                 mimeType: dto.mimeType,
                 sizeBytes: dto.sizeBytes,
                 storagePath: dto.storagePath,
-                version: 1,
+                version: version,
+                parentVersionId: parentId,
+                signatureType: dto.signatureType || 'NONE',
+                signatureStatus: dto.signatureStatus || (dto.signatureType && dto.signatureType !== 'NONE' ? 'PENDING' : null),
             },
         })
+    }
+
+    async requestSignature(tenantId: string, _userId: string, dto: RequestSignatureDto) {
+        const doc = await this.prisma.document.findFirst({
+            where: { id: dto.documentId, tenantId },
+        })
+
+        if (!doc) throw new NotFoundException('Documento não encontrado.')
+
+        return this.prisma.document.update({
+            where: { id: dto.documentId },
+            data: {
+                signatureType: dto.signatureType,
+                signatureStatus: 'PENDING',
+                signatureProvider: dto.signatureType === 'QES' ? 'AUTENTICACAO_GOV' : 'MULTICERT',
+                signatureMetadata: {
+                    requestedAt: new Date(),
+                    signatories: dto.signatories || [],
+                },
+            },
+        })
+    }
+
+    async getVersionHistory(tenantId: string, documentId: string) {
+        // Encontrar o documento raiz (se o ID passado for uma versão, encontrar o pai original)
+        const doc = await this.prisma.document.findFirst({
+            where: { id: documentId, tenantId }
+        });
+
+        if (!doc) throw new NotFoundException('Documento não encontrado.');
+
+        const rootId = doc.parentVersionId || doc.id;
+
+        return this.prisma.document.findMany({
+            where: {
+                tenantId,
+                OR: [
+                    { id: rootId },
+                    { parentVersionId: rootId }
+                ]
+            },
+            orderBy: { version: 'desc' },
+            include: {
+                // Incluir quem fez o upload se necessário (precisaria de relação no prisma)
+            }
+        });
     }
 
     async getDownloadUrl(tenantId: string, id: string) {
@@ -99,5 +179,20 @@ export class DocumentsService {
             signedUrl: data.signedUrl,
             filename: document.filename,
         }
+    }
+
+    async toggleShare(tenantId: string, id: string, isSharedWithClient: boolean) {
+        const document = await this.prisma.document.findFirst({
+            where: { id, tenantId },
+        })
+
+        if (!document) {
+            throw new NotFoundException('Documento não encontrado.')
+        }
+
+        return this.prisma.document.update({
+            where: { id },
+            data: { isSharedWithClient },
+        })
     }
 }

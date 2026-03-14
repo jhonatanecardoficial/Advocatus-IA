@@ -15,6 +15,9 @@ import { BillingModule } from './billing/billing.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AiModule } from './ai/ai.module';
 import { AuditModule } from './audit/audit.module';
+import { PortalModule } from './portal/portal.module';
+import { ReportsModule } from './reports/reports.module';
+import { QesModule } from './qes/qes.module';
 
 @Module({
     imports: [
@@ -54,8 +57,11 @@ import { AuditModule } from './audit/audit.module';
         NotificationsModule,
         AiModule,
         AuditModule,
-        // TODO Fase 2: AiModule, SignaturesModule
-        // TODO Fase 3: ReportsModule, JurimetricsModule, ClientPortalModule
+        PortalModule,
+        ReportsModule,
+        QesModule,
+        // TODO Fase 2: SignaturesModule
+        // TODO Fase 3: JurimetricsModule
     ],
 })
 export class AppModule { }

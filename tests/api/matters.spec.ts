@@ -95,6 +95,10 @@ test.describe.serial('Matters API', () => {
             }
         });
 
+        if (response.status() !== 200) {
+            console.log("Matters PUT Error:", await response.text());
+        }
+
         expect(response.status()).toBe(200);
         const data = await response.json();
         expect(data.title).toBe(newTitle);

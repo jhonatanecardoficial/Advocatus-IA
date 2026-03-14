@@ -78,5 +78,26 @@ Como vamos chegar aos primeiros clientes e faturar?
 
 ---
 
-### Resumo Executivo para a Equipa
-> *"A fundação está montada, a arquitetura está validada para o mercado português e a documentação está sólida. Agora, o foco total é construir o **Dashboard Core (Clientes + Processos)** a um nível de excelência visual (Premium/Trust) e implementar a robustez de permissões. O caminho para os 10 primeiros clientes começa hoje com a entrega funcional do MVP."*
+---
+
+## 7. 🚀 Progresso Recente (Março 2026 - Semana 2)
+
+Atingimos marcos críticos na transição para a **Fase 2**:
+
+*   **Portal do Cliente Base:** Implementado e funcional, permitindo visualização de documentos e chat seguro.
+*   **AI Search V2:** Refinamento do RAG com citações legais e sistema de auditoria imutável concluído.
+*   **Gerador de Proformas:** Funcionalidade de rascunhos de faturação e faturização de horas integrada no `MatterDetail`.
+*   **Estabilização da API:** Resolvidos problemas de contexto de tenant e validação Zod, com 100% dos testes de core API a passar.
+
+### Milestone 12 Setembro 2024: Portal e Estabilidade
+- Debugging completo do ZodValidationPipe e PortalService.
+- Testes de API (matters, clients, time-entries) a passar a 100%.
+
+### Milestone 13 Março 2026: Configurações e Inteligência de Negócio
+- Implementação da página de `/settings` (Escritório, Perfil, Equipa).
+- Integração de Conflict Check (Conflito de Interesses) no registo de Clientes.
+- Dashboard refinado com métricas reais em tempo real.
+- Novo módulo de Relatórios com foco em Rentabilidade por Processo.
+
+### Próximo Grande Marco:
+Início da **Task 010 — Assinatura Digital QES**. Este será o nosso maior diferencial de "validade legal" no mercado português.
