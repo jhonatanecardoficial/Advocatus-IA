@@ -183,7 +183,9 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
           isBillable,
           ratePerHour
         }));
-      } catch (e) {}
+      } catch (e) {
+        console.error('Failed to parse saved timer:', e);
+      }
     } else {
        localStorage.setItem(`timer_${matterId}`, JSON.stringify({
          accumulatedSeconds: 0,

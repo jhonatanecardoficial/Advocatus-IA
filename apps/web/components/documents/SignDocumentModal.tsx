@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { X, PenTool, CheckCircle2, ShieldCheck, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import QesSignatureModal from '../qes/QesSignatureModal';
 
 interface Props {
   documentId: string;
@@ -16,9 +17,15 @@ type SignatureType = 'SES' | 'AES' | 'QES';
 export default function SignDocumentModal({ documentId, filename, onClose, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
   const [selectedType, setSelectedType] = useState<SignatureType>('AES');
+  const [showQesModule, setShowQesModule] = useState(false);
 
   const handleRequest = async () => {
+    if (selectedType === 'QES') {
+        setShowQesModule(true);
+        return;
+    }
     setLoading(true);
+    // ... resto da lógica SES/AES
     try {
       const token = localStorage.getItem('access_token');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
@@ -134,6 +141,19 @@ export default function SignDocumentModal({ documentId, filename, onClose, onSuc
           </div>
         </div>
       </div>
+
+      {showQesModule && (
+        <QesSignatureModal 
+            isOpen={showQesModule}
+            onClose={() => setShowQesModule(false)}
+            documentId={documentId}
+            filename={filename}
+            onSuccess={() => {
+                setShowQesModule(false);
+                onSuccess();
+            }}
+        />
+      )}
     </div>
   );
 }

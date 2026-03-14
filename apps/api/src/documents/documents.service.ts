@@ -63,7 +63,7 @@ export class DocumentsService {
         if (!matter) throw new NotFoundException('Processo não encontrado.')
 
         let version = 1;
-        let parentId = dto.parentVersionId;
+        const parentId = dto.parentVersionId;
 
         if (parentId) {
             const parentDoc = await this.prisma.document.findFirst({

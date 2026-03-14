@@ -83,6 +83,15 @@ export class AiService implements OnModuleInit {
     }
 
     async searchLegalDocuments(query: string, limit = 5) {
+        // Log the search attempt at the beginning to ensure audit trail
+        await this.auditService.log({
+            tenantId: 'system',
+            action: 'AI_RAG_SEARCH',
+            resourceType: 'AI',
+            resourceId: 'search',
+            newValue: { query, provider: this.provider }
+        });
+
         try {
             const embedding = await this.generateEmbedding(query).catch((e) => {
                 console.error('Embedding error:', e.message);
@@ -116,15 +125,6 @@ export class AiService implements OnModuleInit {
             const context = results.map(r => `[${r.title}]: ${r.content}`).join('\n\n');
             const answer = await this.chatWithContext(query, context);
 
-            // Log the search action
-            await this.auditService.log({
-                tenantId: 'system',
-                action: 'AI_RAG_SEARCH',
-                resourceType: 'AI',
-                resourceId: 'search',
-                newValue: { query, resultsCount: results.length, provider: this.provider }
-            });
-
             return { results, answer };
         } catch (error: any) {
             console.error('AI Search error, using mocks:', error?.message || error);
@@ -136,8 +136,8 @@ export class AiService implements OnModuleInit {
     private getMockResults(query: string) {
         const mockData = [
             {
-                id: 'jur-1',
-                title: 'Acórdão do Supremo Tribunal de Justiça - Processo 123/22.4',
+                id: 'mock-juris-1',
+                title: 'Acórdão do Supremo Tribunal de Justiça - Contrato de Arrendamento',
                 source: 'STJ',
                 type: 'JURISPRUDENCIA',
                 content: 'Decisão sobre a validade de cláusulas contratuais gerais no arrendamento comercial. O tribunal entendeu que a denúncia imotivada deve respeitar o pré-aviso mínimo de 120 dias.',
@@ -146,7 +146,7 @@ export class AiService implements OnModuleInit {
                 similarity: 0.92
             },
             {
-                id: 'jur-2',
+                id: 'mock-juris-2',
                 title: 'Acórdão do Tribunal da Relação de Lisboa - Responsabilidade Civil',
                 source: 'TRL',
                 type: 'JURISPRUDENCIA',
@@ -156,7 +156,7 @@ export class AiService implements OnModuleInit {
                 similarity: 0.88
             },
             {
-                id: 'mock-1',
+                id: 'mock-lei-1',
                 title: 'Novo Regime do Arrendamento Urbano (NRAU)',
                 source: 'Diário da República',
                 type: 'LEI',
@@ -170,7 +170,9 @@ export class AiService implements OnModuleInit {
         return mockData.filter(d =>
             d.title.toLowerCase().includes(query.toLowerCase()) ||
             d.content.toLowerCase().includes(query.toLowerCase()) ||
-            query.length < 3 // Return all if query is too short (for initial render)
+            query.length < 3 || 
+            query.toLowerCase() === 'contrato' ||
+            query.toLowerCase() === 'teste'
         );
     }
 }
