@@ -34,22 +34,29 @@ async function fetchSettingsData() {
 export default async function SettingsPage() {
   const { user, tenant } = await fetchSettingsData();
 
-  return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-2 border-navy pb-6">
-        <div>
-          <h1 className="text-5xl font-display font-black text-navy uppercase tracking-tighter flex items-center gap-4">
-            <Settings size={48} className="text-amber-500" />
-            Configurações
-          </h1>
-          <p className="text-slate-500 mt-2 font-mono text-sm uppercase tracking-widest">
-            Gestão do Workspace • {tenant?.name || "Advocatus IA"}
-          </p>
-        </div>
-      </div>
+    return (
+        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out pb-20">
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8">
+                <div>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-white/5 rounded-lg border border-white/10">
+                            <Settings className="w-5 h-5 text-slate-400" />
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em]">Sistema</span>
+                    </div>
+                    <h1 className="text-4xl font-display font-black text-white uppercase tracking-tighter leading-none">
+                        Configurações Gerais
+                    </h1>
+                    <p className="text-white/40 mt-3 font-mono text-[10px] uppercase tracking-widest flex items-center gap-2">
+                        Escritório: <span className="text-amber font-bold">{tenant?.name || "Advocatus IA"}</span> • Versão Premium 1.2.0
+                    </p>
+                </div>
+            </div>
 
-      <SettingsTabs tenant={tenant} user={user} />
-    </div>
-  );
+            <div className="glass-panel border border-white/5 bg-navy/20 backdrop-blur-xl p-1 shadow-2xl">
+                <SettingsTabs tenant={tenant} user={user} />
+            </div>
+        </div>
+    );
 }

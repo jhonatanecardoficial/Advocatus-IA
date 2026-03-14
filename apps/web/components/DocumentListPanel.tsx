@@ -27,7 +27,7 @@ export default function DocumentListPanel({ matterId, documents: initialDocument
   const [loading, setLoading] = useState<string | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<{ id: string; filename: string } | null>(null);
   const [showUploadVersion, setShowUploadVersion] = useState<{ id: string; filename: string } | null>(null);
-  const [showSignModal, setShowSignModal] = useState<{ id: string; filename: string } | null>(null);
+  const [docToSign, setDocToSign] = useState<{ id: string; filename: string } | null>(null);
 
   const toggleShare = async (docId: string, currentStatus: boolean) => {
     setLoading(docId);
@@ -86,53 +86,69 @@ export default function DocumentListPanel({ matterId, documents: initialDocument
   };
 
   if (documents.length === 0) {
-    return <p className="text-xs text-slate-500 mb-4">Nenhum documento anexado ainda.</p>;
+    return (
+      <div className="flex flex-col items-center justify-center p-8 glass-panel border-dashed border-white/10">
+        <FileText className="w-8 h-8 text-slate-600 mb-2 opacity-20" />
+        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Sem documentos</p>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-2 mb-4">
-      {documents.map(doc => (
-        <div key={doc.id} className="flex items-center justify-between p-2 border border-slate-200 bg-slate-50 hover:border-navy transition-colors">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <FileText className="text-navy w-4 h-4 shrink-0" />
+    <div className="space-y-3 mb-4">
+      {documents.map((doc, index) => (
+        <div 
+          key={doc.id} 
+          className="flex items-center justify-between p-3 glass-panel border border-white/5 bg-white/5 hover:bg-white/10 transition-all group animate-reveal"
+          style={{ animationDelay: `${index * 50}ms` }}
+        >
+          <div className="flex items-center gap-4 overflow-hidden">
+            <div className="p-2 bg-navy-600/50 rounded-lg group-hover:bg-amber/20 transition-colors">
+              <FileText className="text-amber w-4 h-4 shrink-0" />
+            </div>
             <div className="flex flex-col truncate">
-              <span className="text-xs font-bold text-navy truncate" title={doc.filename}>{doc.filename}</span>
-              <span className="text-[10px] text-slate-500">{new Date(doc.createdAt).toLocaleDateString('pt-PT')}</span>
+              <span className="text-xs font-bold text-white truncate group-hover:text-amber transition-colors" title={doc.filename}>
+                {doc.filename}
+              </span>
+              <span className="text-[10px] text-slate-500 uppercase tracking-widest font-medium">
+                {new Date(doc.createdAt).toLocaleDateString('pt-PT')}
+              </span>
             </div>
           </div>
           
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => toggleShare(doc.id, !!doc.isSharedWithClient)}
               disabled={loading === doc.id}
-              className={`flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider border transition-colors ${
+              className={`badge-premium flex items-center gap-1.5 transition-all ${
                 doc.isSharedWithClient 
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' 
-                  : 'bg-white text-slate-500 border-slate-300 hover:bg-slate-100'
+                  ? 'badge-success hover:opacity-80' 
+                  : 'border border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
               }`}
               title={doc.isSharedWithClient ? "Visível no Portal" : "Não visível no Portal"}
             >
               <Globe className="w-3 h-3" />
-              {doc.isSharedWithClient ? 'Partilhado' : 'Partilhar'}
+              <span className="hidden sm:inline">{doc.isSharedWithClient ? 'Partilhado' : 'Partilhar'}</span>
             </button>
+            <div className="h-4 w-[1px] bg-white/5 mx-1" />
             <button
               onClick={() => setSelectedDoc({ id: doc.id, filename: doc.filename })}
-              title="Histórico de Versões"
-              className="p-1 text-slate-400 hover:text-amber-500 transition-colors"
+              title="Histórico"
+              className="p-1.5 text-slate-400 hover:text-amber transition-all hover:scale-110"
             >
               <History className="w-4 h-4" />
             </button>
             <button
-              onClick={() => setShowSignModal({ id: doc.id, filename: doc.filename })}
-              title="Solicitar Assinatura"
-              className={`p-1 transition-colors ${doc.signatureStatus === 'SIGNED' ? 'text-emerald-500' : doc.signatureStatus === 'PENDING' ? 'text-amber-500 animate-pulse' : 'text-slate-400 hover:text-navy'}`}
+              onClick={() => setDocToSign({ id: doc.id, filename: doc.filename })}
+              title="Assinatura"
+              className={`p-1.5 transition-all hover:scale-110 ${doc.signatureStatus === 'SIGNED' ? 'text-emerald-400' : doc.signatureStatus === 'PENDING' ? 'text-amber animate-pulse' : 'text-slate-400 hover:text-white'}`}
             >
               <PenTool className="w-4 h-4" />
             </button>
             <button
               onClick={() => handleDownload(doc.id)}
-              title="Descarregar"
-              className="p-1 text-slate-400 hover:text-navy transition-colors"
+              title="Download"
+              className="p-1.5 text-slate-400 hover:text-white transition-all hover:scale-110"
             >
               <Download className="w-4 h-4" />
             </button>
@@ -175,13 +191,13 @@ export default function DocumentListPanel({ matterId, documents: initialDocument
         </div>
       )}
 
-      {showSignModal && (
+      {docToSign && (
         <SignDocumentModal
-          documentId={showSignModal.id}
-          filename={showSignModal.filename}
-          onClose={() => setShowSignModal(null)}
+          documentId={docToSign.id}
+          filename={docToSign.filename}
+          onClose={() => setDocToSign(null)}
           onSuccess={() => {
-            setShowSignModal(null);
+            setDocToSign(null);
             toast.success("Solicitação de assinatura enviada!");
           }}
         />

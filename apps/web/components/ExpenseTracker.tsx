@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { DollarSign, Plus, X } from 'lucide-react';
+import { Plus, X, Calendar, Tag, Receipt } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Expense {
     id: string;
@@ -44,7 +45,6 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
     const [allExpenses, setAllExpenses] = useState<Expense[]>(expenses);
     const [tasks, setTasks] = useState<Task[]>([]);
 
-    // Carregar tarefas do processo
     useEffect(() => {
         async function loadTasks() {
             try {
@@ -104,7 +104,6 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
             setAllExpenses(updated);
             onExpensesChange?.(updated);
 
-            // Reset
             setAmount(0);
             setDescription('');
             setCategory('OUTRO');
@@ -143,141 +142,189 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
     const totalAmount = allExpenses.reduce((sum, e) => sum + parseFloat(String(e.amount || 0)), 0);
 
     return (
-        <div className="space-y-4">
-            {/* Title/Icon Section */}
-            <div className="flex items-center gap-2 mb-1">
-                <DollarSign className="w-5 h-5 text-navy" />
-                <h3 className="font-bold text-navy uppercase tracking-widest text-sm">Despesas e Encargos</h3>
-            </div>
+        <div className="space-y-6">
+            {/* Header/Summary Area */}
+            <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="glass-panel p-8 relative overflow-hidden bg-green-500/5 group"
+            >
+                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <Receipt size={120} className="text-green-400" />
+                </div>
+                
+                <div className="flex flex-col md:flex-row justify-between items-center gap-6 relative z-10">
+                    <div className="text-center md:text-left">
+                        <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-1">Total de Despesas Acumuladas</h3>
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-5xl font-display font-black text-white leading-none">
+                                €{totalAmount.toLocaleString('pt-PT', { minimumFractionDigits: 0 })}
+                            </span>
+                            <span className="text-sm font-bold text-green-400/60 uppercase">Efectivas</span>
+                        </div>
+                    </div>
+                    
+                    <div className="flex flex-col items-center md:items-end">
+                        <span className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-black text-white/40 uppercase tracking-widest">
+                            {allExpenses.length} REGISTOS
+                        </span>
+                    </div>
+                </div>
+            </motion.div>
 
             {/* Expense Form */}
-            <div className="bg-white border-2 border-navy p-4 space-y-3">
-                <div>
-                    <label className="block text-xs font-bold uppercase text-navy mb-2">Descrição</label>
+            <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="glass-panel p-6 space-y-4"
+            >
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Descrição do Encargo</label>
                     <input
                         type="text"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="Ex: Pagamento de taxa de justiça, custas..."
-                        className="w-full border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:border-navy"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all placeholder:text-slate-600 font-medium"
                     />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <label className="block text-xs font-bold uppercase text-navy mb-2">Categoria</label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Categoria</label>
                         <select
                             value={category}
                             onChange={(e) => setCategory(e.target.value)}
-                            className="w-full border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:border-navy"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all appearance-none cursor-pointer"
                         >
                             {CATEGORIES.map((cat) => (
-                                <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                <option key={cat.value} value={cat.value} className="bg-navy">{cat.label}</option>
                             ))}
                         </select>
                     </div>
-                    <div>
-                        <label className="block text-xs font-bold uppercase text-navy mb-2">Valor (€)</label>
-                        <input
-                            type="number"
-                            value={amount}
-                            onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-                            min={0}
-                            step="0.01"
-                            className="w-full border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:border-navy"
-                        />
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Valor (€)</label>
+                        <div className="relative">
+                            <input
+                                type="number"
+                                value={amount}
+                                onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+                                min={0}
+                                step="0.01"
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all pl-8"
+                            />
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-400 font-bold text-xs">€</span>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Data</label>
+                        <div className="relative">
+                            <input
+                                type="date"
+                                value={date}
+                                onChange={(e) => setDate(e.target.value)}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all pr-10"
+                            />
+                            <Calendar size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                        </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <label className="block text-xs font-bold uppercase text-navy mb-2">Data</label>
-                        <input
-                            type="date"
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                            className="w-full border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:border-navy"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold uppercase text-navy mb-2">Tarefa (Opcional)</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Tarefa Associada (Opcional)</label>
                         <select
                             value={taskId}
                             onChange={(e) => setTaskId(e.target.value)}
-                            className="w-full border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:border-navy"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all appearance-none cursor-pointer"
                         >
-                            <option value="">Nenhuma tarefa</option>
+                            <option value="" className="bg-navy">Nenhuma tarefa</option>
                             {tasks.map((task) => (
-                                <option key={task.id} value={task.id}>{task.title}</option>
+                                <option key={task.id} value={task.id} className="bg-navy">{task.title}</option>
                             ))}
                         </select>
                     </div>
-                </div>
-
-                <div className="flex items-center gap-2 py-1">
-                    <input
-                        type="checkbox"
-                        id="billable-expense"
-                        checked={isBillable}
-                        onChange={(e) => setIsBillable(e.target.checked)}
-                        className="w-4 h-4"
-                    />
-                    <label htmlFor="billable-expense" className="text-xs font-bold uppercase text-navy cursor-pointer">Faturável ao cliente</label>
+                    <div className="flex items-end pb-3">
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                             <div className={`w-10 h-6 rounded-full p-1 transition-all ${isBillable ? 'bg-green-500' : 'bg-white/10'}`}>
+                                <div className={`w-4 h-4 rounded-full bg-navy transition-all ${isBillable ? 'translate-x-4' : 'translate-x-0'}`} />
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={isBillable}
+                                onChange={(e) => setIsBillable(e.target.checked)}
+                                className="hidden"
+                            />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white transition-colors">Faturável ao Cliente</span>
+                        </label>
+                    </div>
                 </div>
 
                 <button
                     onClick={saveExpense}
                     disabled={loading || amount <= 0}
-                    className="w-full px-4 py-2 bg-navy text-white font-bold rounded hover:bg-amber-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-xl text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-green-500 hover:text-navy hover:border-green-500 transition-all disabled:opacity-30 disabled:hover:bg-white/5 flex items-center justify-center gap-2"
                 >
-                    <Plus className="w-4 h-4" /> Registar Despesa
+                    {loading ? 'A Gravar...' : (
+                        <>
+                            <Plus size={14} /> Registar Nova Despesa
+                        </>
+                    )}
                 </button>
-            </div>
-
-            {/* Summary Area */}
-            <div className="bg-amber-50 border-2 border-amber-300 p-4">
-                <div className="flex justify-between items-center mb-1">
-                    <h3 className="text-sm font-bold uppercase text-amber-900">Total Despesas</h3>
-                    <span className="text-xl font-black text-navy">€{totalAmount.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</span>
-                </div>
-                <p className="text-[10px] text-amber-700 uppercase font-bold tracking-wider">{allExpenses.length} registos efetuados</p>
-            </div>
+            </motion.div>
 
             {/* History List */}
-            {allExpenses.length > 0 && (
-                <div className="bg-white border-2 border-navy p-4">
-                    <h3 className="text-sm font-bold uppercase text-navy mb-3">Histórico de Despesas</h3>
-                    <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                        {allExpenses.map((expense) => (
-                            <div
-                                key={expense.id}
-                                className="group flex items-center justify-between p-3 bg-slate-50 border border-slate-200 hover:border-navy transition-colors rounded text-sm"
-                            >
-                                <div className="flex-1 min-w-0 mr-2">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-[10px] font-bold bg-navy text-white px-1.5 py-0.5 rounded leading-none uppercase">
-                                            {CATEGORIES.find(c => c.value === expense.category)?.label || expense.category}
-                                        </span>
-                                        <span className="text-xs font-bold text-navy">€{parseFloat(String(expense.amount)).toFixed(2)}</span>
-                                    </div>
-                                    <p className="text-xs text-navy font-medium truncate">{expense.description}</p>
-                                    <p className="text-[10px] text-slate-500 mt-1">
-                                        {new Date(expense.date).toLocaleDateString('pt-PT')} {expense.billable ? '• Faturável' : ''}
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => deleteExpense(expense.id)}
-                                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors rounded"
-                                    disabled={loading}
-                                    title="Eliminar despesa"
+            <AnimatePresence>
+                {allExpenses.length > 0 && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="space-y-4"
+                    >
+                         <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] px-2">Histórico de Custos</h3>
+                        
+                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 no-scrollbar">
+                            {allExpenses.map((expense, idx) => (
+                                <motion.div
+                                    key={expense.id}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    className="group flex items-center justify-between p-4 glass-panel border border-white/5 bg-white/2 hover:bg-white/5 transition-all"
                                 >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+                                    <div className="flex-1 min-w-0 mr-4">
+                                        <div className="flex items-center gap-3 mb-1">
+                                            <span className="px-2 py-0.5 rounded bg-navy-600/50 text-[10px] font-black border border-white/5 text-amber uppercase tracking-wider">
+                                                {CATEGORIES.find(c => c.value === expense.category)?.label || expense.category}
+                                            </span>
+                                            <span className="text-sm font-black text-white">€{parseFloat(String(expense.amount)).toFixed(2)}</span>
+                                        </div>
+                                        <p className="text-xs text-slate-400 font-medium truncate">{expense.description}</p>
+                                        <div className="flex items-center gap-3 mt-1.5 opacity-60">
+                                            <span className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1.5">
+                                                <Calendar size={10} /> {new Date(expense.date).toLocaleDateString('pt-PT')}
+                                            </span>
+                                            {expense.billable && (
+                                                <span className="text-[10px] font-bold text-green-400 uppercase flex items-center gap-1.5">
+                                                    <Tag size={10} /> Faturável
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => deleteExpense(expense.id)}
+                                        className="p-2 text-slate-600 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                        disabled={loading}
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

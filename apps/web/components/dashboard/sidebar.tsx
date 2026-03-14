@@ -1,15 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, FileText, Users, Calendar, Settings, ChevronLeft, ChevronRight, LogOut, Search, Wallet } from 'lucide-react'
 import { useLogout } from '@/context/logout-context'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export function Sidebar() {
     const [isExpanded, setIsExpanded] = useState(true)
+    const [isMounted, setIsMounted] = useState(false)
     const pathname = usePathname()
     const { openLogoutModal } = useLogout()
+
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
     const navItems = [
         { icon: LayoutDashboard, label: 'Painel Central', href: '/dashboard' },
@@ -17,7 +23,7 @@ export function Sidebar() {
         { icon: Users, label: 'Cadastro de Clientes', href: '/clients' },
         { icon: Wallet, label: 'Faturação', href: '/billing' },
         { icon: Search, label: 'Pesquisa Jurídica IA', href: '/ai-search' },
-        { icon: Calendar, label: 'Prazos & Agenda', href: '/dashboard' }, // Links para o dashboard por enquanto
+        { icon: Calendar, label: 'Prazos & Agenda', href: '/tasks' },
         { icon: Settings, label: 'Definições do Escritório', href: '/settings' },
     ]
 
@@ -30,38 +36,56 @@ export function Sidebar() {
     }
 
     return (
-        <div className={`${isExpanded ? 'w-64' : 'w-20'} bg-[#0F1D3A] text-white border-r border-[#1a2b4c] transition-all duration-200 flex flex-col font-body`}>
+        <motion.div 
+            animate={{ width: isExpanded ? 256 : 80 }}
+            className="glass-panel border-r border-white/5 flex flex-col font-body h-full sticky top-0 left-0 z-50 bg-navy/20 backdrop-blur-xl shrink-0"
+        >
             {/* Header Area */}
-            <div className="h-16 border-b border-[#1a2b4c] flex items-center justify-between px-4">
+            <div className="h-20 flex items-center justify-between px-4 border-b border-white/5 overflow-hidden">
                 <Link
                     href="/dashboard"
                     onClick={handleLogoClick}
                     className="flex-1 flex items-center h-full group transition-all"
                     suppressHydrationWarning
                 >
-                    {isExpanded && (
-                        <div className="flex items-center gap-3 overflow-hidden">
-                            <div className="w-8 h-8 bg-amber flex items-center justify-center text-[#0F1D3A] font-display font-bold shadow-sm shrink-0 group-hover:scale-110 transition-transform">A</div>
-                            <span className="font-display font-bold tracking-tight text-white whitespace-nowrap group-hover:text-amber transition-colors text-sm">Advocatus IA</span>
-                        </div>
-                    )}
-                    {!isExpanded && (
-                        <div className="w-8 h-8 bg-amber w-full flex items-center justify-center text-[#0F1D3A] font-display font-bold shadow-sm group-hover:scale-110 transition-transform">A</div>
-                    )}
+                    <AnimatePresence mode="wait">
+                        {isExpanded ? (
+                            <motion.div 
+                                key="expanded"
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -10 }}
+                                className="flex items-center gap-3 overflow-hidden"
+                            >
+                                <div className="w-10 h-10 bg-amber flex items-center justify-center text-navy font-display font-bold rounded-lg shadow-lg group-hover:rotate-6 transition-transform">A</div>
+                                <span className="font-display font-bold tracking-tight text-gradient whitespace-nowrap text-lg">Advocatus IA</span>
+                            </motion.div>
+                        ) : (
+                            <motion.div 
+                                key="collapsed"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="w-10 h-10 bg-amber mx-auto flex items-center justify-center text-navy font-display font-bold rounded-lg shadow-lg"
+                            >
+                                A
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </Link>
             </div>
 
-            {/* Toggle Button Container */}
-            <button
+            {/* Toggle Button */}
+            <motion.button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full py-2 bg-[#122345] hover:bg-[#1a2b4c] transition-colors border-b border-[#1a2b4c] flex justify-center text-slate-400 hover:text-white"
-                aria-label="Toggle sidebar"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="absolute -right-3 top-24 bg-amber hover:bg-white text-navy w-6 h-6 rounded-full flex items-center justify-center shadow-lg transition-all z-50"
             >
-                {isExpanded ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
-            </button>
+                {isExpanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+            </motion.button>
 
-            {/* Navigation Items */}
-            <nav className="flex-1 py-6 space-y-1 overflow-y-auto custom-scrollbar">
+            <nav className="flex-1 py-8 space-y-2 overflow-y-auto px-3 custom-scrollbar">
                 {navItems.map((item) => {
                     const Icon = item.icon
                     const isActive = pathname === item.href
@@ -71,41 +95,54 @@ export function Sidebar() {
                         <Link
                             key={item.label}
                             href={item.href}
-                            className={`flex items-center ${isExpanded ? 'px-6' : 'justify-center'} py-3 transition-all group relative ${isActive ? 'bg-[#1a2b4c] text-white' : 'text-slate-400 hover:text-white hover:bg-[#1a2b4c]/50'} ${isAiSearch ? 'hover:text-amber' : ''}`}
+                            className={`flex items-center ${isExpanded ? 'px-4' : 'justify-center'} py-3 transition-all rounded-xl relative group ${isMounted && isActive ? 'bg-amber text-navy shadow-lg shadow-amber/20' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
                             title={!isExpanded ? item.label : ''}
                         >
-                            {/* Active indicator bar - left edge */}
-                            <div className={`absolute left-0 top-0 bottom-0 w-1 bg-amber transition-all duration-300 ${isActive ? 'scale-y-100' : 'scale-y-0 group-hover:scale-y-100'}`}></div>
-
-                            <Icon size={18} className={`flex-shrink-0 transition-transform group-hover:scale-110 ${isActive ? 'text-amber' : ''}`} />
+                            <motion.div
+                                whileHover={{ scale: 1.1 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                            >
+                                <Icon size={isExpanded ? 18 : 22} className={`flex-shrink-0 ${isActive ? 'text-navy' : isAiSearch ? 'text-amber' : ''}`} />
+                            </motion.div>
 
                             {isExpanded && (
-                                <span className="ml-4 font-medium text-xs whitespace-nowrap">
+                                <motion.span 
+                                    initial={{ opacity: 0, x: -5 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="ml-4 font-semibold text-xs whitespace-nowrap"
+                                >
                                     {item.label}
-                                </span>
+                                </motion.span>
+                            )}
+                            
+                            {isActive && isExpanded && (
+                                <motion.div 
+                                    layoutId="active-indicator"
+                                    className="absolute right-2 w-1.5 h-1.5 bg-navy rounded-full"
+                                />
                             )}
                         </Link>
                     )
                 })}
             </nav>
 
-            {/* User Area Footer */}
-            <div className="border-t border-[#1a2b4c] p-4 bg-[#0a1529]">
+            {/* User Area Footer with fixed visibility */}
+            <div className="p-4 border-t border-white/10 bg-black/20 backdrop-blur-md">
                 <button
                     onClick={openLogoutModal}
-                    className={`w-full flex items-center ${isExpanded ? 'px-2' : 'justify-center'} py-2.5 text-slate-400 hover:text-white hover:bg-red-500/10 transition-all group rounded-none`}
-                    title="Terminar Sessão"
+                    className={`w-full flex items-center ${isExpanded ? 'px-4' : 'justify-center'} py-3 text-white hover:text-red-400 hover:bg-red-500/10 transition-all rounded-xl group border border-white/10 hover:border-red-500/40 shadow-lg`}
                 >
-                    <LogOut size={18} className="flex-shrink-0 group-hover:-translate-x-1 transition-transform" />
-                    {isExpanded && <span className="ml-4 font-medium text-xs">Terminar Sessão</span>}
+                    <LogOut size={18} className="flex-shrink-0 group-hover:-translate-x-1 transition-transform text-red-500" />
+                    {isExpanded && <span className="ml-4 font-black text-xs uppercase tracking-widest text-white brightness-125">Sair do Sistema</span>}
                 </button>
                 {isExpanded && (
-                    <div className="mt-4 px-2 text-[10px] text-slate-600 font-mono tracking-tighter opacity-50 italic">
-                        BUILD v1.0.0-PILOT
+                    <div className="mt-4 px-4 text-[10px] text-slate-400 font-mono tracking-widest opacity-60 uppercase flex items-center gap-2">
+                        <div className="w-1 h-1 bg-amber rounded-full animate-pulse" />
+                        v1.2.0 PREMIUM
                     </div>
                 )}
             </div>
-        </div>
+        </motion.div>
     )
 }
 

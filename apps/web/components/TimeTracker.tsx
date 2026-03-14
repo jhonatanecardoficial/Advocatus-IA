@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Play, Pause, X, Plus } from 'lucide-react';
+import { Play, Pause, X, Clock, Save } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface TimeEntry {
   id: string;
@@ -35,7 +36,6 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
   const [taskId, setTaskId] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [allEntries, setAllEntries] = useState<TimeEntry[]>(entries);
-  // State for initial load completion
   const [isLoaded, setIsLoaded] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -96,7 +96,6 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
 
     loadFromStorage();
 
-    // Sync across tabs
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === `timer_${matterId}`) {
         loadFromStorage();
@@ -140,7 +139,6 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
     let data = savedTimer ? JSON.parse(savedTimer) : { accumulatedSeconds: 0 };
     
     if (newIsRunning) {
-      // Start
       data = {
         ...data,
         isRunning: true,
@@ -151,7 +149,6 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
         lastUpdated: now
       };
     } else {
-      // Pause
       const elapsed = data.startTime ? Math.floor((now - data.startTime) / 1000) : 0;
       data = {
         ...data,
@@ -174,7 +171,6 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
     setDescription('');
   };
 
-  // Sync description and other fields to storage when they change
   useEffect(() => {
     if (!isLoaded || !matterId) return;
     const savedTimer = localStorage.getItem(`timer_${matterId}`);
@@ -247,10 +243,10 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
       if (!res.ok) throw new Error('Falha ao gravar tempo');
 
       const newEntry = await res.json();
-      setAllEntries([newEntry, ...allEntries]);
-      onEntriesChange?.([newEntry, ...allEntries]);
+      const updated = [newEntry, ...allEntries];
+      setAllEntries(updated);
+      onEntriesChange?.(updated);
 
-      // Reset
       localStorage.removeItem(`timer_${matterId}`);
       setSeconds(0);
       setDescription('');
@@ -291,77 +287,106 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
   const totalEntryHours = allEntries.reduce((sum, e) => sum + parseFloat(String(e.hours || 0)), 0);
 
   return (
-    <div className="space-y-4">
-      {/* Timer Display */}
-      <div className="bg-gradient-to-br from-navy to-slate-800 text-white p-6 rounded border-2 border-amber-500">
-        <div className="text-center">
-          <div className="text-4xl font-mono font-bold mb-4">{formatTime(seconds)}</div>
-          <p className="text-amber-300 text-sm mb-4">{getHours(seconds)} horas</p>
-          <div className="flex gap-2 justify-center">
+    <div className="space-y-6">
+      {/* Timer Display - Glassmorphism */}
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-panel p-8 relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+            <Clock size={120} className={isTimerRunning ? 'animate-spin-slow text-amber' : 'text-white'} />
+        </div>
+        
+        <div className="text-center relative z-10">
+          <div className="text-6xl font-display font-black text-white mb-2 tracking-tighter">
+            {formatTime(seconds)}
+          </div>
+          <div className="flex items-center justify-center gap-2 mb-8">
+              <span className="h-2 w-2 rounded-full bg-amber animate-pulse" />
+              <p className="text-amber/80 text-[10px] font-black uppercase tracking-[0.2em]">{getHours(seconds)} Horas Acumuladas</p>
+          </div>
+          
+          <div className="flex gap-4 justify-center">
             <button
               onClick={toggleTimer}
-              className="px-4 py-2 bg-amber-500 text-navy font-bold rounded hover:bg-amber-600 flex items-center gap-2"
+              className={`px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center gap-2 shadow-xl ${
+                isTimerRunning 
+                  ? 'bg-red-500/20 text-red-500 border border-red-500/30 hover:bg-red-500/30 shadow-red-500/10' 
+                  : 'bg-amber text-navy hover:scale-105 active:scale-95 shadow-amber/20'
+              }`}
             >
-              {isTimerRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-              {isTimerRunning ? 'Parar' : 'Iniciar'}
+              {isTimerRunning ? <Pause size={14} /> : <Play size={14} />}
+              {isTimerRunning ? 'Pausar' : 'Iniciar'}
             </button>
             <button
               onClick={resetTimer}
-              className="px-4 py-2 bg-slate-600 text-white font-bold rounded hover:bg-slate-700 flex items-center gap-2"
+              className="px-6 py-3 rounded-xl bg-white/5 text-white/60 border border-white/10 font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
             >
-              <X className="w-4 h-4" /> Reset
+              <X size={14} /> Reset
             </button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Entry Form */}
-      <div className="bg-white border-2 border-navy p-4 space-y-3">
-        <div>
-          <label className="block text-xs font-bold uppercase text-navy mb-2">Descrição da atividade</label>
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="glass-panel p-6 space-y-4"
+      >
+        <div className="space-y-2">
+          <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Atividade Realizada</label>
           <input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Ex: Análise de documentação, redação de petição..."
-            className="w-full border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:border-navy"
+            placeholder="O que está a fazer agora?"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all placeholder:text-slate-600 font-medium"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-bold uppercase text-navy mb-2">Valor/hora (€)</label>
-            <input
-              type="number"
-              value={ratePerHour}
-              onChange={(e) => setRatePerHour(parseInt(e.target.value) || 0)}
-              min={0}
-              className="w-full border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:border-navy"
-            />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Valor por Hora (€)</label>
+            <div className="relative">
+                <input
+                    type="number"
+                    value={ratePerHour}
+                    onChange={(e) => setRatePerHour(parseInt(e.target.value) || 0)}
+                    min={0}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all pl-8"
+                />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs text-amber font-bold">€</span>
+            </div>
           </div>
-          <div className="flex items-end">
-            <label className="flex items-center gap-2 cursor-pointer">
+          <div className="flex items-end pb-3">
+            <label className="flex items-center gap-3 cursor-pointer group">
+              <div className={`w-10 h-6 rounded-full p-1 transition-all ${isBillable ? 'bg-amber' : 'bg-white/10'}`}>
+                <div className={`w-4 h-4 rounded-full bg-navy transition-all ${isBillable ? 'translate-x-4' : 'translate-x-0'}`} />
+              </div>
               <input
                 type="checkbox"
                 checked={isBillable}
                 onChange={(e) => setIsBillable(e.target.checked)}
-                className="w-4 h-4"
+                className="hidden"
               />
-              <span className="text-xs font-bold uppercase text-navy">Faturável</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white transition-colors">Faturável ao Cliente</span>
             </label>
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-bold uppercase text-navy mb-2">Tarefa (Opcional)</label>
+        <div className="space-y-2">
+          <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Tarefa Relacionada (Opcional)</label>
           <select
             value={taskId}
             onChange={(e) => setTaskId(e.target.value)}
-            className="w-full border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:border-navy"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all appearance-none cursor-pointer"
           >
-            <option value="">Nenhuma tarefa</option>
+            <option value="" className="bg-navy">Nenhuma tarefa associada</option>
             {tasks.map((task) => (
-              <option key={task.id} value={task.id}>{task.title}</option>
+              <option key={task.id} value={task.id} className="bg-navy">{task.title}</option>
             ))}
           </select>
         </div>
@@ -369,49 +394,70 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
         <button
           onClick={saveTimeEntry}
           disabled={loading || seconds === 0}
-          className="w-full px-4 py-2 bg-green-600 text-white font-bold rounded hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-xl text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-amber hover:text-navy hover:border-amber transition-all disabled:opacity-30 disabled:hover:bg-white/5 flex items-center justify-center gap-2"
         >
-          <Plus className="w-4 h-4" /> Registar tempo
+          {loading ? 'A Gravar...' : (
+              <>
+                <Save size={14} /> Gravar No Histórico
+              </>
+          )}
         </button>
-      </div>
+      </motion.div>
 
-      {/* Summary */}
-      <div className="bg-slate-50 border-2 border-slate-300 p-4">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-sm font-bold uppercase text-navy">Total de tempo registado</h3>
-          <span className="text-2xl font-bold text-navy">{totalEntryHours.toFixed(2)}h</span>
-        </div>
-        <p className="text-xs text-slate-500">{allEntries.length} registos</p>
-      </div>
-
-      {/* Entries List */}
-      {allEntries.length > 0 && (
-        <div className="bg-white border-2 border-navy p-4">
-          <h3 className="text-sm font-bold uppercase text-navy mb-3">Histórico</h3>
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {allEntries.map((entry) => (
-              <div
-                key={entry.id}
-                className="flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded text-sm"
-              >
-                <div className="flex-1">
-                  <p className="font-bold text-navy">{entry.description}</p>
-                  <p className="text-xs text-slate-500">
-                    {entry.hours}h {entry.rate_per_hour ? `@ €${entry.rate_per_hour}/h` : ''} • {new Date(entry.activity_date).toLocaleDateString('pt-PT')}
-                  </p>
-                </div>
-                <button
-                  onClick={() => deleteEntry(entry.id)}
-                  className="ml-2 p-1 text-red-600 hover:bg-red-50 rounded"
-                  disabled={loading}
-                >
-                  <X className="w-4 h-4" />
-                </button>
+      {/* History List */}
+      <AnimatePresence>
+          {allEntries.length > 0 && (
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-4"
+            >
+              <div className="flex justify-between items-center px-2">
+                  <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">Histórico Recente</h3>
+                  <div className="flex items-center gap-2">
+                       <span className="text-[10px] font-black text-amber uppercase">{totalEntryHours.toFixed(2)}H</span>
+                       <span className="text-[10px] font-bold text-slate-700 uppercase">Totais</span>
+                  </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+              
+              <div className="space-y-3">
+                {allEntries.map((entry, idx) => (
+                  <motion.div
+                    key={entry.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="flex items-center justify-between p-4 glass-panel border border-white/5 bg-white/2 hover:bg-white/5 transition-all group"
+                  >
+                    <div className="flex-1 min-w-0 mr-4">
+                      <p className="text-sm font-bold text-white group-hover:text-amber transition-colors truncate">{entry.description}</p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-[10px] font-mono text-slate-500 flex items-center gap-1">
+                            <Clock size={10} /> {entry.hours}h
+                        </span>
+                        {entry.rate_per_hour && (
+                            <span className="text-[10px] font-mono text-slate-600">
+                                @ €{entry.rate_per_hour}/h
+                            </span>
+                        )}
+                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+                            • {new Date(entry.activity_date).toLocaleDateString('pt-PT')}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => deleteEntry(entry.id)}
+                      className="p-2 text-slate-600 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                      disabled={loading}
+                    >
+                      <X size={14} />
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+      </AnimatePresence>
     </div>
   );
 }

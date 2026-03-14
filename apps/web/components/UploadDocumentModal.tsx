@@ -56,31 +56,33 @@ export default function UploadDocumentModal({ matterId, parentVersionId, buttonT
         <>
             <button
                 onClick={() => setIsOpen(true)}
-                className={`flex items-center gap-2 px-4 py-2 bg-navy text-white text-xs font-bold uppercase tracking-wider hover:bg-amber-600 transition-colors ${parentVersionId ? 'hidden' : ''}`}
+                className={`btn-premium btn-premium-primary text-[10px] uppercase w-full flex items-center justify-center gap-2 ${parentVersionId ? 'hidden' : ''}`}
             >
                 <Upload size={14} /> {buttonText || 'Adicionar Ficheiro'}
             </button>
 
             {isOpen && (
-                <div className="fixed inset-0 bg-navy/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white border-4 border-navy w-full max-w-md shadow-[8px_8px_0px_#D4A853] animate-in zoom-in-95 duration-200">
-                        <div className="bg-navy p-4 flex justify-between items-center">
-                            <h2 className="text-white font-display font-black uppercase tracking-widest text-sm flex items-center gap-2">
-                                <Upload size={16} className="text-amber-400" />
+                <div className="fixed inset-0 bg-navy/80 backdrop-blur-xl z-50 flex items-center justify-center p-4 animate-in fade-in duration-500">
+                    <div className="glass-panel border-white/10 w-full max-w-md shadow-glow overflow-hidden animate-reveal">
+                        <div className="bg-white/5 p-5 flex justify-between items-center border-b border-white/5">
+                            <h2 className="text-white font-display font-black uppercase tracking-widest text-sm flex items-center gap-3">
+                                <div className="p-2 bg-amber/20 rounded-lg">
+                                    <Upload size={16} className="text-amber" />
+                                </div>
                                 {parentVersionId ? 'Upload de Nova Versão' : 'Upload de Documento'}
                             </h2>
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="text-white hover:text-amber transition-colors"
+                                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white transition-all"
                             >
                                 <X size={20} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                        <form onSubmit={handleSubmit} className="p-8 space-y-8">
                             <div
                                 onClick={() => fileInputRef.current?.click()}
-                                className={`border-2 border-dashed p-8 flex flex-col items-center justify-center cursor-pointer transition-all ${file ? 'border-green-500 bg-green-50' : 'border-slate-300 hover:border-navy bg-slate-50'}`}
+                                className={`border-2 border-dashed p-10 flex flex-col items-center justify-center cursor-pointer transition-all rounded-2xl group ${file ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-white/10 hover:border-amber/50 bg-white/5'}`}
                             >
                                 <input
                                     type="file"
@@ -91,26 +93,30 @@ export default function UploadDocumentModal({ matterId, parentVersionId, buttonT
 
                                 {file ? (
                                     <>
-                                        <CheckCircle2 className="text-green-500 mb-2" size={32} />
-                                        <span className="text-sm font-bold text-navy text-center truncate max-w-full">
+                                        <div className="p-4 bg-emerald-500/20 rounded-full mb-3">
+                                            <CheckCircle2 className="text-emerald-400" size={32} />
+                                        </div>
+                                        <span className="text-sm font-bold text-white text-center truncate max-w-full">
                                             {file.name}
                                         </span>
-                                        <span className="text-[10px] text-slate-500 uppercase mt-1">
+                                        <span className="text-[10px] text-slate-500 uppercase mt-1 tracking-widest">
                                             {(file.size / 1024 / 1024).toFixed(2)} MB
                                         </span>
                                     </>
                                 ) : (
                                     <>
-                                        <Upload className="text-slate-300 mb-2" size={32} />
-                                        <span className="text-sm font-bold text-slate-500 uppercase tracking-tighter">Clique para selecionar</span>
-                                        <span className="text-[10px] text-slate-400 mt-1 italic">PDF, DOCX, PNG até 10MB</span>
+                                        <div className="p-4 bg-white/5 rounded-full mb-3 group-hover:bg-amber/10 transition-colors">
+                                            <Upload className="text-slate-500 group-hover:text-amber" size={32} />
+                                        </div>
+                                        <span className="text-sm font-bold text-slate-400 uppercase tracking-tighter group-hover:text-white transition-colors">Clique para selecionar</span>
+                                        <span className="text-[10px] text-slate-600 mt-1 italic font-medium">PDF, DOCX, PNG até 10MB</span>
                                     </>
                                 )}
                             </div>
 
                             <div className="space-y-4">
-                                <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 text-amber-900 text-[10px] uppercase font-bold leading-tight">
-                                    <AlertCircle size={16} className="shrink-0" />
+                                <div className="flex items-start gap-3 p-4 bg-amber/5 border border-amber/20 text-amber/80 text-[10px] uppercase font-bold leading-tight rounded-xl">
+                                    <AlertCircle size={18} className="shrink-0 text-amber" />
                                     <p>O documento será processado pelo sistema de IA para indexação automática e pesquisa semântica.</p>
                                 </div>
                             </div>
@@ -119,22 +125,25 @@ export default function UploadDocumentModal({ matterId, parentVersionId, buttonT
                                 <button
                                     type="button"
                                     onClick={() => setIsOpen(false)}
-                                    className="flex-1 px-4 py-3 text-xs font-bold uppercase tracking-widest text-navy bg-slate-100 hover:bg-slate-200 transition-colors"
+                                    className="btn-premium btn-premium-outline flex-1 py-4 text-xs font-bold uppercase tracking-widest"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading || !file}
-                                    className="flex-1 px-4 py-3 text-xs font-bold uppercase tracking-widest bg-navy text-white hover:bg-amber-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="btn-premium btn-premium-primary flex-1 py-4 text-xs font-bold uppercase tracking-widest disabled:opacity-30 flex items-center justify-center gap-3"
                                 >
                                     {loading ? (
                                         <>
-                                            <Loader2 size={14} className="animate-spin" />
+                                            <Loader2 size={16} className="animate-spin" />
                                             A Enviar...
                                         </>
                                     ) : (
-                                        'Submeter'
+                                        <>
+                                            <CheckCircle2 size={16} />
+                                            Submeter
+                                        </>
                                     )}
                                 </button>
                             </div>

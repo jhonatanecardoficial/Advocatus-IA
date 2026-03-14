@@ -31,10 +31,10 @@ pnpm test:web
 | 011 | Pesquisa IA (RAG) | Done | Integrated with Gemini 1.5 Flash + Supabase Vector. |
 | 012 | Logout & Logo Nav | Done | Confirmation modal + dynamic logo logic implemented. |
 | 013 | Proforma Generator | Done | Merged and validated in PR #7. |
-| --- | Console & Hydration Fixes | **In Progress** | Fixing duplicate keys and browser extension hydration errors. |
+| --- | Console & Hydration Fixes | **Done** | Fixed hydration errors in `Sidebar.tsx` and duplicate keys. |
 
 ## Notes for PR Review
 
 - Current Branch: `fix/console-errors-and-hydration` (Phase 1 stabilization).
 - CI target: lint + build + unit + API tests.
-- Status: **90% Readiness**. Remaining fixes in Console/Hydration.
+- Status: **95% Readiness**. Remaining: Final automated scan and QES kickoff.
