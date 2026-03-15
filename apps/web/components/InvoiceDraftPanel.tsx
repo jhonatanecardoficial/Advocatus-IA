@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { FileDown, Plus, ReceiptText, Percent } from "lucide-react";
+import { FileDown, Plus, ReceiptText, Percent, ShieldCheck, Clock, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -12,6 +12,9 @@ interface Invoice {
   vatRate: number | string;
   total: number | string;
   status: string;
+  isCertified: boolean;
+  hashControl?: string;
+  atcud?: string;
   createdAt: string;
 }
 
@@ -96,6 +99,33 @@ export default function InvoiceDraftPanel({ matterId }: InvoiceDraftPanelProps) 
       toast.success("Draft exportado.");
     } catch (error) {
       toast.error((error as Error).message);
+    }
+  }
+
+  async function finalizeInvoice(invoiceId: string) {
+    if (!confirm("AVISO LEGAL AT: Ao finalizar, esta fatura será assinada digitalmente e tornar-se-á IMUTÁVEL. Não poderá ser alterada ou apagada. Deseja continuar?")) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`${API_URL}/invoices/${invoiceId}/finalize`, {
+        method: "POST",
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
+
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(body?.message || "Erro ao certificar fatura.");
+      }
+
+      toast.success(`Fatura ${body.reference} certificada com sucesso!`);
+      await loadInvoices();
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -198,30 +228,65 @@ export default function InvoiceDraftPanel({ matterId }: InvoiceDraftPanelProps) 
                   transition={{ delay: idx * 0.05 }}
                   className="group flex items-center justify-between p-4 glass-panel border border-white/5 bg-white/2 hover:bg-white/5 transition-all"
                 >
-                  <div>
-                    <div className="flex items-center gap-3 mb-1">
-                      <span className="text-sm font-black text-white">{invoice.reference}</span>
-                      <span className="px-2 py-0.5 rounded bg-amber/10 text-[10px] font-black text-amber uppercase tracking-wider border border-amber/20">
-                        {invoice.status}
-                      </span>
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className={`p-3 rounded-2xl ${invoice.isCertified ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber/10 text-amber'}`}>
+                      {invoice.isCertified ? <ShieldCheck size={20} /> : <Clock size={20} />}
                     </div>
-                    <div className="flex items-center gap-3 opacity-60">
-                      <p className="text-[10px] font-bold text-slate-500 uppercase">
-                        {new Date(invoice.createdAt).toLocaleDateString("pt-PT")}
-                      </p>
-                      <span className="w-1 h-1 rounded-full bg-slate-700" />
-                      <p className="text-sm font-black text-white">
-                        €{Number(invoice.total).toLocaleString("pt-PT", { minimumFractionDigits: 2 })}
-                      </p>
+                    
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <span className="text-sm font-black text-white tracking-tight">{invoice.reference}</span>
+                        {invoice.isCertified ? (
+                          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-[9px] font-black text-emerald-500 uppercase tracking-tighter border border-emerald-500/20">
+                            <CheckCircle2 size={10} /> Certificada
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-amber/10 text-[9px] font-black text-amber uppercase tracking-tighter border border-amber/20">
+                            Proforma / Draft
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 opacity-60">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                          {new Date(invoice.createdAt).toLocaleDateString("pt-PT")}
+                        </p>
+                        <span className="w-1 h-1 rounded-full bg-slate-700" />
+                        <p className="text-sm font-black text-white">
+                          €{Number(invoice.total).toLocaleString("pt-PT", { minimumFractionDigits: 2 })}
+                        </p>
+                        {invoice.atcud && (
+                           <>
+                             <span className="w-1 h-1 rounded-full bg-slate-700" />
+                             <p className="text-[9px] font-mono text-slate-400">ATCUD: {invoice.atcud}</p>
+                           </>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => downloadDraftPdf(invoice.id)}
-                    className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all group-hover:border-amber/30"
-                    title="Exportar PDF"
-                  >
-                    <FileDown size={16} />
-                  </button>
+                  
+                  <div className="flex gap-2 ml-4">
+                    {!invoice.isCertified && (
+                      <button
+                        onClick={() => finalizeInvoice(invoice.id)}
+                        disabled={loading}
+                        className="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/20 rounded-xl text-emerald-500 hover:text-navy transition-all text-[9px] font-black uppercase tracking-widest disabled:opacity-30 flex items-center gap-2"
+                        title="Emitir Fatura Definitiva"
+                      >
+                        {loading ? "..." : (
+                          <>
+                            <ShieldCheck size={12} /> Certificar
+                          </>
+                        )}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => downloadDraftPdf(invoice.id)}
+                      className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all group-hover:border-amber/30 flex items-center justify-center"
+                      title={invoice.isCertified ? "Download Fatura" : "Download Draft"}
+                    >
+                      <FileDown size={18} />
+                    </button>
+                  </div>
                 </motion.div>
               ))}
             </div>

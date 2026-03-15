@@ -7,7 +7,7 @@ export const CreateClientSchema = z.object({
         .string()
         .regex(/^\d{9}$/, 'NIF deve ter 9 dígitos')
         .optional(),
-    email: z.string().email('Email inválido').optional(),
+    email: z.string().trim().email('Email inválido').optional(),
     phone: z.string().min(9).max(20).optional(),
     address: z.string().max(500).optional(),
     notes: z.string().max(2000).optional(),

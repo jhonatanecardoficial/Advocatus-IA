@@ -24,6 +24,7 @@ interface ExpenseTrackerProps {
     matterId: string;
     expenses?: Expense[];
     onExpensesChange?: (expenses: Expense[]) => void;
+    onRefresh?: () => void;
 }
 
 const CATEGORIES = [
@@ -34,7 +35,7 @@ const CATEGORIES = [
     { value: 'OUTRO', label: 'Outro' },
 ];
 
-export default function ExpenseTracker({ matterId, expenses = [], onExpensesChange }: ExpenseTrackerProps) {
+export default function ExpenseTracker({ matterId, expenses = [], onExpensesChange, onRefresh }: ExpenseTrackerProps) {
     const [amount, setAmount] = useState<number>(0);
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('OUTRO');
@@ -62,6 +63,30 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
             }
         }
         if (matterId) loadTasks();
+    }, [matterId]);
+
+    // Load expenses from server if none provided
+    const loadExpenses = async () => {
+        if (expenses && expenses.length > 0) return;
+        try {
+            const token = localStorage.getItem('access_token');
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+            const res = await fetch(`${API_URL}/expenses/matter/${matterId}`, {
+                headers: { Authorization: token ? `Bearer ${token}` : '' },
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setAllExpenses(data);
+            }
+        } catch (err) {
+            console.error('Erro ao carregar despesas:', err);
+        }
+    };
+
+    useEffect(() => {
+        if (matterId) {
+            loadExpenses();
+        }
     }, [matterId]);
 
     async function saveExpense() {
@@ -109,8 +134,10 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
             setCategory('OUTRO');
             setTaskId('');
             toast.success('Despesa registada com sucesso');
-        } catch (err) {
-            toast.error((err as Error).message || 'Erro ao gravar');
+            onRefresh?.();
+        } catch (err: any) {
+            console.error('Erro ao gravar despesa:', err);
+            toast.error(err.message || 'Erro ao gravar');
         } finally {
             setLoading(false);
         }
@@ -132,6 +159,7 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
             setAllExpenses(updated);
             onExpensesChange?.(updated);
             toast.success('Despesa eliminada');
+            onRefresh?.();
         } catch (err) {
             toast.error((err as Error).message || 'Erro ao eliminar');
         } finally {
@@ -303,7 +331,7 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
                                         <p className="text-xs text-slate-400 font-medium truncate">{expense.description}</p>
                                         <div className="flex items-center gap-3 mt-1.5 opacity-60">
                                             <span className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1.5">
-                                                <Calendar size={10} /> {new Date(expense.date).toLocaleDateString('pt-PT')}
+                                                <Calendar size={10} /> {expense.date ? new Date(expense.date).toLocaleDateString('pt-PT') : 'Sem data'}
                                             </span>
                                             {expense.billable && (
                                                 <span className="text-[10px] font-bold text-green-400 uppercase flex items-center gap-1.5">

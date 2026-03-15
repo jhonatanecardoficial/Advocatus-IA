@@ -28,7 +28,7 @@ export async function loginAction(data: any) {
                 path: "/",
                 maxAge: 60 * 60 * 24 * 7 // 7 days
             });
-            return { success: true };
+            return { success: true, token: result.access_token };
         }
 
         return { error: "Token não retornado pelo servidor." };
@@ -66,7 +66,7 @@ export async function registerAction(data: any) {
                 path: "/",
                 maxAge: 60 * 60 * 24 * 7
             });
-            return { success: true };
+            return { success: true, token: result.access_token };
         }
 
         return { error: "Token não retornado pelo servidor." };

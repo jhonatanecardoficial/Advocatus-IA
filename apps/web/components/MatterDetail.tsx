@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { Clock, FileText, Calendar, Wallet, User, AlertTriangle, ArrowLeft, History, DollarSign, Receipt, Info, ChevronRight } from 'lucide-react';
+import { Clock, FileText, Calendar, Wallet, User, AlertTriangle, History, DollarSign, Receipt, Info, ChevronRight, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import TimeTracker from './TimeTracker';
 import ExpenseTracker from './ExpenseTracker';
@@ -13,6 +13,7 @@ import AddTaskModal from './AddTaskModal';
 import PortalLinkButton from './PortalLinkButton';
 import DocumentListPanel from './DocumentListPanel';
 import AiDraftButton from './ai/AiDraftButton';
+import SignedDocumentsPanel from './documents/SignedDocumentsPanel';
 
 interface Matter {
   id: string;
@@ -85,7 +86,7 @@ const generateMockTimeline = (matter: Matter) => [
 export default function MatterDetail({ matter: initialMatter }: Props) {
   const [matter, setMatter] = useState(initialMatter);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'timeline' | 'fees' | 'expenses' | 'billing'>('timeline');
+  const [activeTab, setActiveTab] = useState<'timeline' | 'fees' | 'expenses' | 'billing' | 'signatures'>('timeline');
   const [form, setForm] = useState({
     title: initialMatter.title,
     type: initialMatter.type,
@@ -98,32 +99,38 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
   });
   const [loading, setLoading] = useState(false);
   const [summaries, setSummaries] = useState({ total_hours: 0, total_expenses: 0 });
-  const timeline = useMemo(() => generateMockTimeline(matter), [matter]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    async function loadSummaries() {
-      try {
-        const token = localStorage.getItem('access_token');
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
-        const headers = { Authorization: token ? `Bearer ${token}` : '' } as Record<string, string>;
+    setMounted(true);
+  }, []);
+  const timeline = useMemo(() => generateMockTimeline(matter), [matter]);
 
-        const [hoursRes, expRes] = await Promise.all([
-          fetch(`${API_URL}/time-entries/matter/${matter.id}/summary`, { headers }),
-          fetch(`${API_URL}/expenses/matter/${matter.id}/summary`, { headers }),
-        ]);
+  async function loadSummaries() {
+    try {
+      const token = localStorage.getItem('access_token');
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+      const headers = { Authorization: token ? `Bearer ${token}` : '' } as Record<string, string>;
 
-        if (hoursRes.ok && expRes.ok) {
-          const hData = await hoursRes.json();
-          const eData = await expRes.json();
-          setSummaries({
-            total_hours: hData.total_hours || 0,
-            total_expenses: eData.total_amount || 0,
-          });
-        }
-      } catch (err) {
-        console.error('Erro ao carregar resumos:', err);
+      const [hoursRes, expRes] = await Promise.all([
+        fetch(`${API_URL}/time-entries/matter/${matter.id}/summary`, { headers }),
+        fetch(`${API_URL}/expenses/matter/${matter.id}/summary`, { headers }),
+      ]);
+
+      if (hoursRes.ok && expRes.ok) {
+        const hData = await hoursRes.json();
+        const eData = await expRes.json();
+        setSummaries({
+          total_hours: hData.total_hours || 0,
+          total_expenses: eData.total_amount || 0,
+        });
       }
+    } catch (err) {
+      console.error('Erro ao carregar resumos:', err);
     }
+  }
+
+  useEffect(() => {
     if (matter.id) loadSummaries();
   }, [matter.id]);
 
@@ -180,6 +187,7 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
     { id: 'fees', label: 'Honorários', icon: DollarSign },
     { id: 'expenses', label: 'Despesas', icon: Receipt },
     { id: 'billing', label: 'Faturação', icon: Wallet },
+    { id: 'signatures', label: 'Assinaturas', icon: ShieldCheck },
   ] as const;
 
   return (
@@ -536,7 +544,7 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
                                         {event.title}
                                     </p>
                                     <span className="text-[10px] font-mono text-slate-500 bg-white/2 px-2 py-0.5 rounded">
-                                        {event.timestamp.toLocaleDateString('pt-PT')}
+                                        {mounted ? event.timestamp.toLocaleDateString('pt-PT') : ''}
                                     </span>
                                 </div>
                                 <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed max-w-xl">
@@ -548,9 +556,10 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
                         </div>
                     )}
 
-                    {activeTab === 'fees' && <TimeTracker matterId={matter.id} />}
-                    {activeTab === 'expenses' && <ExpenseTracker matterId={matter.id} />}
-                    {activeTab === 'billing' && <InvoiceDraftPanel matterId={matter.id} />}
+                    {activeTab === 'fees' && <TimeTracker key="fees" matterId={matter.id} onRefresh={loadSummaries} />}
+                    {activeTab === 'expenses' && <ExpenseTracker key="expenses" matterId={matter.id} onRefresh={loadSummaries} />}
+                    { activeTab === 'billing' && <InvoiceDraftPanel key="billing" matterId={matter.id} /> }
+                    { activeTab === 'signatures' && <SignedDocumentsPanel key="signatures" matterId={matter.id} /> }
                 </motion.div>
               </AnimatePresence>
             </div>
