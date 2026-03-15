@@ -48,7 +48,6 @@ model Tenant {
   invoiceSeries  InvoiceSeries[]
   signedDocuments SignedDocument[]
 
-
   @@map("tenants")
 }
 
