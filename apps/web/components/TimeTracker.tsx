@@ -10,8 +10,10 @@ interface TimeEntry {
   description: string;
   hours: string | number;
   rate_per_hour?: number | null;
+  ratePerHour?: number | null;
   billable: boolean;
-  activity_date: string;
+  activityDate?: string;
+  activity_date?: string;
   taskId?: string | null;
 }
 
@@ -25,9 +27,10 @@ interface TimeTrackerProps {
   totalHours?: number;
   entries?: TimeEntry[];
   onEntriesChange?: (entries: TimeEntry[]) => void;
+  onRefresh?: () => void;
 }
 
-export default function TimeTracker({ matterId, entries = [], onEntriesChange }: TimeTrackerProps) {
+export default function TimeTracker({ matterId, entries = [], onEntriesChange, onRefresh }: TimeTrackerProps) {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [description, setDescription] = useState('');
@@ -59,12 +62,35 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
     if (matterId) loadTasks();
   }, [matterId]);
 
-  // Update allEntries if entries prop changes
+  // Update allEntries if entries prop changes (Prevent infinite loop with stable check)
   useEffect(() => {
-    if (entries) {
+    if (entries && entries.length > 0) {
       setAllEntries(entries);
     }
   }, [entries]);
+
+  // Load entries from server if none provided
+  const loadEntries = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+      const res = await fetch(`${API_URL}/time-entries/matter/${matterId}`, {
+        headers: { Authorization: token ? `Bearer ${token}` : '' } as Record<string, string>,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAllEntries(data);
+      }
+    } catch (err) {
+      console.error('Erro ao carregar registos de tempo:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (matterId) {
+      loadEntries();
+    }
+  }, [matterId]);
 
   // 1. Initial Load and Synchronization
   useEffect(() => {
@@ -224,6 +250,17 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
       const token = localStorage.getItem('access_token');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const hours = parseFloat(getHours(seconds));
+      const rate = ratePerHour || 0;
+      
+      const payload = {
+        matter_id: matterId,
+        description: description.trim(),
+        hours: hours,
+        activity_date: new Date().toISOString().split('T')[0],
+        rate_per_hour: rate,
+        billable: isBillable,
+        task_id: taskId || undefined,
+      };
 
       const res = await fetch(`${API_URL}/time-entries`, {
         method: 'POST',
@@ -231,15 +268,7 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
           'Content-Type': 'application/json',
           'Authorization': token ? `Bearer ${token}` : '',
         } as Record<string, string>,
-        body: JSON.stringify({
-          matter_id: matterId,
-          description: description.trim(),
-          hours,
-          rate_per_hour: ratePerHour,
-          billable: isBillable,
-          activity_date: new Date().toISOString().split('T')[0],
-          task_id: taskId || undefined,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) throw new Error('Falha ao gravar tempo');
@@ -248,6 +277,7 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
       const updated = [newEntry, ...allEntries];
       setAllEntries(updated);
       onEntriesChange?.(updated);
+      onRefresh?.();
 
       localStorage.removeItem(`timer_${matterId}`);
       setSeconds(0);
@@ -279,6 +309,7 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
       setAllEntries(updatedEntries);
       onEntriesChange?.(updatedEntries);
       toast.success('Registo eliminado');
+      onRefresh?.();
     } catch (err) {
       toast.error((err as Error).message || 'Erro ao eliminar');
     } finally {
@@ -443,7 +474,7 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange }:
                             </span>
                         )}
                         <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
-                            • {new Date(entry.activity_date).toLocaleDateString('pt-PT')}
+                            • {entry.activityDate ? new Date(entry.activityDate).toLocaleDateString('pt-PT') : (entry.activity_date ? new Date(entry.activity_date).toLocaleDateString('pt-PT') : 'Sem data')}
                         </span>
                       </div>
                     </div>

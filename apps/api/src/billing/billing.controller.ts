@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -25,6 +26,16 @@ const CreateInvoiceDraftSchema = z.object({
   vat_rate: z.number().min(0).max(100).optional(),
   due_date: z.string().datetime().or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).optional(),
   notes: z.string().max(2000).optional(),
+});
+
+const UpdateTenantBillingSchema = z.object({
+  nif: z.string().min(9).max(9).optional(),
+  address: z.string().min(5).optional(),
+  postalCode: z.string().regex(/^\d{4}-\d{3}$/).optional(),
+  city: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().email().optional(),
+  commercialRegistration: z.string().optional(),
 });
 
 const InvoiceQuerySchema = z.object({
@@ -62,6 +73,30 @@ export class BillingController {
   @Get(':id/pdf')
   @Roles('ADVOGADO', 'SECRETARIA', 'SOCIO', 'ADMIN')
   getDraftPdf(@CurrentUser() user: RequestUser, @Param('id') id: string) {
-    return this.billingService.getDraftPdf(user.tenantId, id);
+    return this.billingService.generateInvoicePdf(user.tenantId, id);
+  }
+
+  @Post(':id/finalize')
+  @Roles('SOCIO', 'ADMIN')
+  @HttpCode(HttpStatus.OK)
+  finalizeInvoice(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+    return this.billingService.finalizeInvoice(user.tenantId, id);
+  }
+
+  @Get('export/saft')
+  @Roles('ADMIN', 'SOCIO')
+  async exportSaft(
+    @CurrentUser() user: RequestUser,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    return this.billingService.generateSaft(user.tenantId, startDate, endDate);
+  }
+
+  @Patch('tenant-details')
+  @Roles('ADMIN', 'SOCIO')
+  @UsePipes(new ZodValidationPipe(UpdateTenantBillingSchema))
+  updateTenantDetails(@CurrentUser() user: RequestUser, @Body() body: any) {
+    return this.billingService.updateTenantBillingDetails(user.tenantId, body);
   }
 }

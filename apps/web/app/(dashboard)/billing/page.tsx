@@ -1,12 +1,14 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { Wallet, ArrowRight, FileText, Calendar, TrendingUp } from "lucide-react";
+import SaftExportPanel from "@/components/SaftExportPanel";
  
 interface InvoiceRow {
   id: string;
   reference: string;
   total: number | string;
   status: string;
+  isCertified?: boolean;
   createdAt: string;
   matter?: { id: string; title: string };
   client?: { id: string; name: string };
@@ -30,9 +32,27 @@ async function fetchInvoices(): Promise<InvoiceRow[]> {
  
   return res.json();
 }
+
+async function fetchTenant(token: string) {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
+  const res = await fetch(`${API_URL}/tenants/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.data;
+}
  
 export default async function BillingPage() {
-  const invoices = await fetchInvoices();
+  const token = (await cookies()).get("access_token")?.value;
+  if (!token) return null;
+
+  const [invoices, tenant] = await Promise.all([
+    fetchInvoices(),
+    fetchTenant(token)
+  ]);
  
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
@@ -58,7 +78,10 @@ export default async function BillingPage() {
               </button>
           </div>
       </div>
- 
+
+      {/* SAF-T and Fiscal Config Section */}
+      <SaftExportPanel token={token} tenantDetails={tenant} />
+  
       {/* Table Area */}
       <div className="glass-panel border border-white/10 overflow-hidden bg-navy/20 backdrop-blur-xl">
         <div className="grid grid-cols-12 bg-white/5 border-b border-white/5 text-[9px] uppercase tracking-[0.2em] text-white/40 font-black p-4">
@@ -99,6 +122,12 @@ export default async function BillingPage() {
               <div className="col-span-3 flex items-center text-white/40 font-mono text-xs">
                 <Calendar size={12} className="mr-2 text-white/20" />
                 {new Date(invoice.createdAt).toLocaleDateString("pt-PT")}
+                {invoice.isCertified && (
+                    <div className="ml-4 flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-black text-[8px] uppercase tracking-tighter shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                        <div className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse"></div>
+                        Certificada
+                    </div>
+                )}
               </div>
               <div className="col-span-2 flex items-center justify-end font-mono text-sm font-black text-amber-400">
                 <span className="text-[10px] text-amber-400/50 mr-2">EUR</span>

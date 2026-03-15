@@ -22,6 +22,16 @@ model Tenant {
   logoUrl       String?
   settings      Json          @default("{}")
   billingStatus BillingStatus @default(TRIAL)
+  
+  // Detalhes Fiscais (SAF-T PT)
+  nif                    String?
+  address                String?
+  postalCode             String?
+  city                   String?
+  phone                  String?
+  email                  String?
+  commercialRegistration String? // Conservatória / Registo Comercial
+
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
@@ -35,6 +45,7 @@ model Tenant {
   auditLogs      AuditLog[]
   expenses       Expense[]
   portalAccesses PortalAccess[]
+  invoiceSeries  InvoiceSeries[]
 
   @@map("tenants")
 }
@@ -226,20 +237,32 @@ model Expense {
 // FATURAS
 // ============================================================
 model Invoice {
-  id        String        @id @default(cuid())
-  matterId  String
-  clientId  String
-  tenantId  String
-  reference String
-  amount    Decimal       @db.Decimal(10, 2)
-  vatRate   Decimal       @default(23) @db.Decimal(5, 2)
-  total     Decimal       @db.Decimal(10, 2)
-  status    InvoiceStatus @default(DRAFT)
-  dueDate   DateTime?
-  paidAt    DateTime?
-  notes     String?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id          String        @id @default(cuid())
+  matterId    String
+  clientId    String
+  tenantId    String
+  reference   String        @unique // ex: FS 2024/1
+  series      String        @default("A")
+  number      Int           @default(0)
+  amount      Decimal       @db.Decimal(10, 2)
+  vatRate     Decimal       @default(23) @db.Decimal(5, 2)
+  total       Decimal       @db.Decimal(10, 2)
+  status      InvoiceStatus @default(DRAFT)
+  dueDate     DateTime?
+  paidAt      DateTime?
+  notes       String?
+  
+  // Campos de Certificação AT
+  hash        String?       // Hash de encadeamento
+  hashControl String?       // 4 caracteres da assinatura
+  signature   String?       // Assinatura digital RSA
+  atcud       String?       // Código Único de Documento
+  keyVersion  Int           @default(1)
+  isCertified Boolean       @default(false)
+  certDate    DateTime?     // Data/Hora da certificação
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   matter Matter @relation(fields: [matterId], references: [id])
   client Client @relation(fields: [clientId], references: [id])
@@ -247,6 +270,22 @@ model Invoice {
 
   @@index([tenantId])
   @@map("invoices")
+}
+
+model InvoiceSeries {
+  id         String   @id @default(cuid())
+  tenantId   String
+  code       String   // ex: "A", "2024"
+  type       String   @default("FT") // FT, FS, NC, ND
+  nextNumber Int      @default(1)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, code])
+  @@map("invoice_series")
 }
 
 // ============================================================

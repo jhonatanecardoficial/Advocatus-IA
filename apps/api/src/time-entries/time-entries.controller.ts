@@ -23,7 +23,7 @@ import { RequestUser } from '../auth/strategies/jwt.strategy';
 const CreateTimeEntrySchema = z.object({
   matter_id: z.string().cuid(),
   description: z.string().min(1).max(500),
-  hours: z.number().min(0.25).max(24),
+  hours: z.number().min(0.01).max(24),
   rate_per_hour: z.number().optional(),
   billable: z.boolean().optional(),
   activity_date: z.string().datetime().or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),

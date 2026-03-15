@@ -50,8 +50,10 @@ async function bootstrap() {
 
     // CORS — apenas origens configuradas
     app.enableCors({
-        origin: process.env.ALLOWED_ORIGINS?.split(',') ?? ['http://localhost:3000'],
+        origin: true, // Em desenvolvimento, permitir todos (ou especificar melhor se necessário)
         credentials: true,
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+        allowedHeaders: 'Content-Type,Accept,Authorization,X-Requested-With',
     })
 
     // DEBUGFILTER: Retornar a stack trace real nos erros 500 para diagnosticar a falha nos testes

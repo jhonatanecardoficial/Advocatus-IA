@@ -37,6 +37,9 @@ export function LoginForm() {
             if (result.error) {
                 setErrorMsg(result.error);
             } else if (result.success) {
+                if (result.token) {
+                    localStorage.setItem("access_token", result.token);
+                }
                 // Simulate success and redirect
                 window.location.href = "/dashboard"
             }
