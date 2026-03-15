@@ -139,7 +139,7 @@ export class QesService {
         document: true,
       },
       orderBy: {
-        signedAt: 'desc',
+        signatureTimestamp: 'desc',
       },
     });
   }

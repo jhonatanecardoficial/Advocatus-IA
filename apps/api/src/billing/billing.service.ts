@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InvoiceStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { BillingCertificationService } from './billing-certification.service';
-import * as PDFDocument from 'pdfkit';
+import PDFDocument from 'pdfkit';
 import * as QRCode from 'qrcode';
 
 export interface CreateInvoiceDraftDto {
