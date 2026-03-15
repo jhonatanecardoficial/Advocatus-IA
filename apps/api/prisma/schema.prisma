@@ -46,6 +46,7 @@ model Tenant {
   expenses       Expense[]
   portalAccesses PortalAccess[]
   invoiceSeries  InvoiceSeries[]
+  signedDocuments SignedDocument[]
 
   @@map("tenants")
 }
@@ -141,6 +142,8 @@ model Matter {
   messages       Message[]
   expenses       Expense[]
   portalAccesses PortalAccess[]
+  signedDocuments SignedDocument[]
+
 
   @@index([tenantId])
   @@map("matters")
@@ -175,9 +178,33 @@ model Document {
   tenant        Tenant     @relation(fields: [tenantId], references: [id])
   parentVersion Document?  @relation("DocumentVersions", fields: [parentVersionId], references: [id])
   versions      Document[] @relation("DocumentVersions")
+  signedDocuments SignedDocument[]
+
 
   @@index([tenantId])
   @@map("documents")
+}
+
+model SignedDocument {
+  id                 String   @id @default(cuid())
+  tenantId           String
+  matterId           String?
+  documentId         String? // Relacionamento opcional com o Document original
+  originalFilePath   String // Caminho no Supabase Storage
+  signedFilePath     String? // Caminho do PDF assinado final
+  signerName         String? // Nome extraído do CC/CMD
+  signerNif          String? // NIF do signatário
+  signatureTimestamp DateTime @default(now())
+  signatureValid     Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  tenant   Tenant  @relation(fields: [tenantId], references: [id])
+  matter   Matter? @relation(fields: [matterId], references: [id])
+  document Document? @relation(fields: [documentId], references: [id])
+
+  @@index([tenantId])
+  @@map("signed_documents")
 }
 
 // ============================================================
