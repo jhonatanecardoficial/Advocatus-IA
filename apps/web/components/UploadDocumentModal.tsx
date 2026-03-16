@@ -45,7 +45,7 @@ export default function UploadDocumentModal({ matterId, parentVersionId, buttonT
                 setFile(null);
                 if (onSuccess) onSuccess();
             }
-        } catch (err) {
+        } catch (_) {
             toast.error('Erro ao conectar ao servidor');
         } finally {
             setLoading(false);

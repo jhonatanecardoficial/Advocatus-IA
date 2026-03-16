@@ -18,7 +18,7 @@ type Step = 'choice' | 'cmd_input' | 'cc_waiting' | 'processing' | 'success' | '
 
 export default function QesSignatureModal({ isOpen, onClose, documentId, filename, onSuccess }: QesSignatureModalProps) {
     const [step, setStep] = useState<Step>('choice')
-    const [method, setMethod] = useState<QesMethod | null>(null)
+    const [_, setMethod] = useState<QesMethod | null>(null)
     const [phone, setPhone] = useState('')
     const [loading, setLoading] = useState(false)
     const [errorMsg, setErrorMsg] = useState('')
@@ -306,4 +306,3 @@ export default function QesSignatureModal({ isOpen, onClose, documentId, filenam
         </AnimatePresence>
     )
 }
-
