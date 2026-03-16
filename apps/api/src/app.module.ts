@@ -18,6 +18,7 @@ import { AuditModule } from './audit/audit.module';
 import { PortalModule } from './portal/portal.module';
 import { ReportsModule } from './reports/reports.module';
 import { QesModule } from './qes/qes.module';
+import { LegalTemplatesModule } from './legal-templates/legal-templates.module';
 
 @Module({
     imports: [
@@ -60,6 +61,7 @@ import { QesModule } from './qes/qes.module';
         PortalModule,
         ReportsModule,
         QesModule,
+        LegalTemplatesModule,
         // TODO Fase 2: SignaturesModule
         // TODO Fase 3: JurimetricsModule
     ],

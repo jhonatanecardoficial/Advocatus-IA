@@ -47,6 +47,7 @@ model Tenant {
   portalAccesses PortalAccess[]
   invoiceSeries  InvoiceSeries[]
   signedDocuments SignedDocument[]
+  legalTemplates  LegalTemplate[]
 
   @@map("tenants")
 }
@@ -144,7 +145,6 @@ model Matter {
   portalAccesses PortalAccess[]
   signedDocuments SignedDocument[]
 
-
   @@index([tenantId])
   @@map("matters")
 }
@@ -179,7 +179,6 @@ model Document {
   parentVersion Document?  @relation("DocumentVersions", fields: [parentVersionId], references: [id])
   versions      Document[] @relation("DocumentVersions")
   signedDocuments SignedDocument[]
-
 
   @@index([tenantId])
   @@map("documents")
@@ -429,6 +428,28 @@ model PortalAccess {
   @@index([tenantId])
   @@index([token])
   @@map("portal_accesses")
+}
+
+// ============================================================
+// TEMPLATES JURÍDICOS — Para automação de geração de peças
+// ============================================================
+model LegalTemplate {
+  id          String   @id @default(cuid())
+  tenantId    String
+  name        String
+  description String?
+  category    String   // ex: Procuração, Requerimento, Petição
+  content     String   @db.Text // Texto base com placeholders {{var}}
+  placeholders String[] // Lista de variáveis detectadas para auxílio na UI
+  aiPrompt    String?  @db.Text // Instruções específicas para IA ao refinar
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@map("legal_templates")
 }
 
 // ============================================================

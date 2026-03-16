@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { Clock, FileText, Calendar, Wallet, User, AlertTriangle, History, DollarSign, Receipt, Info, ChevronRight, ShieldCheck } from 'lucide-react';
+import { Clock, FileText, Calendar, Wallet, User, AlertTriangle, History, DollarSign, Receipt, Info, ChevronRight, ShieldCheck, Wand2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import TimeTracker from './TimeTracker';
 import ExpenseTracker from './ExpenseTracker';
@@ -14,6 +14,7 @@ import PortalLinkButton from './PortalLinkButton';
 import DocumentListPanel from './DocumentListPanel';
 import AiDraftButton from './ai/AiDraftButton';
 import SignedDocumentsPanel from './documents/SignedDocumentsPanel';
+import TemplateAutomationPanel from './templates/TemplateAutomationPanel';
 
 interface Matter {
   id: string;
@@ -86,7 +87,7 @@ const generateMockTimeline = (matter: Matter) => [
 export default function MatterDetail({ matter: initialMatter }: Props) {
   const [matter, setMatter] = useState(initialMatter);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'timeline' | 'fees' | 'expenses' | 'billing' | 'signatures'>('timeline');
+  const [activeTab, setActiveTab] = useState<'timeline' | 'fees' | 'expenses' | 'billing' | 'signatures' | 'automation'>('timeline');
   const [form, setForm] = useState({
     title: initialMatter.title,
     type: initialMatter.type,
@@ -188,6 +189,7 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
     { id: 'expenses', label: 'Despesas', icon: Receipt },
     { id: 'billing', label: 'Faturação', icon: Wallet },
     { id: 'signatures', label: 'Assinaturas', icon: ShieldCheck },
+    { id: 'automation', label: 'Automação', icon: Wand2 },
   ] as const;
 
   if (!mounted) return null;
@@ -562,6 +564,7 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
                     {activeTab === 'expenses' && <ExpenseTracker key="expenses" matterId={matter.id} onRefresh={loadSummaries} />}
                     { activeTab === 'billing' && <InvoiceDraftPanel key="billing" matterId={matter.id} /> }
                     { activeTab === 'signatures' && <SignedDocumentsPanel key="signatures" matterId={matter.id} /> }
+                    { activeTab === 'automation' && <TemplateAutomationPanel key="automation" matterId={matter.id} /> }
                 </motion.div>
               </AnimatePresence>
             </div>
