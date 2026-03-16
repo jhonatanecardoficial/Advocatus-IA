@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogOut, Scale, Bell, Search } from 'lucide-react';
@@ -7,8 +8,13 @@ import { useLogout } from '@/context/logout-context';
 import { motion } from 'framer-motion';
 
 export function TopNav() {
+    const [isMounted, setIsMounted] = useState(false);
     const pathname = usePathname();
     const { openLogoutModal } = useLogout();
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const isDashboard = pathname === '/dashboard';
 
@@ -18,6 +24,8 @@ export function TopNav() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
+
+    if (!isMounted) return null;
 
     return (
         <header className="sticky top-0 z-40 w-full glass-panel border-b border-white/5 text-white bg-navy/10 backdrop-blur-xl">

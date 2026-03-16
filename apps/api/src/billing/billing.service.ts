@@ -44,14 +44,14 @@ export class BillingService {
     }
 
     const feesSubtotal = this.roundMoney(
-      timeEntries.reduce((sum, entry) => {
+      timeEntries.reduce((sum: number, entry) => {
         const hours = Number(entry.hours || 0);
         const rate = Number(entry.ratePerHour || 0);
         return sum + hours * rate;
       }, 0),
     );
     const expensesSubtotal = this.roundMoney(
-      expenses.reduce((sum, expense) => sum + Number(expense.amount || 0), 0),
+      expenses.reduce((sum: number, expense) => sum + Number(expense.amount || 0), 0),
     );
 
     const amount = this.roundMoney(feesSubtotal + expensesSubtotal);
@@ -77,11 +77,11 @@ export class BillingService {
 
     await Promise.all([
       this.prisma.timeEntry.updateMany({
-        where: { tenantId, matterId: matter.id, billable: true, invoiceId: null },
+        where: { tenantId, matterId: matter.id, billable: true, invoiceId: invoice.id },
         data: { invoiceId: invoice.id },
       }),
       this.prisma.expense.updateMany({
-        where: { tenantId, matterId: matter.id, billable: true, invoiceId: null },
+        where: { tenantId, matterId: matter.id, billable: true, invoiceId: invoice.id },
         data: { invoiceId: invoice.id },
       }),
     ]);
@@ -145,20 +145,20 @@ export class BillingService {
 
     // 2. Gerar QR Code String (Simplificada para conformidade AT)
     const qrString = [
-      `A:${(tenant as any)?.nif || '999999990'}`,
+      `A:${tenant?.nif || '999999990'}`,
       `B:${invoice.client.nif || '999999990'}`,
       `C:PT`,
       `D:FT`,
       `E:${isCertified ? 'N' : 'D'}`,
       `F:${invoice.createdAt.toISOString().split('T')[0].replace(/-/g, '')}`,
       `G:${invoice.reference}`,
-      `H:${(invoice as any).atcud || '0'}`,
+      `H:${invoice.atcud || '0'}`,
       `I1:PT`,
       `I7:${subtotal.toFixed(2)}`,
       `I8:${vatAmount.toFixed(2)}`,
       `N:${total.toFixed(2)}`,
       `O:${total.toFixed(2)}`,
-      `Q:${isCertified ? (invoice as any).hashControl : ''}`
+      `Q:${isCertified ? invoice.hashControl : ''}`
     ].join('*');
 
     const qrCodeDataUrl = await QRCode.toDataURL(qrString);
@@ -183,9 +183,9 @@ export class BillingService {
       try {
         // --- Cabeçalho ---
         doc.fontSize(20).text(tenant?.name || 'ADVOCATUS IA', { align: 'right' });
-        doc.fontSize(10).text((tenant as any)?.address || 'Endereço não configurado', { align: 'right' });
-        doc.text(`${(tenant as any)?.postalCode || ''} ${(tenant as any)?.city || ''}`, { align: 'right' });
-        doc.text(`NIF: ${(tenant as any)?.nif || '---'}`, { align: 'right' });
+        doc.fontSize(10).text(tenant?.address || 'Endereço não configurado', { align: 'right' });
+        doc.text(`${tenant?.postalCode || ''} ${tenant?.city || ''}`, { align: 'right' });
+        doc.text(`NIF: ${tenant?.nif || '---'}`, { align: 'right' });
         doc.moveDown();
 
         // --- Título e Info do Documento ---
@@ -194,8 +194,8 @@ export class BillingService {
         doc.fontSize(16).text(isCertified ? 'FATURA' : 'PROFORMA / DRAFT', 50, 170);
         doc.fontSize(10).text(`Referência: ${invoice.reference}`, 50, 190);
         doc.text(`Data: ${invoice.createdAt.toLocaleDateString('pt-PT')}`, 50, 205);
-        if (isCertified && (invoice as any).atcud) {
-          doc.text(`ATCUD: ${(invoice as any).atcud}`, 50, 220);
+        if (isCertified && invoice.atcud) {
+          doc.text(`ATCUD: ${invoice.atcud}`, 50, 220);
         }
 
         // --- Cliente ---
@@ -216,7 +216,7 @@ export class BillingService {
         let currentY = tableTop + 20;
 
         // Honorários
-        entries.forEach(entry => {
+        entries.forEach((entry: any) => {
           doc.fontSize(9).text(entry.description, 50, currentY, { width: 180 });
           doc.text(`${Number(entry.hours).toFixed(2)}h`, 250, currentY, { align: 'right' });
           doc.text(`${Number(entry.ratePerHour || 0).toFixed(2)} €`, 350, currentY, { align: 'right' });
@@ -226,7 +226,7 @@ export class BillingService {
         });
 
         // Despesas
-        expenses.forEach(expense => {
+        expenses.forEach((expense: any) => {
           doc.fontSize(9).text(`[Despesa] ${expense.description}`, 50, currentY, { width: 180 });
           doc.text('1.00', 250, currentY, { align: 'right' });
           doc.text(`${Number(expense.amount).toFixed(2)} €`, 350, currentY, { align: 'right' });
@@ -249,7 +249,7 @@ export class BillingService {
         // --- QR Code e Rodapé Fiscal ---
         if (isCertified) {
           doc.image(qrCodeDataUrl, 50, 680, { width: 80 });
-          doc.fontSize(8).text(`Hash: ${(invoice as any).hashControl} - Processado por programa certificado n.º 9999/AT`, 140, 700);
+          doc.fontSize(8).text(`Hash: ${invoice.hashControl} - Processado por programa certificado n.º 9999/AT`, 140, 700);
           doc.text('Os bens/serviços foram colocados à disposição do adquirente na data e local deste documento.', 140, 715);
         } else {
           doc.fontSize(12).fillColor('red').text('ESTE DOCUMENTO NÃO SERVE DE FATURA', 50, 700, { align: 'center' });
@@ -317,8 +317,8 @@ export class BillingService {
       ),
       '',
       isCertified ? 'Documento processado por programa certificado n.º 9999/AT' : 'Documento proforma - Não serve de fatura',
-      isCertified ? `Assinatura: ${(invoice as any).hashControl}-Processado por programa certificado n.º 9999/AT` : '',
-      (invoice as any).atcud ? `ATCUD: ${(invoice as any).atcud}` : '',
+      isCertified ? `Assinatura: ${invoice.hashControl}-Processado por programa certificado n.º 9999/AT` : '',
+      invoice.atcud ? `ATCUD: ${invoice.atcud}` : '',
     ].join('\n');
 
     return {
@@ -389,19 +389,19 @@ export class BillingService {
         hashControl,
         isCertified: true,
         certDate: new Date(),
-        status: InvoiceStatus.SENT, // Marcar como enviada/emitida
+        status: 'SENT', // Marcar como enviada/emitida
         atcud: `MOCK-${reference}`, // Código Único de Documento
       },
     });
   }
 
   async findOrCreateSeries(tenantId: string, code: string) {
-    let series = await (this.prisma as any).invoiceSeries.findUnique({
+    let series = await this.prisma.invoiceSeries.findUnique({
       where: { tenantId_code: { tenantId, code } },
     });
 
     if (!series) {
-      series = await (this.prisma as any).invoiceSeries.create({
+      series = await this.prisma.invoiceSeries.create({
         data: {
           tenantId,
           code,
@@ -413,8 +413,16 @@ export class BillingService {
     return series;
   }
 
-  async updateTenantBillingDetails(tenantId: string, details: any) {
-    return (this.prisma as any).tenant.update({
+  async updateTenantBillingDetails(tenantId: string, details: {
+    nif?: string;
+    address?: string;
+    postalCode?: string;
+    city?: string;
+    phone?: string;
+    email?: string;
+    commercialRegistration?: string;
+  }) {
+    return this.prisma.tenant.update({
       where: { id: tenantId },
       data: {
         nif: details.nif,
@@ -430,7 +438,7 @@ export class BillingService {
 
   async generateSaft(tenantId: string, startDate: string, endDate: string) {
     const [tenant, invoices] = await Promise.all([
-      (this.prisma as any).tenant.findUnique({ where: { id: tenantId } }),
+      this.prisma.tenant.findUnique({ where: { id: tenantId } }),
       this.prisma.invoice.findMany({
         where: {
           tenantId,
@@ -472,7 +480,7 @@ export class BillingService {
   </Header>
   <MasterFiles>
     <Customer>
-      ${[...new Set(invoices.map(inv => inv.client))].map(client => `
+      ${[...new Set(invoices.map((inv) => inv.client))].map((client) => `
       <CustomerID>${client.id}</CustomerID>
       <AccountID>Desconhecido</AccountID>
       <RegistrationNumber>${client.nif || '999999990'}</RegistrationNumber>
@@ -490,8 +498,8 @@ export class BillingService {
     <SalesInvoices>
       <NumberOfEntries>${invoices.length}</NumberOfEntries>
       <TotalDebit>0.00</TotalDebit>
-      <TotalCredit>${invoices.reduce((sum, inv) => sum + Number(inv.total), 0).toFixed(2)}</TotalCredit>
-      ${invoices.map(inv => `
+      <TotalCredit>${invoices.reduce((sum: number, inv) => sum + Number(inv.total), 0).toFixed(2)}</TotalCredit>
+      ${invoices.map((inv) => `
       <Invoice>
         <InvoiceNo>${inv.reference}</InvoiceNo>
         <atcud>${inv.atcud || '0'}</atcud>

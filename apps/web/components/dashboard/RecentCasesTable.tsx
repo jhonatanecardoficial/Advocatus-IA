@@ -77,6 +77,7 @@ export default function RecentCasesTable({ matters }: RecentCasesTableProps) {
                   <Link 
                     href={`/matters/${matter.id}`} 
                     className="inline-flex items-center gap-2 px-4 py-2 bg-navy text-white hover:bg-amber hover:text-navy hover:shadow-lg transition-all rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-[0.98]"
+                    suppressHydrationWarning
                   >
                     Abrir
                     <ArrowUpRight className="h-3 w-3" />

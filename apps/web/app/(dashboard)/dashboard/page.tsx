@@ -159,7 +159,11 @@ export default async function DashboardPage() {
                             <span className="w-1.5 h-8 bg-amber rounded-full"></span>
                             Casos Recentes
                         </h2>
-                        <Link href="/matters" className="text-[10px] font-black uppercase tracking-[0.2em] text-amber hover:text-white transition-all flex items-center gap-2">
+                        <Link 
+                            href="/matters" 
+                            className="text-[10px] font-black uppercase tracking-[0.2em] text-amber hover:text-white transition-all flex items-center gap-2"
+                            suppressHydrationWarning
+                        >
                             Ver Arquivo Completo
                         </Link>
                     </div>

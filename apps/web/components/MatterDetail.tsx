@@ -190,6 +190,8 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
     { id: 'signatures', label: 'Assinaturas', icon: ShieldCheck },
   ] as const;
 
+  if (!mounted) return null;
+
   return (
     <div className="space-y-8 max-w-[1600px] mx-auto pb-12">
       {/* breadcrumb navigation */}
