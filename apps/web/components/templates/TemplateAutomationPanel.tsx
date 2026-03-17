@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FileText, Sparkles, Wand2, Download, Save, RefreshCw, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
 interface LegalTemplate {
@@ -42,7 +42,7 @@ export default function TemplateAutomationPanel({ matterId }: TemplateAutomation
         const data = await res.json();
         setTemplates(data);
       }
-    } catch (error) {
+    } catch (_) {
       toast.error('Erro ao carregar templates');
     } finally {
       setLoading(false);
@@ -69,7 +69,7 @@ export default function TemplateAutomationPanel({ matterId }: TemplateAutomation
       setGeneratedContent(data.content);
       setSelectedTemplate(templates.find(t => t.id === templateId) || null);
       toast.success('Documento gerado com dados do processo!');
-    } catch (error) {
+    } catch (_) {
       toast.error('Erro ao gerar documento');
     } finally {
       setIsGenerating(false);
@@ -100,7 +100,7 @@ export default function TemplateAutomationPanel({ matterId }: TemplateAutomation
       setGeneratedContent(data.refinedContent);
       setRefineInstruction('');
       toast.success('IA: Documento refinado com sucesso!');
-    } catch (error) {
+    } catch (_) {
       toast.error('Erro ao refinar documento com IA');
     } finally {
       setIsRefining(false);
@@ -130,7 +130,7 @@ export default function TemplateAutomationPanel({ matterId }: TemplateAutomation
       if (!res.ok) throw new Error('Falha ao salvar documento');
 
       toast.success('Documento guardado na pasta do processo!');
-    } catch (error) {
+    } catch (_) {
       toast.error('Erro ao guardar documento');
     }
   };
@@ -165,7 +165,7 @@ export default function TemplateAutomationPanel({ matterId }: TemplateAutomation
       a.click();
       window.URL.revokeObjectURL(url);
       toast.success('Download do PDF iniciado');
-    } catch (error) {
+    } catch (_) {
       toast.error('Erro ao descarregar PDF');
     }
   };

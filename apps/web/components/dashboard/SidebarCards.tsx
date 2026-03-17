@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Zap, Calendar } from "lucide-react";
+import Link from 'next/link';
 
 export default function DashboardSidebarCards() {
   return (
@@ -57,8 +58,8 @@ export default function DashboardSidebarCards() {
 
         <div className="space-y-5 relative z-10">
           {[
-            { time: "10:30", title: "Reunião de Estratégia", location: "Sala 2 • Dr. João Manuel", status: "green" },
-            { time: "14:00", title: "Audiência Preliminar", location: "Tribunal de Cascais", status: "amber" }
+            { time: "10:30", title: "Reunião de Estratégia", location: "Sala 2 • Dra. Ana Silva", status: "green" },
+            { time: "14:00", title: "Audiência Preliminar", location: "Tribunal de Justiça", status: "amber" }
           ].map((event, idx) => (
             <motion.div 
               key={idx}
@@ -93,9 +94,11 @@ export default function DashboardSidebarCards() {
             </motion.div>
           ))}
         </div>
-        <button className="w-full mt-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-amber/60 hover:text-white hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10">
-          Ver Calendário Completo
-        </button>
+        <Link href="/tasks">
+          <button className="w-full mt-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-amber/60 hover:text-white hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10">
+            Ver Calendário Completo
+          </button>
+        </Link>
       </motion.div>
     </div>
   );
