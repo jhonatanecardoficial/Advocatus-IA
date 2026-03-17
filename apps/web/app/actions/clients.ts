@@ -12,13 +12,22 @@ export async function createClientAction(data: { nome: string, nif: string, tipo
 
         if (!token) return { error: "Não está autenticado." };
 
+        // Mapeamento para o Backend (name, type, nif, email, phone)
+        const backendData = {
+            name: data.nome,
+            type: data.tipo === 'COLETIVA' ? 'COLETIVO' : 'SINGULAR',
+            nif: data.nif,
+            email: data.email,
+            phone: data.telefone
+        };
+
         const response = await fetch(`${API_URL}/clients`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify(data),
+            body: JSON.stringify(backendData),
             cache: "no-store",
         });
 
@@ -46,13 +55,18 @@ export async function checkConflictAction(data: { nome: string, nif: string }) {
 
         if (!token) return { error: "Não está autenticado." };
 
+        const backendData = {
+            name: data.nome,
+            nif: data.nif
+        };
+
         const response = await fetch(`${API_URL}/clients/conflict-check`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify(data),
+            body: JSON.stringify(backendData),
             cache: "no-store",
         });
 

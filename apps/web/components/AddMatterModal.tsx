@@ -41,7 +41,7 @@ export default function AddMatterModal() {
             const data = await res.json();
             setClients(data.data || []);
         } catch (err) {
-            console.error('Erro ao procurar clientes:', err);
+            console.error('Erro ao buscar clientes:', err);
         }
     };
 
@@ -125,7 +125,7 @@ export default function AddMatterModal() {
                                         type="text"
                                         value={form.title}
                                         onChange={(e) => setForm({ ...form, title: e.target.value })}
-                                        placeholder="Ex: Acção de Despejo - Fracção B"
+                                        placeholder="Ex: Acção de Despejo - Imóvel Centro"
                                         className="w-full px-5 py-4 bg-white/[0.03] border border-white/10 rounded-2xl focus:border-amber/50 focus:bg-white/[0.07] focus:ring-4 focus:ring-amber/5 outline-none transition-all font-body text-sm text-white placeholder:text-white/20"
                                     />
                                 </div>
@@ -142,7 +142,7 @@ export default function AddMatterModal() {
                                             onChange={(e) => setForm({ ...form, clientId: e.target.value })}
                                             className="w-full px-5 py-4 bg-white/[0.03] border border-white/10 rounded-2xl focus:border-amber/50 focus:bg-white/[0.07] outline-none transition-all font-body text-sm text-white appearance-none cursor-pointer"
                                         >
-                                            <option value="" className="bg-navy-900">Seleccionar Cliente...</option>
+                                            <option value="" className="bg-navy-900">Selecionar Cliente...</option>
                                             {clients.map(c => (
                                                 <option key={c.id} value={c.id} className="bg-navy-900">{c.name}</option>
                                             ))}
@@ -181,7 +181,7 @@ export default function AddMatterModal() {
                                             type="text"
                                             value={form.courtReference}
                                             onChange={(e) => setForm({ ...form, courtReference: e.target.value })}
-                                            placeholder="Ex: 123/24.5LSB"
+                                            placeholder="Ex: 5000123-45.2024.8.26.0000"
                                             className="w-full px-5 py-4 bg-white/[0.03] border border-white/10 rounded-2xl focus:border-amber/50 focus:bg-white/[0.07] outline-none transition-all font-body text-sm text-white placeholder:text-white/20"
                                         />
                                     </div>
@@ -208,7 +208,7 @@ export default function AddMatterModal() {
                                         value={form.description}
                                         onChange={(e) => setForm({ ...form, description: e.target.value })}
                                         rows={4}
-                                        placeholder="Breve descrição dos factos ou objectivos do processo..."
+                                        placeholder="Breve descrição dos fatos ou objetivos do processo..."
                                         className="w-full px-5 py-4 bg-white/[0.03] border border-white/10 rounded-2xl focus:border-amber/50 focus:bg-white/[0.07] outline-none transition-all font-body text-sm text-white placeholder:text-white/20 resize-none"
                                     ></textarea>
                                 </div>
@@ -232,7 +232,7 @@ export default function AddMatterModal() {
                                     ) : (
                                         <Plus className="w-4 h-4 shadow-glow" />
                                     )}
-                                    <span>{loading ? 'A Gravar...' : 'Abrir Processo'}</span>
+                                    <span>{loading ? 'Guardando...' : 'Abrir Processo'}</span>
                                 </button>
                             </div>
                         </form>

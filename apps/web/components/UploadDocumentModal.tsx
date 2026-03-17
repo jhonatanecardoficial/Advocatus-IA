@@ -45,7 +45,7 @@ export default function UploadDocumentModal({ matterId, parentVersionId, buttonT
                 setFile(null);
                 if (onSuccess) onSuccess();
             }
-        } catch (err) {
+        } catch (_) {
             toast.error('Erro ao conectar ao servidor');
         } finally {
             setLoading(false);
@@ -84,11 +84,14 @@ export default function UploadDocumentModal({ matterId, parentVersionId, buttonT
                                 onClick={() => fileInputRef.current?.click()}
                                 className={`border-2 border-dashed p-10 flex flex-col items-center justify-center cursor-pointer transition-all rounded-2xl group ${file ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-white/10 hover:border-amber/50 bg-white/5'}`}
                             >
+                                <label htmlFor="file-upload" className="sr-only">Carregar Documento</label>
                                 <input
+                                    id="file-upload"
                                     type="file"
                                     ref={fileInputRef}
                                     onChange={handleFileChange}
                                     className="hidden"
+                                    aria-label="Upload de documento"
                                 />
 
                                 {file ? (

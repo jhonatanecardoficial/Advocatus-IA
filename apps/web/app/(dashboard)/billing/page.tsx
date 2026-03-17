@@ -69,7 +69,7 @@ export default async function BillingPage() {
                   Gestão de Faturação
               </h1>
               <p className="text-white/40 mt-3 font-mono text-[10px] uppercase tracking-widest">
-                  Workspace ativo • {invoices.length} faturas em processamento
+                  Workspace ativo • {invoices.length} faturações em processamento
               </p>
           </div>
           <div className="flex gap-4">
@@ -89,7 +89,7 @@ export default async function BillingPage() {
           <div className="col-span-3">PROCESSO / CLIENTE</div>
           <div className="col-span-3">DATA DE EMISSÃO</div>
           <div className="col-span-2 text-right">MONTANTE TOTAL</div>
-          <div className="col-span-1 text-right">ACÇÕES</div>
+          <div className="col-span-1 text-right">AÇÕES</div>
         </div>
  
         {invoices.length === 0 ? (
@@ -130,8 +130,8 @@ export default async function BillingPage() {
                 )}
               </div>
               <div className="col-span-2 flex items-center justify-end font-mono text-sm font-black text-amber-400">
-                <span className="text-[10px] text-amber-400/50 mr-2">EUR</span>
-                {Number(invoice.total).toLocaleString("pt-PT", { minimumFractionDigits: 2 })}
+                <span className="text-[10px] text-amber-400/50 mr-2">€</span>
+                {Number(invoice.total).toLocaleString("pt-PT", { minimumFractionDigits: 2, style: 'currency', currency: 'EUR' }).replace('€', '')}
               </div>
               <div className="col-span-1 flex items-center justify-end">
                 {invoice.matter?.id ? (

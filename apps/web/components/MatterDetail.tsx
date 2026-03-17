@@ -15,6 +15,7 @@ import DocumentListPanel from './DocumentListPanel';
 import AiDraftButton from './ai/AiDraftButton';
 import SignedDocumentsPanel from './documents/SignedDocumentsPanel';
 import TemplateAutomationPanel from './templates/TemplateAutomationPanel';
+import DeadlinesCalendar from './tasks/DeadlinesCalendar';
 
 interface Matter {
   id: string;
@@ -87,7 +88,8 @@ const generateMockTimeline = (matter: Matter) => [
 export default function MatterDetail({ matter: initialMatter }: Props) {
   const [matter, setMatter] = useState(initialMatter);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'timeline' | 'fees' | 'expenses' | 'billing' | 'signatures' | 'automation'>('timeline');
+  const [activeTab, setActiveTab] = useState<'timeline' | 'fees' | 'expenses' | 'billing' | 'signatures' | 'automation' | 'calendar'>('timeline');
+  const [tasks, setTasks] = useState<any[]>([]);
   const [form, setForm] = useState({
     title: initialMatter.title,
     type: initialMatter.type,
@@ -131,8 +133,27 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
     }
   }
 
+  async function loadTasks() {
+    try {
+      const token = localStorage.getItem('access_token');
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+      const res = await fetch(`${API_URL}/tasks?matterId=${matter.id}`, {
+        headers: { Authorization: token ? `Bearer ${token}` : '' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTasks(data);
+      }
+    } catch (err) {
+      console.error('Erro ao carregar tarefas:', err);
+    }
+  }
+
   useEffect(() => {
-    if (matter.id) loadSummaries();
+    if (matter.id) {
+        loadSummaries();
+        loadTasks();
+    }
   }, [matter.id]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
@@ -190,6 +211,7 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
     { id: 'billing', label: 'Faturação', icon: Wallet },
     { id: 'signatures', label: 'Assinaturas', icon: ShieldCheck },
     { id: 'automation', label: 'Automação', icon: Wand2 },
+    { id: 'calendar', label: 'Calendário', icon: Calendar },
   ] as const;
 
   if (!mounted) return null;
@@ -565,6 +587,7 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
                     { activeTab === 'billing' && <InvoiceDraftPanel key="billing" matterId={matter.id} /> }
                     { activeTab === 'signatures' && <SignedDocumentsPanel key="signatures" matterId={matter.id} /> }
                     { activeTab === 'automation' && <TemplateAutomationPanel key="automation" matterId={matter.id} /> }
+                    { activeTab === 'calendar' && <DeadlinesCalendar key="calendar" deadlines={tasks} /> }
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -634,7 +657,7 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
             
             <div className="mt-8 grid grid-cols-1 gap-3">
                 <UploadDocumentModal matterId={matter.id} />
-                <AddTaskModal matterId={matter.id} />
+                <AddTaskModal matterId={matter.id} onSuccess={loadTasks} />
             </div>
           </motion.div>
 

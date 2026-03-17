@@ -1,12 +1,31 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto'
+import { LegalDeadlineService } from './legal-deadline.service'
 
 @Injectable()
 export class TasksService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly deadlineService: LegalDeadlineService,
+    ) { }
 
     async create(tenantId: string, createdById: string, dto: CreateTaskDto) {
+        let finalDueAt = dto.dueAt;
+
+        // Cálculo assistido de prazo se 'days' e 'startDate' forem fornecidos
+        if (dto.days && dto.startDate) {
+            const calculation = this.deadlineService.calculateDeadline({
+                startDate: dto.startDate,
+                days: dto.days,
+                isUrgent: dto.isUrgent ?? false,
+                includeSuspension: dto.type === 'PRAZO',
+                dilacao: dto.dilacao ?? 0,
+            });
+            finalDueAt = calculation.dueAt;
+        }
+
+
         return this.prisma.task.create({
             data: {
                 tenantId,
@@ -16,7 +35,15 @@ export class TasksService {
                 description: dto.description,
                 type: dto.type ?? 'OUTRO',
                 priority: dto.priority ?? 'MEDIA',
-                dueAt: dto.dueAt,
+                dueAt: finalDueAt,
+                penaltyLimitAt: (dto.days && dto.startDate) ? 
+                    this.deadlineService.calculateDeadline({
+                        startDate: dto.startDate,
+                        days: dto.days,
+                        isUrgent: dto.isUrgent ?? false,
+                        includeSuspension: dto.type === 'PRAZO',
+                        dilacao: dto.dilacao ?? 0,
+                    }).penaltyLimitAt : null,
                 assignedToId: dto.assignedToId,
             },
             include: {

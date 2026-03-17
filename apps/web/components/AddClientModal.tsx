@@ -86,7 +86,7 @@ export default function AddClientModal() {
                                     <User className="w-5 h-5 text-amber" />
                                 </div>
                                 <div>
-                                    <h3 className="text-white text-sm font-bold uppercase tracking-widest">Nova Entidade</h3>
+                                    <h3 className="text-white text-sm font-bold uppercase tracking-widest">Novo Cliente</h3>
                                     <p className="text-[10px] text-white/50 font-medium">Registo e Compliance</p>
                                 </div>
                             </div>
@@ -122,7 +122,7 @@ export default function AddClientModal() {
                                         onChange={() => setForm({ ...form, tipo: 'COLETIVA' })}
                                     />
                                     <Briefcase size={18} className={form.tipo === 'COLETIVA' ? 'text-amber' : 'text-white/40'} />
-                                    <span className={`text-[11px] font-black uppercase tracking-widest ${form.tipo === 'COLETIVA' ? 'text-white' : 'text-white/40'}`}>Pessoa Coletiva</span>
+                                    <span className={`text-[11px] font-black uppercase tracking-widest ${form.tipo === 'COLETIVA' ? 'text-white' : 'text-white/40'}`}>Pessoa Colectiva</span>
                                 </label>
                             </div>
 
@@ -137,7 +137,7 @@ export default function AddClientModal() {
                                         type="text"
                                         value={form.nome}
                                         onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                                        placeholder="Ex: João Silva ou Empresa, Lda"
+                                        placeholder="Ex: João Silva ou Empresa Lda"
                                         className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm text-white placeholder:text-white/20"
                                     />
                                 </div>
@@ -151,10 +151,9 @@ export default function AddClientModal() {
                                         <input
                                             required
                                             type="text"
-                                            maxLength={9}
                                             value={form.nif}
                                             onChange={(e) => setForm({ ...form, nif: e.target.value })}
-                                            placeholder="999 999 999"
+                                            placeholder="Ex: 500123456"
                                             className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm text-white placeholder:text-white/20"
                                         />
                                     </div>
@@ -167,7 +166,7 @@ export default function AddClientModal() {
                                             type="tel"
                                             value={form.telefone}
                                             onChange={(e) => setForm({ ...form, telefone: e.target.value })}
-                                            placeholder="+351 9xx xxx xxx"
+                                            placeholder="(00) 00000-0000"
                                             className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm text-white placeholder:text-white/20"
                                         />
                                     </div>
@@ -199,7 +198,7 @@ export default function AddClientModal() {
                                             className="w-full py-3 text-[10px] font-bold uppercase tracking-widest border border-amber-500/50 text-amber-600 bg-amber-50/50 rounded-xl hover:bg-amber-500 hover:text-white transition-all flex items-center justify-center gap-2 relative z-10 active:scale-[0.98]"
                                         >
                                             <Shield size={14} className={checkingConflict ? 'animate-spin' : ''} />
-                                            {checkingConflict ? 'A Verificar...' : 'Verificar Conflitos de Interesse'}
+                                            {checkingConflict ? 'Verificando...' : 'Verificar Conflitos de Interesse'}
                                         </button>
                                         
                                         <div className="absolute bottom-full left-0 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 z-[100] w-full pointer-events-none translate-y-2 group-hover:translate-y-0">
@@ -251,7 +250,7 @@ export default function AddClientModal() {
                                     ) : (
                                         <Plus className="w-4 h-4" />
                                     )}
-                                    <span>{loading ? 'A Gravar...' : 'Confirmar Registo'}</span>
+                                    <span>{loading ? 'Guardando...' : 'Confirmar Registo'}</span>
                                 </button>
                             </div>
                         </form>
