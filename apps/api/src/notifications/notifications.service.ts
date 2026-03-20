@@ -47,7 +47,7 @@ export class NotificationsService {
       }
 
       const daysRemaining = this.daysUntil(todayStart, task.dueAt);
-      if (daysRemaining !== 7 && daysRemaining !== 1) {
+      if (daysRemaining !== 7 && daysRemaining !== 3 && daysRemaining !== 1) {
         continue;
       }
 

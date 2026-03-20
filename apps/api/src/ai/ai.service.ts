@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { AuditService } from '../audit/audit.service';
+import { McpClientService } from './mcp-client.service';
 
 @Injectable()
 export class AiService implements OnModuleInit {
@@ -15,6 +16,7 @@ export class AiService implements OnModuleInit {
         private prisma: PrismaService,
         private configService: ConfigService,
         private auditService: AuditService,
+        private mcpClient: McpClientService,
     ) { }
 
     onModuleInit() {
@@ -121,15 +123,43 @@ export class AiService implements OnModuleInit {
                 return { results: mocks, answer };
             }
 
-            // Generate RAG Answer
-            const context = results.map(r => `[${r.title}]: ${r.content}`).join('\n\n');
-            const answer = await this.chatWithContext(query, context);
+            // --- NOVO: Integração MCP para busca de dados públicos em tempo real ---
+            try {
+                const mcpLegislation = await this.mcpClient.callTool('search_legislation', { query }) as any;
+                const mcpCaseLaw = await this.mcpClient.callTool('search_case_law', { query }) as any;
+                
+                if (mcpLegislation?.content?.[0]?.type === 'text') {
+                    results.push({
+                        id: 'mcp-leg-1',
+                        title: 'Resultados Diário da República (MCP)',
+                        source: 'DRE',
+                        content: mcpLegislation.content[0].text,
+                        url: 'https://diariodarepublica.pt'
+                    });
+                }
+
+                if (mcpCaseLaw?.content?.[0]?.type === 'text') {
+                    results.push({
+                        id: 'mcp-case-1',
+                        title: 'Resultados Jurisprudência DGSI (MCP)',
+                        source: 'DGSI',
+                        content: mcpCaseLaw.content[0].text,
+                        url: 'http://www.dgsi.pt'
+                    });
+                }
+            } catch (mcpError: any) {
+                console.error('MCP Tool error:', mcpError.message);
+            }
+            // ----------------------------------------------------------------------
+
+            const finalContext = results.map(r => `[${r.title}]: ${r.content}`).join('\n\n');
+            const answer = await this.chatWithContext(query, finalContext);
 
             return { results, answer };
         } catch (error: any) {
             console.error('AI Search error, using mocks:', error?.message || error);
             const mocks = this.getMockResults(query);
-            return { results: mocks, answer: 'Ocorreu um erro técnico. Apresentando resultados de demonstração baseados em jurisprudência real.' };
+            return { results: mocks, answer: 'Ocorreu um erro técnico ao consultar bases de dados externas. Apresentando resultados de demonstração.' };
         }
     }
 

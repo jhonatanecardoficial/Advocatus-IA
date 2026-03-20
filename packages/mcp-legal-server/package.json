@@ -1,0 +1,26 @@
+{
+  "name": "@advocatus/mcp-legal-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "mcp-legal-server": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch",
+    "lint": "eslint \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.0",
+    "dotenv": "^16.4.7",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@advocatus/config-tsconfig": "workspace:*",
+    "@types/node": "^22.13.1",
+    "typescript": "^5.7.3"
+  }
+}

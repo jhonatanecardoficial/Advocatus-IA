@@ -18,6 +18,7 @@
         "@advocatus/types": "workspace:*",
         "@fastify/cookie": "^11.0.2",
         "@google/generative-ai": "^0.24.1",
+        "@modelcontextprotocol/sdk": "^1.27.1",
         "@nestjs/bull": "^10.2.3",
         "@nestjs/common": "^11.0.5",
         "@nestjs/config": "^3.3.0",

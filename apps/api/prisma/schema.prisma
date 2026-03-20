@@ -328,6 +328,7 @@ model Task {
   type             TaskType     @default(OUTRO)
   priority         TaskPriority @default(MEDIA)
   dueAt            DateTime?
+  penaltyLimitAt   DateTime?
   completedAt      DateTime?
   notificationSent Boolean      @default(false)
   createdAt        DateTime     @default(now())

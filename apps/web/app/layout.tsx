@@ -15,6 +15,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+    metadataBase: new URL('https://advocatus.ia'),
     title: {
         default: 'Advocatus IA — Gestão Jurídica Inteligente',
         template: '%s | Advocatus IA',
@@ -23,7 +24,18 @@ export const metadata: Metadata = {
         'Plataforma de gestão jurídica com Inteligência Artificial para escritórios de advocacia portugueses. Gerencie processos, documentos, prazos e faturação com eficiência.',
     keywords: ['advocacia', 'gestão jurídica', 'inteligência artificial', 'Portugal', 'legal tech'],
     authors: [{ name: 'Advocatus IA' }],
-    robots: { index: false, follow: false }, // Mudar para true em produção pública
+    openGraph: {
+        title: 'Advocatus IA — Gestão Jurídica Inteligente',
+        description: 'Plataforma de gestão jurídica integrada com IA em Portugal.',
+        locale: 'pt-PT',
+        type: 'website',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Advocatus IA',
+        description: 'Gestão Jurídica Inteligente para Portugal.',
+    },
+    robots: { index: false, follow: false },
 }
 
 export default function RootLayout({

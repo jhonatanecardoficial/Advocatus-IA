@@ -3,6 +3,7 @@ import { AiService } from './ai.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { AuditService } from '../audit/audit.service';
+import { McpClientService } from './mcp-client.service';
 
 describe('AiService', () => {
     let service: AiService;
@@ -24,6 +25,10 @@ describe('AiService', () => {
         log: jest.fn().mockResolvedValue({ id: 'log-1' }),
     };
 
+    const mockMcpClientService = {
+        callTool: jest.fn().mockResolvedValue({ content: [{ type: 'text', text: 'mcp result' }] }),
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -31,6 +36,7 @@ describe('AiService', () => {
                 { provide: PrismaService, useValue: mockPrismaService },
                 { provide: ConfigService, useValue: mockConfigService },
                 { provide: AuditService, useValue: mockAuditService },
+                { provide: McpClientService, useValue: mockMcpClientService },
             ],
         }).compile();
 

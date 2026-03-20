@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, FileText, Users, Calendar, Settings, ChevronLeft, ChevronRight, LogOut, Search, Wallet } from 'lucide-react'
+import { LayoutDashboard, FileText, Users, Calendar, Settings, ChevronLeft, ChevronRight, LogOut, Search, Wallet, Brain } from 'lucide-react'
 import { useLogout } from '@/context/logout-context'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -20,11 +20,12 @@ export function Sidebar() {
     const navItems = [
         { icon: LayoutDashboard, label: 'Painel Central', href: '/dashboard' },
         { icon: FileText, label: 'Processos', href: '/matters' },
-        { icon: Users, label: 'Cadastro de Clientes', href: '/clients' },
+        { icon: Users, label: 'Clientes', href: '/clients' },
         { icon: Wallet, label: 'Faturação', href: '/billing' },
         { icon: Search, label: 'Pesquisa Jurídica IA', href: '/ai-search' },
+        { icon: Brain, label: 'Inteligência Legal', href: '/intelligence' },
         { icon: Calendar, label: 'Prazos & Agenda', href: '/tasks' },
-        { icon: Settings, label: 'Definições do Escritório', href: '/settings' },
+        { icon: Settings, label: 'Definições', href: '/settings' },
     ]
 
     const isDashboard = pathname === '/dashboard'
@@ -140,7 +141,7 @@ export function Sidebar() {
                     className={`w-full flex items-center ${isExpanded ? 'px-4' : 'justify-center'} py-3 text-white hover:text-red-400 hover:bg-red-500/10 transition-all rounded-xl group border border-white/10 hover:border-red-500/40 shadow-lg`}
                 >
                     <LogOut size={18} className="flex-shrink-0 group-hover:-translate-x-1 transition-transform text-red-500" />
-                    {isExpanded && <span className="ml-4 font-black text-xs uppercase tracking-widest text-white brightness-125">Sair do Sistema</span>}
+                    {isExpanded && <span className="ml-4 font-black text-xs uppercase tracking-widest text-white brightness-125">Terminar Sessão</span>}
                 </button>
                 {isExpanded && (
                     <div className="mt-4 px-4 text-[10px] text-slate-400 font-mono tracking-widest opacity-60 uppercase flex items-center gap-2">

@@ -142,7 +142,7 @@ export default async function MattersPage() {
                                         <div className="flex items-center gap-3 text-white/40">
                                             <Clock className="h-3.5 w-3.5 text-amber/60" />
                                             <span className="font-mono text-[10px] uppercase tracking-tighter">
-                                                Prazo Fatal: {new Date(matter.deadline_at).toLocaleDateString("pt-PT")}
+                                                Prazo Fatal: {new Date(matter.deadline_at).toLocaleDateString("pt-BR")}
                                             </span>
                                         </div>
                                     )}
@@ -168,7 +168,7 @@ export default async function MattersPage() {
                         <Briefcase className="h-16 w-16 mb-6 opacity-10" />
                         <h3 className="text-xl font-display font-bold text-white">Nenhum processo encontrado</h3>
                         <p className="font-body text-xs mt-2 mb-8 text-center max-w-sm opacity-60">
-                            A sua base de dados jurídica está vazia. Comece a organizar os seus processos utilizando as nossas ferramentas de IA.
+                            A base de dados jurídica está vazia. Comece a organizar seus processos utilizando nossas ferramentas de IA.
                         </p>
                         <AddMatterModal />
                     </div>

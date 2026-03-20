@@ -55,7 +55,7 @@ export default async function ClientsPage() {
                         Carteira de Clientes
                     </h1>
                     <p className="text-white/40 mt-3 font-mono text-[10px] uppercase tracking-widest">
-                        Workspace ativo • {clients.length} entidades geridas
+                        Workspace ativo • {clients.length} clientes geridos
                     </p>
                 </div>
                 <div className="flex gap-4">
@@ -69,12 +69,12 @@ export default async function ClientsPage() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
                     <input
                         type="text"
-                        placeholder="Pesquisar por nome, NIF ou email..."
+                        placeholder="Pesquisar por nome, CPF/CNPJ ou email..."
                         className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-none focus:outline-none focus:border-amber/50 focus:bg-white/10 font-mono text-xs text-white placeholder:text-white/20 transition-all uppercase tracking-wider"
                     />
                 </div>
                 <div className="flex gap-1 w-full md:w-auto">
-                    {['Singulares', 'Coletivos', 'Todos'].map((label) => (
+                    {['Físicas', 'Jurídicas', 'Todos'].map((label) => (
                         <button 
                             key={label}
                             className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest transition-all flex-1 md:flex-none ${
@@ -110,7 +110,7 @@ export default async function ClientsPage() {
                                     {client.name}
                                 </h3>
                                 <p className="font-mono text-[10px] text-white/60 uppercase tracking-[0.2em] mt-3 mb-8 bg-white/5 px-2 py-1 inline-block border border-white/10">
-                                    Identificador: <span className="text-white font-bold">{client.nif}</span>
+                                    Documento: <span className="text-white font-bold">{client.nif}</span>
                                 </p>
                             </div>
                             <div className="space-y-4 pt-8 border-t border-white/5 mt-auto">
@@ -136,7 +136,7 @@ export default async function ClientsPage() {
                         <Users className="h-16 w-16 mb-6 opacity-10" />
                         <h3 className="text-xl font-display font-bold text-white">Nenhum cliente encontrado</h3>
                         <p className="font-body text-xs mt-2 mb-8 text-center max-w-sm opacity-60">
-                            A sua lista de entidades está vazia. Comece por adicionar os dados do seu primeiro cliente para iniciar a gestão inteligente.
+                            Sua lista de clientes está vazia. Comece adicionando os dados do seu primeiro cliente para iniciar a gestão inteligente.
                         </p>
                         <AddClientModal />
                     </div>
