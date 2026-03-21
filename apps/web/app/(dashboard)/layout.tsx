@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { TopNav } from "@/components/dashboard/top-nav";
 import { Sidebar } from "@/components/dashboard/sidebar";

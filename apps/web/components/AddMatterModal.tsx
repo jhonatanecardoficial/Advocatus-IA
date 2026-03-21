@@ -34,9 +34,7 @@ export default function AddMatterModal() {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
         try {
             const res = await fetch(`${API_URL}/clients`, {
-                headers: { 
-                    'Authorization': `Bearer ${getCookie('accessToken')}`
-                }
+                credentials: 'include',
             });
             const data = await res.json();
             setClients(data.data || []);
@@ -45,12 +43,7 @@ export default function AddMatterModal() {
         }
     };
 
-    const getCookie = (name: string) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop()?.split(';').shift();
-        return undefined;
-    };
+    // Cookies are automatically handled via credentials: 'include'
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

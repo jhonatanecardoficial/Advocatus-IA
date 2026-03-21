@@ -49,10 +49,9 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
     useEffect(() => {
         async function loadTasks() {
             try {
-                const token = localStorage.getItem('accessToken');
                 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
                 const res = await fetch(`${API_URL}/tasks?matterId=${matterId}`, {
-                    headers: { Authorization: token ? `Bearer ${token}` : '' },
+                    credentials: 'include',
                 });
                 if (res.ok) {
                     const data = await res.json();
@@ -69,10 +68,9 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
     const loadExpenses = async () => {
         if (expenses && expenses.length > 0) return;
         try {
-            const token = localStorage.getItem('accessToken');
             const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
             const res = await fetch(`${API_URL}/expenses/matter/${matterId}`, {
-                headers: { Authorization: token ? `Bearer ${token}` : '' },
+                credentials: 'include',
             });
             if (res.ok) {
                 const data = await res.json();
@@ -102,14 +100,13 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
 
         setLoading(true);
         try {
-            const token = localStorage.getItem('accessToken');
             const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
             const res = await fetch(`${API_URL}/expenses`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: token ? `Bearer ${token}` : '',
                 },
                 body: JSON.stringify({
                     matter_id: matterId,
@@ -146,11 +143,10 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
     async function deleteExpense(id: string) {
         setLoading(true);
         try {
-            const token = localStorage.getItem('accessToken');
             const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
             const res = await fetch(`${API_URL}/expenses/${id}`, {
                 method: 'DELETE',
-                headers: { Authorization: token ? `Bearer ${token}` : '' },
+                credentials: 'include',
             });
 
             if (!res.ok) throw new Error('Falha ao eliminar');

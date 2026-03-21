@@ -30,13 +30,7 @@ function getInitials(name: string): string {
     return (first + last).toUpperCase() || '??';
 }
 
-function getCookie(name: string): string | undefined {
-    if (typeof document === 'undefined') return undefined;
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift();
-    return undefined;
-}
+
 
 export function TopNav({ userName }: TopNavProps) {
     const [isMounted, setIsMounted] = useState(false);
@@ -65,9 +59,8 @@ export function TopNav({ userName }: TopNavProps) {
     const fetchDeadlineAlerts = async () => {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
         try {
-            const token = getCookie('accessToken');
             const res = await fetch(`${API_URL}/reports/dashboard-metrics`, {
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                credentials: 'include',
             });
             if (res.ok) {
                 const data = await res.json();
@@ -108,7 +101,7 @@ export function TopNav({ userName }: TopNavProps) {
     const initials = getInitials(userName);
 
     return (
-        <header className="sticky top-0 z-40 w-full glass-panel border-b border-white/5 text-white bg-navy/10 backdrop-blur-xl">
+        <nav className="sticky top-0 z-40 w-full glass-panel border-b border-white/5 text-white bg-navy/10 backdrop-blur-xl">
             <div className="flex h-20 items-center justify-between px-6 md:px-12">
                 <div className="flex items-center gap-8 lg:gap-12">
                     <Link
@@ -226,6 +219,6 @@ export function TopNav({ userName }: TopNavProps) {
                     </button>
                 </div>
             </div>
-        </header>
+        </nav>
     );
 }

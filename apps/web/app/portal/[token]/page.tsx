@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 async function getPortalData(token: string) {
   try {
     const res = await fetch(`${API_URL}/portal/access/${token}`, {
-      cache: "no-store",
+      credentials: 'include' 
     });
     if (!res.ok) {
       if (res.status === 403 || res.status === 404) return null;

@@ -18,8 +18,8 @@ export class ZodValidationPipe implements PipeTransform {
         const result = this.schema.safeParse(value)
 
         if (!result.success) {
-            console.error("ZodValidationPipe failure:", { value, type: metadata?.type, errors: result.error.errors });
-            const errors = result.error.errors.map((e) => ({
+            console.error("ZodValidationPipe failure:", { value, type: metadata?.type, errors: result.error.issues });
+            const errors = result.error.issues.map((e: any) => ({
                 field: e.path.join('.'),
                 message: e.message,
             }))

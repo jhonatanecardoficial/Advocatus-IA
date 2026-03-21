@@ -27,7 +27,6 @@ export default function SignDocumentModal({ documentId, filename, onClose, onSuc
     setLoading(true);
     // ... resto da lógica SES/AES
     try {
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       
       const res = await fetch(`${API_URL}/documents/${documentId}/request-signature`, {

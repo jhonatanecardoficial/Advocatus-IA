@@ -29,9 +29,8 @@ export default function InvoiceDraftPanel({ matterId }: InvoiceDraftPanelProps) 
   const [vatRate, setVatRate] = useState(23);
 
   async function loadInvoices() {
-    const token = localStorage.getItem("accessToken");
     const res = await fetch(`${API_URL}/invoices?matter_id=${matterId}`, {
-      headers: { Authorization: token ? `Bearer ${token}` : "" },
+      credentials: 'include',
     });
     if (res.ok) {
       const data = await res.json();
@@ -48,12 +47,11 @@ export default function InvoiceDraftPanel({ matterId }: InvoiceDraftPanelProps) 
   async function createDraft() {
     setLoading(true);
     try {
-      const token = localStorage.getItem("accessToken");
       const res = await fetch(`${API_URL}/invoices/draft`, {
         method: "POST",
+        credentials: 'include',
         headers: {
           "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
         },
         body: JSON.stringify({
           matter_id: matterId,
@@ -77,9 +75,8 @@ export default function InvoiceDraftPanel({ matterId }: InvoiceDraftPanelProps) 
 
   async function downloadDraftPdf(invoiceId: string) {
     try {
-      const token = localStorage.getItem("accessToken");
       const res = await fetch(`${API_URL}/invoices/${invoiceId}/pdf`, {
-        headers: { Authorization: token ? `Bearer ${token}` : "" },
+        credentials: 'include',
       });
       if (!res.ok) {
         throw new Error("Não foi possível gerar o PDF draft.");
@@ -109,10 +106,9 @@ export default function InvoiceDraftPanel({ matterId }: InvoiceDraftPanelProps) 
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("accessToken");
       const res = await fetch(`${API_URL}/invoices/${invoiceId}/finalize`, {
         method: "POST",
-        headers: { Authorization: token ? `Bearer ${token}` : "" },
+        credentials: 'include',
       });
 
       const body = await res.json().catch(() => ({}));

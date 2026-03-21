@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma } from '@prisma/client';
 
 export interface CreateTimeEntryDto {
   matter_id: string;
@@ -45,8 +45,8 @@ export class TimeEntriesService {
         matterId: dto.matter_id,
         userId,
         description: dto.description,
-        hours: new Decimal(dto.hours),
-        ratePerHour: dto.rate_per_hour ? new Decimal(dto.rate_per_hour) : null,
+        hours: new Prisma.Decimal(dto.hours),
+        ratePerHour: dto.rate_per_hour ? new Prisma.Decimal(dto.rate_per_hour) : null,
         billable: dto.billable ?? true,
         activityDate: new Date(dto.activity_date),
         taskId: dto.task_id || null,
@@ -90,8 +90,8 @@ export class TimeEntriesService {
       where: { id },
       data: {
         ...(dto.description && { description: dto.description }),
-        ...(dto.hours && { hours: new Decimal(dto.hours) }),
-        ...(dto.rate_per_hour && { ratePerHour: new Decimal(dto.rate_per_hour) }),
+        ...(dto.hours && { hours: new Prisma.Decimal(dto.hours) }),
+        ...(dto.rate_per_hour && { ratePerHour: new Prisma.Decimal(dto.rate_per_hour) }),
         ...(dto.billable !== undefined && { billable: dto.billable }),
         ...(dto.activity_date && { activityDate: new Date(dto.activity_date) }),
         ...(dto.task_id && { taskId: dto.task_id }),

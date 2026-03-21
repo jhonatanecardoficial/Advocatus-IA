@@ -46,10 +46,9 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange, o
   useEffect(() => {
     async function loadTasks() {
       try {
-        const token = localStorage.getItem('accessToken');
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
         const res = await fetch(`${API_URL}/tasks?matterId=${matterId}`, {
-          headers: { Authorization: token ? `Bearer ${token}` : '' } as Record<string, string>,
+          credentials: 'include',
         });
         if (res.ok) {
           const data = await res.json();
@@ -72,10 +71,9 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange, o
   // Load entries from server if none provided
   const loadEntries = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const res = await fetch(`${API_URL}/time-entries/matter/${matterId}`, {
-        headers: { Authorization: token ? `Bearer ${token}` : '' } as Record<string, string>,
+        credentials: 'include',
       });
       if (res.ok) {
         const data = await res.json();
@@ -247,7 +245,6 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange, o
 
     setLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const hours = parseFloat(getHours(seconds));
       const rate = ratePerHour || 0;
@@ -264,10 +261,10 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange, o
 
       const res = await fetch(`${API_URL}/time-entries`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-        } as Record<string, string>,
+        },
         body: JSON.stringify(payload),
       });
 
@@ -294,13 +291,10 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange, o
   async function deleteEntry(id: string) {
     setLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const res = await fetch(`${API_URL}/time-entries/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-        } as Record<string, string>,
+        credentials: 'include',
       });
 
       if (!res.ok) throw new Error('Falha ao eliminar');

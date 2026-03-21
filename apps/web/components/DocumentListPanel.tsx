@@ -32,7 +32,6 @@ export default function DocumentListPanel({ matterId, documents: initialDocument
   const toggleShare = async (docId: string, currentStatus: boolean) => {
     setLoading(docId);
     try {
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       
       const res = await fetch(`${API_URL}/documents/${docId}/share`, {
@@ -64,7 +63,6 @@ export default function DocumentListPanel({ matterId, documents: initialDocument
 
   const handleDownload = async (docId: string) => {
     try {
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       
       const res = await fetch(`${API_URL}/documents/${docId}/download-url`, {
