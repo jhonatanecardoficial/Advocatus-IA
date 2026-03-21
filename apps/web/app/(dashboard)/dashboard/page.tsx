@@ -6,16 +6,25 @@ import DashboardSidebarCards from "@/components/dashboard/SidebarCards";
 import { ArrowUpRight, Scale, Users, Clock, AlertTriangle, Calendar } from "lucide-react";
 import Link from "next/link";
 
+interface TodayTask {
+    id: string;
+    title: string;
+    dueAt: string;
+    type: string;
+    priority: string;
+    matter?: { id: string; title: string } | null;
+}
+
 async function fetchDashboardData() {
     const cookieStore = await cookies();
     const token = cookieStore.get("accessToken")?.value;
 
-    if (!token) return { user: null, matters: [], metrics: null };
+    if (!token) return { user: null, matters: [], metrics: null, todayTasks: [] as TodayTask[] };
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
 
     try {
-        const [meRes, mattersRes, metricsRes] = await Promise.all([
+        const [meRes, mattersRes, metricsRes, tasksRes] = await Promise.all([
             fetch(`${API_URL}/auth/me`, {
                 headers: { Authorization: `Bearer ${token}` },
                 cache: "no-store",
@@ -27,21 +36,34 @@ async function fetchDashboardData() {
             fetch(`${API_URL}/reports/dashboard-metrics`, {
                 headers: { Authorization: `Bearer ${token}` },
                 cache: "no-store",
-            })
+            }),
+            fetch(`${API_URL}/tasks`, {
+                headers: { Authorization: `Bearer ${token}` },
+                cache: "no-store",
+            }),
         ]);
 
         const user = meRes.ok ? (await meRes.json()).data : null;
         const matters = mattersRes.ok ? (await mattersRes.json()).data || [] : [];
         const metrics = metricsRes.ok ? (await metricsRes.json()).data : null;
 
-        return { user, matters, metrics };
-    } catch (e) {
-        return { user: null, matters: [], metrics: null };
+        let todayTasks: TodayTask[] = [];
+        if (tasksRes.ok) {
+            const allTasks: TodayTask[] = await tasksRes.json();
+            const todayStr = new Date().toISOString().slice(0, 10);
+            todayTasks = (Array.isArray(allTasks) ? allTasks : [])
+                .filter((t) => t.dueAt && t.dueAt.slice(0, 10) === todayStr)
+                .slice(0, 5);
+        }
+
+        return { user, matters, metrics, todayTasks };
+    } catch {
+        return { user: null, matters: [], metrics: null, todayTasks: [] as TodayTask[] };
     }
 }
 
 export default async function DashboardPage() {
-    const { user, matters, metrics } = await fetchDashboardData();
+    const { user, matters, metrics, todayTasks } = await fetchDashboardData();
 
     return (
         <div className="space-y-10 pb-10">
@@ -171,8 +193,8 @@ export default async function DashboardPage() {
                     <RecentCasesTable matters={matters} />
                 </div>
 
-                {/* Sidebar Cards */}
-                <DashboardSidebarCards />
+                {/* Sidebar Cards — tarefas reais do dia */}
+                <DashboardSidebarCards todayTasks={todayTasks} />
             </div>
         </div>
     );
