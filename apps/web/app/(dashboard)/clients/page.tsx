@@ -17,7 +17,7 @@ interface Client {
 
 async function fetchClients(): Promise<Client[]> {
     const cookieStore = await cookies();
-    const token = cookieStore.get("access_token")?.value;
+    const token = cookieStore.get("accessToken")?.value;
 
     if (!token) return [];
 

@@ -18,6 +18,7 @@ export default function AddClientModal() {
 
     const [conflictResults, setConflictResults] = useState<any[]>([]);
     const [checkingConflict, setCheckingConflict] = useState(false);
+    const [nifError, setNifError] = useState<string | null>(null);
 
     const handleConflictCheck = async () => {
         if (!form.nome || !form.nif) {
@@ -137,7 +138,7 @@ export default function AddClientModal() {
                                         type="text"
                                         value={form.nome}
                                         onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                                        placeholder="Ex: João Silva ou Empresa Lda"
+                                        placeholder="Ex: João Lopes ou Empresa Lda"
                                         className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm text-white placeholder:text-white/20"
                                     />
                                 </div>
@@ -152,10 +153,23 @@ export default function AddClientModal() {
                                             required
                                             type="text"
                                             value={form.nif}
-                                            onChange={(e) => setForm({ ...form, nif: e.target.value })}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/\D/g, '').slice(0, 9);
+                                                setForm({ ...form, nif: val });
+                                                if (val.length > 0 && val.length < 9) {
+                                                    setNifError('O NIF deve ter 9 dígitos');
+                                                } else {
+                                                    setNifError(null);
+                                                }
+                                            }}
                                             placeholder="Ex: 500123456"
-                                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm text-white placeholder:text-white/20"
+                                            className={`w-full px-4 py-3 bg-white/5 border ${nifError ? 'border-red-400/50' : 'border-white/10'} rounded-xl focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm text-white placeholder:text-white/20`}
                                         />
+                                        {nifError && (
+                                            <span className="text-[10px] text-red-400 font-bold mt-1 block animate-reveal">
+                                                {nifError}
+                                            </span>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="text-[11px] text-white/40 uppercase font-bold mb-2 block flex items-center gap-2">
@@ -242,8 +256,8 @@ export default function AddClientModal() {
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={loading}
-                                    className="flex-1 py-4 text-[11px] font-bold uppercase tracking-widest bg-navy text-white rounded-2xl hover:bg-navy/90 hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                    disabled={loading || !!nifError || !form.nif || form.nif.length < 9}
+                                    className="flex-1 py-4 text-[11px] font-bold uppercase tracking-widest bg-navy text-white rounded-2xl hover:bg-navy/90 hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-white/10 flex items-center justify-center gap-2"
                                 >
                                     {loading ? (
                                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

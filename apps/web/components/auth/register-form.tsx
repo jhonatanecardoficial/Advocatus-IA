@@ -146,7 +146,7 @@ export function RegisterForm() {
                                 <input
                                     id="lastName"
                                     type="text"
-                                    placeholder="Silva"
+                                    placeholder="Ex: João Lopes"
                                     className="block w-full pl-10 pr-3 py-2.5 bg-white border border-slate-200 focus:ring-amber-400 focus:border-amber-400 rounded-sm text-sm"
                                     {...register("lastName")}
                                 />
@@ -168,7 +168,7 @@ export function RegisterForm() {
                                 <input
                                     id="officeName"
                                     type="text"
-                                    placeholder="Silva & Advogados, SP"
+                                    placeholder="Ex: Aliança & Advogados, SP"
                                     className="block w-full pl-10 pr-3 py-2.5 bg-white border border-slate-200 focus:ring-amber-400 focus:border-amber-400 rounded-sm text-sm"
                                     {...register("officeName")}
                                 />
@@ -208,7 +208,7 @@ export function RegisterForm() {
                                 <input
                                     id="email"
                                     type="email"
-                                    placeholder="joao@silvaadvogados.pt"
+                                    placeholder="exemplo@advocacia.pt"
                                     className="block w-full pl-10 pr-3 py-2.5 bg-white border border-slate-200 focus:ring-amber-400 focus:border-amber-400 rounded-sm text-sm"
                                     {...register("email")}
                                 />

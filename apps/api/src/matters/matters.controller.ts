@@ -33,7 +33,7 @@ export class MattersController {
     constructor(private readonly mattersService: MattersService) { }
 
     @Post()
-    @Roles('ADVOGADO', 'SOCIO', 'ADMIN')
+    @Roles('SECRETARIA', 'ADVOGADO', 'SOCIO', 'ADMIN')
     @HttpCode(HttpStatus.CREATED)
     @UsePipes(new ZodValidationPipe(CreateMatterSchema))
     create(@CurrentUser() user: RequestUser, @Body() dto: CreateMatterDto) {

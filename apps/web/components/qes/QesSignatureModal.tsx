@@ -35,7 +35,7 @@ export default function QesSignatureModal({ isOpen, onClose, documentId, filenam
         setStep('processing')
         setLoading(true)
         try {
-            const token = localStorage.getItem('access_token')
+            const token = localStorage.getItem('accessToken')
 
             // 1. Obter Hash do documento no Servidor
             const hashRes = await fetch(`${API_URL}/qes/cc/hash`, {
@@ -97,7 +97,7 @@ export default function QesSignatureModal({ isOpen, onClose, documentId, filenam
         setStep('processing')
 
         try {
-            const token = localStorage.getItem('access_token')
+            const token = localStorage.getItem('accessToken')
 
             // Obter URL de autenticação
             const urlRes = await fetch(`${API_URL}/qes/auth-url?documentId=${documentId}`, {

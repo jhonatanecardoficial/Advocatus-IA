@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Plus, X, Calendar, FileText, Clock } from 'lucide-react';
+import { Plus, X, Calendar, FileText, Clock, ChevronDown } from 'lucide-react';
 import { createTaskAction } from '@/app/actions/tasks';
 import { toast } from 'sonner';
 
@@ -122,34 +122,40 @@ export default function AddTaskModal({ matterId, onSuccess, isOpen: externalIsOp
                             <div className="grid grid-cols-2 gap-6">
                                 <div>
                                     <label htmlFor="task-type" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Tipo</label>
-                                    <select
-                                        id="task-type"
-                                        required
-                                        value={form.type}
-                                        onChange={(e) => setForm({ ...form, type: e.target.value })}
-                                        className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white focus:border-amber/50 focus:bg-white/15 outline-none transition-all font-body text-sm appearance-none cursor-pointer"
-                                    >
-                                        <option value="PRAZO" className="bg-navy">Prazo Processual</option>
-                                        <option value="AUDIENCIA" className="bg-navy">Audiência</option>
-                                        <option value="DILIGENCIA" className="bg-navy">Diligência</option>
-                                        <option value="REUNIAO" className="bg-navy">Reunião</option>
-                                        <option value="OUTRO" className="bg-navy">Outro</option>
-                                    </select>
+                                    <div className="relative">
+                                        <select
+                                            id="task-type"
+                                            required
+                                            value={form.type}
+                                            onChange={(e) => setForm({ ...form, type: e.target.value })}
+                                            className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white focus:border-amber/50 focus:bg-white/15 outline-none transition-all font-body text-sm appearance-none cursor-pointer"
+                                        >
+                                            <option value="PRAZO" className="bg-[#0a192f] text-white">Prazo Processual</option>
+                                            <option value="AUDIENCIA" className="bg-[#0a192f] text-white">Audiência</option>
+                                            <option value="DILIGENCIA" className="bg-[#0a192f] text-white">Diligência</option>
+                                            <option value="REUNIAO" className="bg-[#0a192f] text-white">Reunião</option>
+                                            <option value="OUTRO" className="bg-[#0a192f] text-white">Outro</option>
+                                        </select>
+                                        <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                    </div>
                                 </div>
                                 <div>
                                     <label htmlFor="task-priority" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Prioridade</label>
-                                    <select
-                                        id="task-priority"
-                                        required
-                                        value={form.priority}
-                                        onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                                        className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white focus:border-amber/50 focus:bg-white/15 outline-none transition-all font-body text-sm appearance-none cursor-pointer"
-                                    >
-                                        <option value="BAIXA" className="bg-navy">Baixa</option>
-                                        <option value="MEDIA" className="bg-navy">Média</option>
-                                        <option value="ALTA" className="bg-navy">Alta</option>
-                                        <option value="CRITICA" className="bg-navy text-red-400">Crítica</option>
-                                    </select>
+                                    <div className="relative">
+                                        <select
+                                            id="task-priority"
+                                            required
+                                            value={form.priority}
+                                            onChange={(e) => setForm({ ...form, priority: e.target.value })}
+                                            className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white focus:border-amber/50 focus:bg-white/15 outline-none transition-all font-body text-sm appearance-none cursor-pointer"
+                                        >
+                                            <option value="BAIXA" className="bg-[#0a192f] text-white">Baixa</option>
+                                            <option value="MEDIA" className="bg-[#0a192f] text-white">Média</option>
+                                            <option value="ALTA" className="bg-[#0a192f] text-white">Alta</option>
+                                            <option value="CRITICA" className="bg-[#0a192f] text-red-400">Crítica</option>
+                                        </select>
+                                        <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                    </div>
                                 </div>
                             </div>
 
@@ -184,17 +190,20 @@ export default function AddTaskModal({ matterId, onSuccess, isOpen: externalIsOp
                                     </div>
                                     <div>
                                         <label htmlFor="task-dilacao" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Dilação (Art. 139.º CPC)</label>
-                                        <select
-                                            id="task-dilacao"
-                                            value={form.dilacao}
-                                            onChange={(e) => setForm({ ...form, dilacao: e.target.value })}
-                                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white outline-none text-sm appearance-none cursor-pointer"
-                                        >
-                                            <option value="0" className="bg-navy">Sem dilação</option>
-                                            <option value="5" className="bg-navy">5 dias (Continente/R. Autónomas)</option>
-                                            <option value="15" className="bg-navy">15 dias (País Estrangeiro - Europa)</option>
-                                            <option value="30" className="bg-navy">30 dias (Fora da Europa)</option>
-                                        </select>
+                                        <div className="relative">
+                                            <select
+                                                id="task-dilacao"
+                                                value={form.dilacao}
+                                                onChange={(e) => setForm({ ...form, dilacao: e.target.value })}
+                                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white outline-none text-sm appearance-none cursor-pointer"
+                                            >
+                                                <option value="0" className="bg-[#0a192f] text-white">Sem dilação</option>
+                                                <option value="5" className="bg-[#0a192f] text-white">5 dias (Continente/R. Autónomas)</option>
+                                                <option value="15" className="bg-[#0a192f] text-white">15 dias (País Estrangeiro - Europa)</option>
+                                                <option value="30" className="bg-[#0a192f] text-white">30 dias (Fora da Europa)</option>
+                                            </select>
+                                            <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                        </div>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <input

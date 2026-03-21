@@ -26,7 +26,7 @@ export default function DocumentHistoryDialog({ documentId, filename, onClose, o
   useEffect(() => {
     async function fetchHistory() {
       try {
-        const token = localStorage.getItem('access_token');
+        const token = localStorage.getItem('accessToken');
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
         const res = await fetch(`${API_URL}/documents/${documentId}/history`, {
           headers: { 'Authorization': token ? `Bearer ${token}` : '' }
@@ -48,7 +48,7 @@ export default function DocumentHistoryDialog({ documentId, filename, onClose, o
 
   const handleDownload = async (id: string) => {
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const res = await fetch(`${API_URL}/documents/${id}/download-url`, {
         headers: { 'Authorization': token ? `Bearer ${token}` : '' }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Plus, X, Briefcase, User, Calendar, FileText, Scale, Zap } from 'lucide-react';
+import { Plus, X, Briefcase, User, Calendar, FileText, Scale, Zap, ChevronDown } from 'lucide-react';
 import { createMatterAction } from '@/app/actions/matters';
 import { toast } from 'sonner';
 
@@ -35,7 +35,7 @@ export default function AddMatterModal() {
         try {
             const res = await fetch(`${API_URL}/clients`, {
                 headers: { 
-                    'Authorization': `Bearer ${getCookie('access_token')}`
+                    'Authorization': `Bearer ${getCookie('accessToken')}`
                 }
             });
             const data = await res.json();
@@ -136,38 +136,44 @@ export default function AddMatterModal() {
                                             <User className="w-3.5 h-3.5 text-amber/60" />
                                             Cliente Associado
                                         </label>
-                                        <select
-                                            required
-                                            value={form.clientId}
-                                            onChange={(e) => setForm({ ...form, clientId: e.target.value })}
-                                            className="w-full px-5 py-4 bg-white/[0.03] border border-white/10 rounded-2xl focus:border-amber/50 focus:bg-white/[0.07] outline-none transition-all font-body text-sm text-white appearance-none cursor-pointer"
-                                        >
-                                            <option value="" className="bg-navy-900">Selecionar Cliente...</option>
-                                            {clients.map(c => (
-                                                <option key={c.id} value={c.id} className="bg-navy-900">{c.name}</option>
-                                            ))}
-                                        </select>
+                                        <div className="relative">
+                                            <select
+                                                required
+                                                value={form.clientId}
+                                                onChange={(e) => setForm({ ...form, clientId: e.target.value })}
+                                                className="w-full px-5 py-4 bg-white/[0.05] border border-white/20 rounded-2xl focus:border-amber/50 focus:bg-white/[0.07] outline-none transition-all font-body text-sm text-white appearance-none cursor-pointer"
+                                            >
+                                                <option value="" className="bg-[#0a192f] text-white">Selecionar Cliente...</option>
+                                                {clients.map(c => (
+                                                    <option key={c.id} value={c.id} className="bg-[#0a192f] text-white">{c.name}</option>
+                                                ))}
+                                            </select>
+                                            <ChevronDown size={16} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                        </div>
                                     </div>
                                     <div>
                                         <label className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-3 block flex items-center gap-2">
                                             <Briefcase className="w-3.5 h-3.5 text-amber/60" />
                                             Área de Prática
                                         </label>
-                                        <select
-                                            required
-                                            value={form.type}
-                                            onChange={(e) => setForm({ ...form, type: e.target.value })}
-                                            className="w-full px-5 py-4 bg-white/[0.03] border border-white/10 rounded-2xl focus:border-amber/50 focus:bg-white/[0.07] outline-none transition-all font-body text-sm text-white appearance-none cursor-pointer"
-                                        >
-                                            <option value="CIVEL" className="bg-navy-900">Cível</option>
-                                            <option value="PENAL" className="bg-navy-900">Penal</option>
-                                            <option value="LABORAL" className="bg-navy-900">Laboral</option>
-                                            <option value="ADMINISTRATIVO" className="bg-navy-900">Administrativo</option>
-                                            <option value="FISCAL" className="bg-navy-900">Fiscal</option>
-                                            <option value="FAMILIA" className="bg-navy-900">Família</option>
-                                            <option value="COMERCIAL" className="bg-navy-900">Comercial</option>
-                                            <option value="OUTRO" className="bg-navy-900">Outro</option>
-                                        </select>
+                                        <div className="relative">
+                                            <select
+                                                required
+                                                value={form.type}
+                                                onChange={(e) => setForm({ ...form, type: e.target.value })}
+                                                className="w-full px-5 py-4 bg-white/[0.05] border border-white/20 rounded-2xl focus:border-amber/50 focus:bg-white/[0.07] outline-none transition-all font-body text-sm text-white appearance-none cursor-pointer"
+                                            >
+                                                <option value="CIVEL" className="bg-[#0a192f] text-white">Cível</option>
+                                                <option value="PENAL" className="bg-[#0a192f] text-white">Penal</option>
+                                                <option value="LABORAL" className="bg-[#0a192f] text-white">Laboral</option>
+                                                <option value="ADMINISTRATIVO" className="bg-[#0a192f] text-white">Administrativo</option>
+                                                <option value="FISCAL" className="bg-[#0a192f] text-white">Fiscal</option>
+                                                <option value="FAMILIA" className="bg-[#0a192f] text-white">Família</option>
+                                                <option value="COMERCIAL" className="bg-[#0a192f] text-white">Comercial</option>
+                                                <option value="OUTRO" className="bg-[#0a192f] text-white">Outro</option>
+                                            </select>
+                                            <ChevronDown size={16} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                        </div>
                                     </div>
                                 </div>
 

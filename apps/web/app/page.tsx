@@ -7,9 +7,13 @@ export default function LandingPage() {
     return (
         <div className="min-h-screen bg-slate-50 font-body selection:bg-amber/20 selection:text-navy">
             {/* Top Navigation */}
-            <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/50">
+            <nav 
+                aria-label="Navegação Principal"
+                className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/50"
+            >
                 <div className="max-w-7xl mx-auto px-6 md:px-12 py-4 flex items-center justify-between">
                     <button 
+                        aria-label="Voltar ao topo"
                         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                         className="flex items-center gap-3 group cursor-pointer"
                     >
@@ -345,7 +349,10 @@ export default function LandingPage() {
             </section>
 
             {/* Footer */}
-            <footer className="bg-slate-900 text-slate-400 py-16 border-t border-slate-800">
+            <footer 
+                aria-label="Rodapé do Site"
+                className="bg-slate-900 text-slate-400 py-16 border-t border-slate-800"
+            >
                 <div className="max-w-7xl mx-auto px-6 md:px-12">
                     <div className="grid md:grid-cols-4 gap-8 mb-12">
                         <div>

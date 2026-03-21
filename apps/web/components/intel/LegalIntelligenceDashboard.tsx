@@ -76,8 +76,8 @@ export function LegalIntelligenceDashboard() {
       {/* Header & Search */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-navy">Inteligência Jurídica</h1>
-          <p className="text-slate-600">Pesquisa em tempo real no Diário da República, DGSI, STJ e bases jurídicas.</p>
+          <h1 className="text-3xl font-display font-bold text-white">Inteligência Jurídica</h1>
+          <p className="text-slate-100 font-medium">Pesquisa em tempo real no Diário da República, DGSI, STJ e bases jurídicas.</p>
         </div>
       </div>
 
@@ -111,7 +111,7 @@ export function LegalIntelligenceDashboard() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 pb-4 text-sm font-medium transition-colors relative ${
-              activeTab === tab.id ? 'text-navy' : 'text-slate-500 hover:text-navy'
+              activeTab === tab.id ? 'text-amber' : 'text-slate-400 hover:text-white'
             }`}
           >
             {tab.icon}
@@ -159,7 +159,7 @@ export function LegalIntelligenceDashboard() {
                       </a>
                     )}
                   </div>
-                  <p className="mt-3 text-slate-600 line-clamp-3">
+                  <p className="mt-3 text-slate-100 line-clamp-3">
                     {result.content}
                   </p>
                   <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
@@ -215,17 +215,17 @@ export function LegalIntelligenceDashboard() {
                 <Info className="w-4 h-4 text-amber-600" />
                 Dicas de Pesquisa
               </h4>
-              <ul className="space-y-3 text-sm text-slate-600">
+              <ul className="space-y-3 text-sm text-slate-100">
                 <li className="flex gap-2">
-                  <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-amber-500 shrink-0" />
                   <span>Use <strong>termos específicos</strong> como "Dano moral" ou "Código Civil".</span>
                 </li>
                 <li className="flex gap-2">
-                  <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
                   <span>A pesquisa abrange acórdãos do <strong>STJ, Tribunais da Relação</strong> e <strong>Tribunais Comarcais</strong>.</span>
                 </li>
                 <li className="flex gap-2">
-                  <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
                   <span>Dados de <strong>e-fatura</strong> requerem NIF e permissão do cliente.</span>
                 </li>
               </ul>
@@ -234,9 +234,9 @@ export function LegalIntelligenceDashboard() {
         </div>
       ) : (
         <EmptyState 
-          title="Pronto para a Pesquisa Inteligente"
-          description="Inicie sua pesquisa para acessar milhões de leis e decisões judiciais portuguesas com suporte de IA."
-          icon={<Gavel className="w-16 h-16 text-slate-200" />}
+          title={<span className="text-white">Pronto para a Pesquisa Inteligente</span>}
+          description={<span className="text-slate-100">Inicie sua pesquisa para acessar milhões de leis e decisões judiciais portuguesas com suporte de IA.</span>}
+          icon={<Gavel className="w-16 h-16 text-slate-400" />}
         />
       )}
     </div>

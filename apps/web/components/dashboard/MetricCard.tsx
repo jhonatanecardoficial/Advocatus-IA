@@ -24,6 +24,7 @@ export default function MetricCard({ children, delay = 0, className = "" }: Metr
         transition: { duration: 0.2 }
       }}
       className={className}
+      aria-label="Cartão de Métrica"
     >
       {children}
     </motion.div>

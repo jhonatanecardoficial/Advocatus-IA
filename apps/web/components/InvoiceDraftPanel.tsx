@@ -29,7 +29,7 @@ export default function InvoiceDraftPanel({ matterId }: InvoiceDraftPanelProps) 
   const [vatRate, setVatRate] = useState(23);
 
   async function loadInvoices() {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("accessToken");
     const res = await fetch(`${API_URL}/invoices?matter_id=${matterId}`, {
       headers: { Authorization: token ? `Bearer ${token}` : "" },
     });
@@ -48,7 +48,7 @@ export default function InvoiceDraftPanel({ matterId }: InvoiceDraftPanelProps) 
   async function createDraft() {
     setLoading(true);
     try {
-      const token = localStorage.getItem("access_token");
+      const token = localStorage.getItem("accessToken");
       const res = await fetch(`${API_URL}/invoices/draft`, {
         method: "POST",
         headers: {
@@ -77,7 +77,7 @@ export default function InvoiceDraftPanel({ matterId }: InvoiceDraftPanelProps) 
 
   async function downloadDraftPdf(invoiceId: string) {
     try {
-      const token = localStorage.getItem("access_token");
+      const token = localStorage.getItem("accessToken");
       const res = await fetch(`${API_URL}/invoices/${invoiceId}/pdf`, {
         headers: { Authorization: token ? `Bearer ${token}` : "" },
       });
@@ -109,7 +109,7 @@ export default function InvoiceDraftPanel({ matterId }: InvoiceDraftPanelProps) 
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("access_token");
+      const token = localStorage.getItem("accessToken");
       const res = await fetch(`${API_URL}/invoices/${invoiceId}/finalize`, {
         method: "POST",
         headers: { Authorization: token ? `Bearer ${token}` : "" },

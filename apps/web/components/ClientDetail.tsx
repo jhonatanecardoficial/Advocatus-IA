@@ -54,7 +54,7 @@ export default function ClientDetail({ client: initialClient }: Props) {
   async function save() {
     setLoading(true);
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const res = await fetch(`${API_URL}/clients/${client.id}`, {
         method: 'PUT',
@@ -79,7 +79,7 @@ export default function ClientDetail({ client: initialClient }: Props) {
   async function checkConflict() {
     setLoading(true);
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const payload = {
         nome: form.nome,
