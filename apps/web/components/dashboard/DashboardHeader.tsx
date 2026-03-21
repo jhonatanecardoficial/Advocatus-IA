@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { TrendingUp } from "lucide-react";
+import Link from "next/link";
 import AddMatterModal from "@/components/AddMatterModal";
 
 interface DashboardHeaderProps {
@@ -37,10 +38,13 @@ export default function DashboardHeader({ userName, tenantId }: DashboardHeaderP
         className="flex gap-3"
       >
         <AddMatterModal />
-        <button className="px-6 py-4 bg-white/50 border border-slate-200 text-navy text-[11px] font-bold uppercase tracking-widest hover:bg-white hover:shadow-lg transition-all rounded-2xl flex items-center gap-2 active:scale-95">
-          <TrendingUp className="w-4 h-4 text-navy" />
-          Relatórios
-        </button>
+        {/* Link para a página de Relatórios */}
+        <Link href="/reports" aria-label="Abrir Relatórios">
+          <button className="px-6 py-4 bg-white/50 border border-slate-200 text-navy text-[11px] font-bold uppercase tracking-widest hover:bg-white hover:shadow-lg transition-all rounded-2xl flex items-center gap-2 active:scale-95">
+            <TrendingUp className="w-4 h-4 text-navy" />
+            Relatórios
+          </button>
+        </Link>
       </motion.div>
     </div>
   );

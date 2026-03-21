@@ -4,6 +4,15 @@ import { motion } from "framer-motion";
 import { Zap, Calendar } from "lucide-react";
 import Link from 'next/link';
 
+// Formata a data actual para exibição — ex: "21 DE MAR"
+function formatTodayDate(): string {
+    const now = new Date();
+    const day = now.getDate().toString().padStart(2, '0');
+    const months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+    const month = months[now.getMonth()];
+    return `${day} DE ${month}`;
+}
+
 export default function DashboardSidebarCards() {
   return (
     <div className="space-y-8">
@@ -33,16 +42,20 @@ export default function DashboardSidebarCards() {
           <p className="text-sm text-slate-300 font-medium leading-relaxed mb-8">
             A IA analisou centenas de páginas de jurisprudência. Uma correspondência vital foi detetada para o <span className="text-amber font-bold">PROC-2024-X89</span>.
           </p>
-          <button 
-            aria-label="Abrir Insights IA"
-            className="w-full bg-white text-navy py-4 text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-amber hover:scale-[1.02] transition-all shadow-xl active:scale-[0.98]"
-          >
-            Abrir Insights IA
-          </button>
+          <Link href="/intelligence" aria-label="Abrir Insights IA">
+            <motion.button 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              aria-label="Abrir Insights IA"
+              className="w-full bg-white text-navy py-4 text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-amber transition-all shadow-xl"
+            >
+              Abrir Insights IA
+            </motion.button>
+          </Link>
         </div>
       </motion.div>
 
-      {/* Agenda Card - Glassmorphism Premium Dark */}
+      {/* Agenda Card - Data Dinâmica */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -56,7 +69,10 @@ export default function DashboardSidebarCards() {
             <Calendar size={16} className="text-amber shadow-glow" />
             Agenda Hoje
           </h3>
-          <span className="text-[10px] font-mono text-amber/60 font-bold uppercase tracking-widest">13 DE MAR</span>
+          {/* Data dinâmica — calculada em tempo de execução */}
+          <span className="text-[10px] font-mono text-amber/60 font-bold uppercase tracking-widest">
+            {formatTodayDate()}
+          </span>
         </div>
 
         <div className="space-y-5 relative z-10">
@@ -97,13 +113,15 @@ export default function DashboardSidebarCards() {
             </motion.div>
           ))}
         </div>
-        <Link href="/tasks">
-            <button 
-              aria-label="Ver Calendário Completo"
-              className="w-full mt-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-amber/60 hover:text-white hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10"
-            >
-              Ver Calendário Completo
-            </button>
+
+        {/* Link do Calendário — navega para /tasks */}
+        <Link href="/tasks" aria-label="Ver Calendário Completo de Prazos">
+          <button 
+            aria-label="Ver Calendário Completo"
+            className="w-full mt-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-amber/60 hover:text-white hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10"
+          >
+            Ver Calendário Completo
+          </button>
         </Link>
       </motion.div>
     </div>
