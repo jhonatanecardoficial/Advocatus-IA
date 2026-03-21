@@ -111,7 +111,7 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
 
   async function loadSummaries() {
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const headers = { Authorization: token ? `Bearer ${token}` : '' } as Record<string, string>;
 
@@ -135,7 +135,7 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
 
   async function loadTasks() {
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const res = await fetch(`${API_URL}/tasks?matterId=${matter.id}`, {
         headers: { Authorization: token ? `Bearer ${token}` : '' }
@@ -164,7 +164,7 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
   async function save() {
     setLoading(true);
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const res = await fetch(`${API_URL}/matters/${matter.id}`, {
         method: 'PUT',

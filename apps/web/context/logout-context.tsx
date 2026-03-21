@@ -26,7 +26,7 @@ export function LogoutProvider({ children }: { children: ReactNode }) {
         setIsLoading(true)
         try {
             await logoutAction()
-            localStorage.removeItem('access_token');
+            localStorage.removeItem('accessToken');
             setIsOpen(false)
             router.push('/login')
         } catch (error) {

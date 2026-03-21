@@ -33,7 +33,10 @@ export default function DashboardSidebarCards() {
           <p className="text-sm text-slate-300 font-medium leading-relaxed mb-8">
             A IA analisou centenas de páginas de jurisprudência. Uma correspondência vital foi detetada para o <span className="text-amber font-bold">PROC-2024-X89</span>.
           </p>
-          <button className="w-full bg-white text-navy py-4 text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-amber hover:scale-[1.02] transition-all shadow-xl active:scale-[0.98]">
+          <button 
+            aria-label="Abrir Insights IA"
+            className="w-full bg-white text-navy py-4 text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-amber hover:scale-[1.02] transition-all shadow-xl active:scale-[0.98]"
+          >
             Abrir Insights IA
           </button>
         </div>
@@ -58,7 +61,7 @@ export default function DashboardSidebarCards() {
 
         <div className="space-y-5 relative z-10">
           {[
-            { time: "10:30", title: "Reunião de Estratégia", location: "Sala 2 • Dra. Ana Silva", status: "green" },
+            { time: "10:30", title: "Reunião de Estratégia", location: "Sala 2 • Equipa", status: "green" },
             { time: "14:00", title: "Audiência Preliminar", location: "Tribunal de Justiça", status: "amber" }
           ].map((event, idx) => (
             <motion.div 
@@ -95,9 +98,12 @@ export default function DashboardSidebarCards() {
           ))}
         </div>
         <Link href="/tasks">
-          <button className="w-full mt-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-amber/60 hover:text-white hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10">
-            Ver Calendário Completo
-          </button>
+            <button 
+              aria-label="Ver Calendário Completo"
+              className="w-full mt-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-amber/60 hover:text-white hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10"
+            >
+              Ver Calendário Completo
+            </button>
         </Link>
       </motion.div>
     </div>

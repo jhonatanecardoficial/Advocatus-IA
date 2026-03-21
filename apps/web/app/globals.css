@@ -1,11 +1,13 @@
 @import "tailwindcss";
 
-/* === Design Tokens — Advocatus IA === */@theme {
+/* === Design Tokens — Advocatus IA === */
+@theme {
   /* === Cores Premium (Vibrantes e Harmônicas) === */
   --color-navy: #0a192f;
   --color-navy-800: #112240;
   --color-navy-700: #1d2d50;
   --color-navy-600: #233554;
+  --color-navy-900: #020c1b;
   --color-navy-100: #ccd6f6;
   --color-navy-50: #e6f1ff;
 
@@ -68,6 +70,21 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* === Universal Contrast Fixes === */
+  ::placeholder {
+    color: rgba(255, 255, 255, 0.45) !important; /* Aumentado de 20% para 45% */
+  }
+
+  /* Forçar contraste em selects nativos */
+  select {
+    color-scheme: dark;
+  }
+  
+  select option {
+    background-color: #0a192f;
+    color: white;
+  }
+
   /* === Tipografia Especial === */
   h1, h2, h3, h4 {
     font-family: var(--font-display);
@@ -81,6 +98,15 @@
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+  }
+
+  /* === Text Contrast Helpers === */
+  .text-premium-muted {
+    color: var(--color-slate-300) !important; /* WCAG AA Checked */
+  }
+
+  .text-premium-low-contrast {
+    color: var(--color-slate-500) !important; /* Reserved for very secondary info */
   }
 
   /* === Scrollbar Sleek === */

@@ -19,16 +19,17 @@ export async function loginAction(data: any) {
         }
 
         const result = await response.json();
+        const token = result.access_token || result.accessToken;
 
-        if (result.access_token) {
-            (await cookies()).set("access_token", result.access_token, {
+        if (token) {
+            (await cookies()).set("accessToken", token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 sameSite: "lax",
                 path: "/",
                 maxAge: 60 * 60 * 24 * 7 // 7 days
             });
-            return { success: true, token: result.access_token };
+            return { success: true, token };
         }
 
         return { error: "Token não retornado pelo servidor." };
@@ -57,16 +58,17 @@ export async function registerAction(data: any) {
         }
 
         const result = await response.json();
+        const token = result.access_token || result.accessToken;
 
-        if (result.access_token) {
-            (await cookies()).set("access_token", result.access_token, {
+        if (token) {
+            (await cookies()).set("accessToken", token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 sameSite: "lax",
                 path: "/",
                 maxAge: 60 * 60 * 24 * 7
             });
-            return { success: true, token: result.access_token };
+            return { success: true, token };
         }
 
         return { error: "Token não retornado pelo servidor." };
@@ -77,6 +79,6 @@ export async function registerAction(data: any) {
 
 export async function logoutAction() {
     const cookieStore = await cookies();
-    cookieStore.delete("access_token");
+    cookieStore.delete("accessToken");
     return { success: true };
 }

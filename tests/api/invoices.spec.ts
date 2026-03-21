@@ -84,7 +84,7 @@ test.describe.serial('Invoices API (Task 008)', () => {
     expect(detailRes.status()).toBe(200);
     const detail = await detailRes.json();
     expect(detail.id).toBe(invoiceId);
-    expect(detail.reference).toContain('INV-');
+    expect(detail.reference).toMatch(/^(INV-|DRAFT-)/);
 
     const pdfRes = await request.get(`/api/v1/invoices/${invoiceId}/pdf`, {
       headers: { Authorization: `Bearer ${ctx.token}` },

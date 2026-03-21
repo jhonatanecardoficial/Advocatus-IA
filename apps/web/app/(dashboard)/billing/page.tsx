@@ -15,7 +15,7 @@ interface InvoiceRow {
 }
  
 async function fetchInvoices(): Promise<InvoiceRow[]> {
-  const token = (await cookies()).get("access_token")?.value;
+  const token = (await cookies()).get("accessToken")?.value;
   if (!token) {
     return [];
   }
@@ -46,7 +46,7 @@ async function fetchTenant(token: string) {
 }
  
 export default async function BillingPage() {
-  const token = (await cookies()).get("access_token")?.value;
+  const token = (await cookies()).get("accessToken")?.value;
   if (!token) return null;
 
   const [invoices, tenant] = await Promise.all([

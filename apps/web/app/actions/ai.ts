@@ -7,7 +7,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1
 export async function aiSearchAction(query: string) {
     try {
         const cookieStore = await cookies();
-        const token = cookieStore.get("access_token")?.value;
+        const token = cookieStore.get("accessToken")?.value;
 
         if (!token) {
             return { error: "Não está autenticado." };
@@ -24,7 +24,7 @@ export async function aiSearchAction(query: string) {
         });
 
         if (response.status === 401) {
-            cookieStore.delete("access_token");
+            cookieStore.delete("accessToken");
             return { error: "Sessão expirada. Faça login novamente." };
         }
 

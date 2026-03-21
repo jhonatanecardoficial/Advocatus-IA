@@ -8,7 +8,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1
 export async function uploadDocumentAction(formData: FormData) {
     try {
         const cookieStore = await cookies();
-        const token = cookieStore.get("access_token")?.value;
+        const token = cookieStore.get("accessToken")?.value;
 
         if (!token) return { error: "NÃ£o estÃ¡ autenticado." };
 
@@ -30,7 +30,7 @@ export async function uploadDocumentAction(formData: FormData) {
         });
 
         if (response.status === 401) {
-            cookieStore.delete("access_token");
+            cookieStore.delete("accessToken");
             return { error: "Sessao expirada. Faca login novamente." };
         }
 

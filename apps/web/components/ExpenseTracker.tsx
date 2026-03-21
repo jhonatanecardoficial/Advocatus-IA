@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Plus, X, Calendar, Tag, Receipt } from 'lucide-react';
+import { Plus, X, Calendar, Tag, Receipt, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Expense {
@@ -49,7 +49,7 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
     useEffect(() => {
         async function loadTasks() {
             try {
-                const token = localStorage.getItem('access_token');
+                const token = localStorage.getItem('accessToken');
                 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
                 const res = await fetch(`${API_URL}/tasks?matterId=${matterId}`, {
                     headers: { Authorization: token ? `Bearer ${token}` : '' },
@@ -69,7 +69,7 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
     const loadExpenses = async () => {
         if (expenses && expenses.length > 0) return;
         try {
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('accessToken');
             const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
             const res = await fetch(`${API_URL}/expenses/matter/${matterId}`, {
                 headers: { Authorization: token ? `Bearer ${token}` : '' },
@@ -102,7 +102,7 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
 
         setLoading(true);
         try {
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('accessToken');
             const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
             const res = await fetch(`${API_URL}/expenses`, {
@@ -146,7 +146,7 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
     async function deleteExpense(id: string) {
         setLoading(true);
         try {
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('accessToken');
             const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
             const res = await fetch(`${API_URL}/expenses/${id}`, {
                 method: 'DELETE',
@@ -221,15 +221,18 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Categoria</label>
-                        <select
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all appearance-none cursor-pointer"
-                        >
-                            {CATEGORIES.map((cat) => (
-                                <option key={cat.value} value={cat.value} className="bg-navy">{cat.label}</option>
-                            ))}
-                        </select>
+                        <div className="relative">
+                            <select
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all appearance-none cursor-pointer"
+                            >
+                                {CATEGORIES.map((cat) => (
+                                    <option key={cat.value} value={cat.value} className="bg-[#0a192f] text-white">{cat.label}</option>
+                                ))}
+                            </select>
+                            <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                        </div>
                     </div>
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Valor (€)</label>
@@ -262,16 +265,19 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Tarefa Associada (Opcional)</label>
-                        <select
-                            value={taskId}
-                            onChange={(e) => setTaskId(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all appearance-none cursor-pointer"
-                        >
-                            <option value="" className="bg-navy">Nenhuma tarefa</option>
-                            {tasks.map((task) => (
-                                <option key={task.id} value={task.id} className="bg-navy">{task.title}</option>
-                            ))}
-                        </select>
+                        <div className="relative">
+                            <select
+                                value={taskId}
+                                onChange={(e) => setTaskId(e.target.value)}
+                                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all appearance-none cursor-pointer"
+                            >
+                                <option value="" className="bg-[#0a192f] text-white">Nenhuma tarefa</option>
+                                {tasks.map((task) => (
+                                    <option key={task.id} value={task.id} className="bg-[#0a192f] text-white">{task.title}</option>
+                                ))}
+                            </select>
+                            <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                        </div>
                     </div>
                     <div className="flex items-end pb-3">
                         <label className="flex items-center gap-3 cursor-pointer group">

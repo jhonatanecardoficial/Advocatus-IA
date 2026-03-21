@@ -22,7 +22,7 @@ interface Matter {
 
 async function fetchMatter(id: string): Promise<Matter | null> {
   const cookieStore = await cookies();
-  const token = cookieStore.get('access_token')?.value;
+  const token = cookieStore.get('accessToken')?.value;
   if (!token) return null;
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';

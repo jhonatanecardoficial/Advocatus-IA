@@ -9,12 +9,39 @@ import { motion } from 'framer-motion';
 
 export function TopNav() {
     const [isMounted, setIsMounted] = useState(false);
+    const [user, setUser] = useState<{ name: string } | null>(null);
     const pathname = usePathname();
     const { openLogoutModal } = useLogout();
 
     useEffect(() => {
         setIsMounted(true);
+        fetchProfile();
     }, []);
+
+    const fetchProfile = async () => {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
+        try {
+            const res = await fetch(`${API_URL}/auth/me`, {
+                headers: { 
+                    'Authorization': `Bearer ${getCookie('accessToken')}`
+                }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setUser(data.data);
+            }
+        } catch (err) {
+            console.error('Erro ao buscar perfil:', err);
+        }
+    };
+
+    const getCookie = (name: string) => {
+        if (typeof document === 'undefined') return undefined;
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift();
+        return undefined;
+    };
 
     const isDashboard = pathname === '/dashboard';
 
@@ -73,14 +100,16 @@ export function TopNav() {
 
                     <div className="flex items-center gap-4">
                         <div className="hidden md:flex flex-col items-end">
-                            <span className="text-xs font-black text-white uppercase tracking-widest">Dr. Silva</span>
+                            <span className="text-xs font-black text-white uppercase tracking-widest">
+                                {user?.name || 'Advogado'}
+                            </span>
                             <span className="text-[10px] text-amber/60 font-mono font-bold tracking-tighter">PREMIUM MEMBER</span>
                         </div>
                         <motion.div 
                             whileHover={{ scale: 1.05, border: "1px solid rgba(251, 191, 36, 0.5)" }}
-                            className="h-10 w-10 rounded-full bg-gradient-to-tr from-amber to-navy-600 border border-white/20 flex items-center justify-center font-bold text-navy shadow-lg"
+                            className="h-10 w-10 rounded-full bg-gradient-to-tr from-amber to-navy-600 border border-white/20 flex items-center justify-center font-bold text-navy shadow-lg text-xs"
                         >
-                            DS
+                            {user?.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '??'}
                         </motion.div>
                     </div>
 

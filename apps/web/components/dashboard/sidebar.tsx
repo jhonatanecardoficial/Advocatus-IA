@@ -101,7 +101,7 @@ export function Sidebar() {
                             className={`flex items-center ${isExpanded ? 'px-4' : 'justify-center'} py-3 transition-all rounded-xl relative group ${
                                 isMounted && isActive 
                                 ? 'bg-amber text-navy shadow-lg shadow-amber/20' 
-                                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                : 'text-slate-300 hover:text-white hover:bg-white/5'
                             }`}
                             title={!isExpanded ? item.label : ''}
                             suppressHydrationWarning

@@ -12,57 +12,51 @@ test.describe('Phase 6: Landing Page & Frontend Flow', () => {
 
     test.describe('Landing Page', () => {
         test('should display hero section with call-to-action', async ({ page }) => {
-            // Check hero heading
-            await expect(page.locator('h1')).toContainText('A Advocacia não tem de ser caótica')
-
+            await expect(page.locator('h1')).toContainText('A Excelência Jurídica Exige Rigor')
+ 
             // Check CTA buttons
-            await expect(page.locator('a:has-text("Começar Agora")')).toBeVisible()
-            await expect(page.locator('button:has-text("Ver Demo")')).toBeVisible()
+            await expect(page.locator('a:has-text("Solicitar Acesso Piloto")')).toBeVisible()
+            await expect(page.locator('a:has-text("Explorar Funcionalidades")')).toBeVisible()
         })
 
         test('should display social proof section', async ({ page }) => {
-            const socialProof = page.locator('text=Segurança e Conformidade')
+            const socialProof = page.locator('text=Acesso Exclusivo para Escritórios Selecionados')
             await expect(socialProof).toBeVisible()
 
             // Check security badges
-            await expect(page.locator('text=Encriptação End-to-End')).toBeVisible()
+            await expect(page.locator('text=Inteligência Artificial que Respeita a Toga.')).toBeVisible()
             await expect(page.locator('text=RGPD Compliant')).toBeVisible()
-            await expect(page.locator('text=Assinatura Digital')).toBeVisible()
+            await expect(page.locator('text=Assinatura QES')).toBeVisible()
         })
 
-        test('should display features section with Z-pattern layout', async ({ page }) => {
-            const featuresSection = page.locator('text=Tudo o que precisa para escalar')
+        test('should display features section', async ({ page }) => {
+            const featuresSection = page.locator('text=Gestão Integral do Seu Escritório')
             await expect(featuresSection).toBeVisible()
 
             // Check feature cards
-            await expect(page.locator('text=Gestão de Tempo')).toBeVisible()
-            await expect(page.locator('text=Gestão de Clientes')).toBeVisible()
-            await expect(page.locator('text=Processos Jurídicos')).toBeVisible()
-            await expect(page.locator('text=IA Integrada')).toBeVisible()
-        })
-
-        test('should display CTA section at bottom', async ({ page }) => {
-            await page.locator('text=Pronto para revolucionar o seu escritório?').scrollIntoViewIfNeeded()
-            await expect(page.locator('text=Começar Teste Gratuito')).toBeVisible()
+            await expect(page.locator('h3:has-text("Honorários e Faturação")')).toBeVisible()
+            await expect(page.locator('h3:has-text("Processos e Clientes")')).toBeVisible()
+            await expect(page.locator('h3:has-text("Prazos e Documentos")')).toBeVisible()
         })
 
         test('should display footer with links', async ({ page }) => {
-            await page.locator('footer').scrollIntoViewIfNeeded()
-            await expect(page.locator('text=Advocatus IA')).toBeVisible()
-            await expect(page.locator('text=Privacidade')).toBeVisible()
-            await expect(page.locator('text=Termos')).toBeVisible()
+            const footer = page.locator('footer')
+            await footer.scrollIntoViewIfNeeded()
+            await expect(page.locator('footer >> text=Advocatus IA')).toBeVisible()
+            await expect(page.locator('footer >> text=Política de Privacidade')).toBeVisible()
+            await expect(page.locator('footer >> text=Termos de Utilização')).toBeVisible()
         })
     })
 
     test.describe('Navigation & Responsiveness', () => {
         test('should navigate to login page', async ({ page }) => {
-            await page.locator('a:has-text("Entrar")').click()
+            await page.locator('a:has-text("Entrar")').first().click()
             await expect(page).toHaveURL(/.*\/login/)
         })
 
         test('should navigate to register page', async ({ page }) => {
-            await page.locator('a:has-text("Começar Grátis")').first().click()
-            await expect(page).toHaveURL(/.*\/register/)
+            await page.locator('a:has-text("Acesso Antecipado")').first().click()
+            await expect(page).toHaveURL(/.*\/login/) // Agora aponta para login também
         })
 
         test('should be responsive on mobile (375px)', async ({ page }) => {
@@ -74,19 +68,19 @@ test.describe('Phase 6: Landing Page & Frontend Flow', () => {
             
             // Verify layout adjusts
             await expect(page.locator('h1')).toBeVisible()
-            await expect(page.locator('button:has-text("Começar Agora")')).toBeVisible()
+            await expect(page.locator('a:has-text("Solicitar Acesso Piloto")')).toBeVisible()
         })
 
         test('should display properly on desktop (1440px)', async ({ page }) => {
             await page.setViewportSize({ width: 1440, height: 900 })
             
             // Check multi-column layouts render
-            await expect(page.locator('text=Tudo o que precisa para escalar')).toBeVisible()
+            await expect(page.locator('text=Gestão Integral do Seu Escritório')).toBeVisible()
             
             // Features should be in grid
-            const featureCards = page.locator('.z-pattern-grid div')
+            const featureCards = page.locator('#features div.grid > div')
             const count = await featureCards.count()
-            expect(count).toBeGreaterThan(0)
+            expect(count).toBe(3)
         })
     })
 
@@ -101,7 +95,7 @@ test.describe('Phase 6: Landing Page & Frontend Flow', () => {
         })
 
         test('should display hover effects on buttons', async ({ page }) => {
-            const button = page.locator('button:has-text("Ver Demo")')
+            const button = page.locator('a:has-text("Solicitar Acesso Piloto")').first()
             
             // Get initial state
             const initialStyle = await button.evaluate(el => window.getComputedStyle(el).transform)
@@ -115,10 +109,10 @@ test.describe('Phase 6: Landing Page & Frontend Flow', () => {
         })
 
         test('should animate elements on page load', async ({ page }) => {
-            const h1 = page.locator('h1').first()
+            const animateDiv = page.locator('div.animate-fade-in').first()
             
             // Check for animation class
-            const className = await h1.getAttribute('class')
+            const className = await animateDiv.getAttribute('class')
             expect(className).toContain('animate')
         })
     })
@@ -129,8 +123,8 @@ test.describe('Phase 6: Landing Page & Frontend Flow', () => {
             await expect(page).toHaveURL('/')
 
             // 2. Click Começar Grátis from hero
-            await page.locator('a:has-text("Começar Agora")').click()
-            await expect(page).toHaveURL(/.*\/register/)
+            await page.locator('a:has-text("Solicitar Acesso Piloto")').click()
+            await expect(page).toHaveURL(/.*\/login/) 
 
             // 3. Register flow (basic check)
             const registerForm = page.locator('form')

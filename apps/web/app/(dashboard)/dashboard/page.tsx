@@ -8,7 +8,7 @@ import Link from "next/link";
 
 async function fetchDashboardData() {
     const cookieStore = await cookies();
-    const token = cookieStore.get("access_token")?.value;
+    const token = cookieStore.get("accessToken")?.value;
 
     if (!token) return { user: null, matters: [], metrics: null };
 
