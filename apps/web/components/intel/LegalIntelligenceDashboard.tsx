@@ -13,6 +13,7 @@ import {
   Sparkles,
   Database
 } from 'lucide-react';
+import { aiSearchAction } from '@/app/actions/ai';
 import { 
   Card, 
   ButtonPrimary, 
@@ -32,14 +33,6 @@ interface LegalResult {
   similarity?: number;
 }
 
-function getCookie(name: string): string | undefined {
-  if (typeof document === 'undefined') return undefined;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift();
-  return undefined;
-}
-
 export function LegalIntelligenceDashboard() {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -54,19 +47,14 @@ export function LegalIntelligenceDashboard() {
     setLoading(true);
     setAiAnswer(null);
     try {
-      // Usamos o endpoint de busca enriquecido com MCP
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
-      const token = getCookie('accessToken');
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      const response = await fetch(`${API_URL}/ai/search`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ query }),
-      });
+      const data = await aiSearchAction(query);
       
-      const data = await response.json();
+      if (data.error) {
+        console.error('Erro retornado pela API:', data.error);
+        // Fallback silently or show a toast if available
+        return;
+      }
+      
       setResults(data.results || []);
       setAiAnswer(data.answer || null);
     } catch (error) {
