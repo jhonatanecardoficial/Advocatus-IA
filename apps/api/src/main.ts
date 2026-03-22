@@ -1,5 +1,15 @@
 // ==========================================
-// 1. INJEÇÃO DO OPENTELEMETRY SDK (DEVE VIR ANTES DE EXPLÍCITAMENTE IMPORTARMOS QQ OUTRO PACOTE)
+// 1. CARREGAMENTO DE VARIÁVEIS DE AMBIENTE (DEVE VIR ANTES DE TUDO)
+// ==========================================
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// Tenta carregar do diretório local ou da raiz do monorepo
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+dotenv.config({ path: path.resolve(process.cwd(), '../../.env') });
+
+// ==========================================
+// 2. INJEÇÃO DO OPENTELEMETRY SDK
 // ==========================================
 import { otelSDK } from './telemetry'
 otelSDK.start()
