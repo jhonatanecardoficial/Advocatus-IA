@@ -14,7 +14,13 @@ interface SearchResult {
     subtitle?: string;
 }
 
-
+function getCookie(name: string): string | undefined {
+    if (typeof document === 'undefined') return undefined;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return undefined;
+}
 
 export function GlobalSearch() {
     const [query, setQuery] = useState('');
@@ -47,11 +53,14 @@ export function GlobalSearch() {
         setIsOpen(true);
 
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+        const token = getCookie('accessToken');
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
 
         try {
             const [clientsRes, mattersRes] = await Promise.all([
-                fetch(`${API_URL}/clients?search=${encodeURIComponent(q)}&perPage=5`, { credentials: 'include' }),
-                fetch(`${API_URL}/matters?search=${encodeURIComponent(q)}&perPage=5`, { credentials: 'include' }),
+                fetch(`${API_URL}/clients?search=${encodeURIComponent(q)}&perPage=5`, { headers }),
+                fetch(`${API_URL}/matters?search=${encodeURIComponent(q)}&perPage=5`, { headers }),
             ]);
 
             const combined: SearchResult[] = [];

@@ -7,6 +7,14 @@ import DocumentHistoryDialog from './DocumentHistoryDialog';
 import UploadDocumentModal from './UploadDocumentModal';
 import SignDocumentModal from './documents/SignDocumentModal';
 
+function getCookie(name: string): string | undefined {
+    if (typeof document === 'undefined') return undefined;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return undefined;
+}
+
 interface Document {
   id: string;
   filename: string;
@@ -31,6 +39,7 @@ export default function DocumentListPanel({ matterId, documents: initialDocument
 
   const toggleShare = async (docId: string, currentStatus: boolean) => {
     setLoading(docId);
+    const token = getCookie('accessToken');
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       
@@ -62,6 +71,7 @@ export default function DocumentListPanel({ matterId, documents: initialDocument
   };
 
   const handleDownload = async (docId: string) => {
+    const token = getCookie('accessToken');
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       

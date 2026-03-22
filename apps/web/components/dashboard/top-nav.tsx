@@ -30,7 +30,13 @@ function getInitials(name: string): string {
     return (first + last).toUpperCase() || '??';
 }
 
-
+function getCookie(name: string): string | undefined {
+    if (typeof document === 'undefined') return undefined;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return undefined;
+}
 
 export function TopNav({ userName }: TopNavProps) {
     const [isMounted, setIsMounted] = useState(false);
@@ -59,8 +65,9 @@ export function TopNav({ userName }: TopNavProps) {
     const fetchDeadlineAlerts = async () => {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
         try {
+            const token = getCookie('accessToken');
             const res = await fetch(`${API_URL}/reports/dashboard-metrics`, {
-                credentials: 'include',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
             });
             if (res.ok) {
                 const data = await res.json();

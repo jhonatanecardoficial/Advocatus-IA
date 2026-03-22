@@ -8,6 +8,14 @@ interface Props {
   matterId: string;
 }
 
+function getCookie(name: string): string | undefined {
+    if (typeof document === 'undefined') return undefined;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return undefined;
+}
+
 export default function AiDraftButton({ matterId }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -26,6 +34,7 @@ export default function AiDraftButton({ matterId }: Props) {
   const handleGenerate = async () => {
     setLoading(true);
     setDraft(null);
+    const token = getCookie('accessToken');
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       

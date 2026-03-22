@@ -5,6 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ShieldCheck, X, Phone, CheckCircle2, AlertCircle, Loader2, CreditCard, Smartphone, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 
+function getCookie(name: string): string | undefined {
+    if (typeof document === 'undefined') return undefined;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return undefined;
+}
+
 interface QesSignatureModalProps {
     isOpen: boolean
     onClose: () => void
@@ -34,6 +42,7 @@ export default function QesSignatureModal({ isOpen, onClose, documentId, filenam
     const startCcFlow = async () => {
         setStep('processing')
         setLoading(true)
+        const token = getCookie('accessToken')
         try {
             // 1. Obter Hash do documento no Servidor
             const hashRes = await fetch(`${API_URL}/qes/cc/hash`, {
@@ -93,6 +102,7 @@ export default function QesSignatureModal({ isOpen, onClose, documentId, filenam
     const handleCmdRequest = async () => {
         setLoading(true)
         setStep('processing')
+        const token = getCookie('accessToken')
 
         try {
             // Obter URL de autenticação
