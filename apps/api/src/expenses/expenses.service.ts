@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma } from '@prisma/client';
 import { ExpenseCategory } from '@prisma/client';
 
 export interface CreateExpenseDto {
@@ -53,7 +53,7 @@ export class ExpensesService {
                 taskId: dto.task_id || null,
                 description: dto.description,
                 category: dto.category,
-                amount: new Decimal(dto.amount),
+                amount: new Prisma.Decimal(dto.amount),
                 date: new Date(dto.date),
                 billable: dto.billable ?? true,
             },
@@ -96,7 +96,7 @@ export class ExpensesService {
             data: {
                 ...(dto.description && { description: dto.description }),
                 ...(dto.category && { category: dto.category }),
-                ...(dto.amount && { amount: new Decimal(dto.amount) }),
+                ...(dto.amount && { amount: new Prisma.Decimal(dto.amount) }),
                 ...(dto.date && { date: new Date(dto.date) }),
                 ...(dto.billable !== undefined && { billable: dto.billable }),
                 ...(dto.task_id && { taskId: dto.task_id }),

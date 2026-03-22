@@ -6,7 +6,7 @@ import { RegisterDto, RegisterSchema } from './dto/register.dto'
 import { LoginDto, LoginSchema } from './dto/login.dto'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { CurrentUser } from './decorators/current-user.decorator'
-import { RequestUser } from './strategies/jwt.strategy'
+import { RequestUser } from './interfaces/auth.interface'
 
 @Controller('auth')
 export class AuthController {

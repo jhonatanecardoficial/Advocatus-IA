@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import type { Metadata } from "next";
 
 export default function PortalLayout({ children }: { children: ReactNode }) {
   return (
@@ -24,3 +25,12 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
     </div>
   );
 }
+
+export const metadata: Metadata = {
+    title: "Portal do Cliente | Advocatus IA",
+    description: "Acesso seguro aos seus processos e documentos.",
+    openGraph: {
+        title: "Portal do Cliente | Advocatus IA",
+        description: "Acesso seguro aos seus processos e documentos.",
+    }
+};

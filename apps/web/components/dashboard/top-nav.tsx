@@ -108,7 +108,7 @@ export function TopNav({ userName }: TopNavProps) {
     const initials = getInitials(userName);
 
     return (
-        <header className="sticky top-0 z-40 w-full glass-panel border-b border-white/5 text-white bg-navy/10 backdrop-blur-xl">
+        <nav className="sticky top-0 z-40 w-full glass-panel border-b border-white/5 text-white bg-navy/10 backdrop-blur-xl">
             <div className="flex h-20 items-center justify-between px-6 md:px-12">
                 <div className="flex items-center gap-8 lg:gap-12">
                     <Link
@@ -226,6 +226,6 @@ export function TopNav({ userName }: TopNavProps) {
                     </button>
                 </div>
             </div>
-        </header>
+        </nav>
     );
 }

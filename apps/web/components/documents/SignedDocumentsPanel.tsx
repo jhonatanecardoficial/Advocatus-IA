@@ -5,6 +5,14 @@ import { ShieldCheck, Download, ExternalLink, Calendar, User, FileCheck } from '
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
+function getCookie(name: string): string | undefined {
+    if (typeof document === 'undefined') return undefined;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return undefined;
+}
+
 interface SignedDocument {
   id: string;
   documentId: string;
@@ -30,8 +38,8 @@ export default function SignedDocumentsPanel({ matterId }: Props) {
   const [loading, setLoading] = useState(true);
 
   const fetchSignedDocuments = async () => {
+    const token = getCookie('accessToken');
     try {
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       
       const res = await fetch(`${API_URL}/qes/signed?matterId=${matterId}`, {

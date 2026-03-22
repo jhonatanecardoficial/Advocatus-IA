@@ -5,6 +5,14 @@ import { FileText, Sparkles, Wand2, Download, Save, RefreshCw, ChevronRight } fr
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
+function getCookie(name: string): string | undefined {
+    if (typeof document === 'undefined') return undefined;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return undefined;
+}
+
 interface LegalTemplate {
   id: string;
   name: string;
@@ -32,8 +40,8 @@ export default function TemplateAutomationPanel({ matterId }: TemplateAutomation
   }, []);
 
   const fetchTemplates = async () => {
+    const token = getCookie('accessToken');
     try {
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const res = await fetch(`${API_URL}/legal-templates`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -51,8 +59,8 @@ export default function TemplateAutomationPanel({ matterId }: TemplateAutomation
 
   const handleGenerate = async (templateId: string) => {
     setIsGenerating(true);
+    const token = getCookie('accessToken');
     try {
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const res = await fetch(`${API_URL}/legal-templates/generate`, {
         method: 'POST',
@@ -76,8 +84,8 @@ export default function TemplateAutomationPanel({ matterId }: TemplateAutomation
   const handleRefine = async () => {
     if (!refineInstruction || !generatedContent) return;
     setIsRefining(true);
+    const token = getCookie('accessToken');
     try {
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const res = await fetch(`${API_URL}/legal-templates/refine`, {
         method: 'POST',
@@ -99,8 +107,8 @@ export default function TemplateAutomationPanel({ matterId }: TemplateAutomation
   };
 
   const handleSaveToMatter = async () => {
+    const token = getCookie('accessToken');
     try {
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const res = await fetch(`${API_URL}/legal-templates/save-to-matter`, {
         method: 'POST',
@@ -124,8 +132,8 @@ export default function TemplateAutomationPanel({ matterId }: TemplateAutomation
   };
 
   const handleDownloadPdf = async () => {
+    const token = getCookie('accessToken');
     try {
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const res = await fetch(`${API_URL}/legal-templates/download-pdf`, {
         method: 'POST',

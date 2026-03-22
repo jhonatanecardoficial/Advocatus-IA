@@ -16,11 +16,10 @@ export default function TasksPage() {
   async function loadTasks() {
     try {
       setLoading(true);
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       
       const res = await fetch(`${API_URL}/tasks`, {
-        headers: { Authorization: token ? `Bearer ${token}` : '' }
+        credentials: 'include',
       });
       
       if (res.ok) {

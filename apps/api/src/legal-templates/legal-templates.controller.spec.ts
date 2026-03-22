@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LegalTemplatesController } from './legal-templates.controller';
 import { LegalTemplatesService } from './legal-templates.service';
-
+import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '../prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
 describe('LegalTemplatesController', () => {
   let controller: LegalTemplatesController;
 
@@ -9,6 +11,9 @@ describe('LegalTemplatesController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [LegalTemplatesController],
       providers: [
+        { provide: JwtService, useValue: {} },
+        { provide: PrismaService, useValue: {} },
+        { provide: ConfigService, useValue: {} },
         {
           provide: LegalTemplatesService,
           useValue: {

@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const UpdateTenantSchema = z.object({
   name: z.string().min(2).optional(),
   logoUrl: z.string().url().optional().or(z.literal('')),
-  settings: z.record(z.any()).optional(),
+  settings: z.record(z.string(), z.any()).optional(),
   nif: z.string().min(9).max(9).optional(),
   address: z.string().optional(),
   postalCode: z.string().optional(),

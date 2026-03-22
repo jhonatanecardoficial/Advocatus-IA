@@ -4,6 +4,14 @@ import { useState, useEffect } from 'react';
 import { X, History, Download, Loader2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
+function getCookie(name: string): string | undefined {
+    if (typeof document === 'undefined') return undefined;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return undefined;
+}
+
 interface Version {
   id: string;
   filename: string;
@@ -25,8 +33,8 @@ export default function DocumentHistoryDialog({ documentId, filename, onClose, o
 
   useEffect(() => {
     async function fetchHistory() {
+      const token = getCookie('accessToken');
       try {
-        const token = localStorage.getItem('accessToken');
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
         const res = await fetch(`${API_URL}/documents/${documentId}/history`, {
           headers: { 'Authorization': token ? `Bearer ${token}` : '' }
@@ -47,8 +55,8 @@ export default function DocumentHistoryDialog({ documentId, filename, onClose, o
   }, [documentId]);
 
   const handleDownload = async (id: string) => {
+    const token = getCookie('accessToken');
     try {
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       const res = await fetch(`${API_URL}/documents/${id}/download-url`, {
         headers: { 'Authorization': token ? `Bearer ${token}` : '' }

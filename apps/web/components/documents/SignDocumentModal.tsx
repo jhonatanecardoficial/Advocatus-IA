@@ -5,6 +5,14 @@ import { X, PenTool, CheckCircle2, ShieldCheck, AlertCircle } from 'lucide-react
 import { toast } from 'sonner';
 import QesSignatureModal from '../qes/QesSignatureModal';
 
+function getCookie(name: string): string | undefined {
+    if (typeof document === 'undefined') return undefined;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return undefined;
+}
+
 interface Props {
   documentId: string;
   filename: string;
@@ -25,9 +33,9 @@ export default function SignDocumentModal({ documentId, filename, onClose, onSuc
         return;
     }
     setLoading(true);
+    const token = getCookie('accessToken');
     // ... resto da lógica SES/AES
     try {
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
       
       const res = await fetch(`${API_URL}/documents/${documentId}/request-signature`, {
