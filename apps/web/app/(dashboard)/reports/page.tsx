@@ -37,7 +37,7 @@ async function fetchReportMetrics() {
     const profitData = profitRes.ok ? (await profitRes.json()).data : [];
 
     // Aggregate financials
-    let financials = { revenue: 0, costs: 0, profit: 0, avgMargin: 0 };
+    const financials = { revenue: 0, costs: 0, profit: 0, avgMargin: 0 };
     if (Array.isArray(profitData) && profitData.length > 0) {
       financials.revenue = profitData.reduce((acc, curr) => acc + curr.revenue, 0);
       financials.costs = profitData.reduce((acc, curr) => acc + curr.costs, 0);
