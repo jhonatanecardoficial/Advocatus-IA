@@ -1,174 +1,183 @@
-import {
-    Injectable,
-    NotFoundException,
-    ConflictException,
-} from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
-import { CreateClientDto, UpdateClientDto, ClientFiltersDto, ConflictCheckDto } from './dto/client.dto'
+import {
+    CreateClientDto,
+    UpdateClientDto,
+    ClientFiltersDto,
+    ConflictCheckDto,
+} from './dto/client.dto'
 
 @Injectable()
 export class ClientsService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(tenantId: string, dto: CreateClientDto) {
-        // Verificar conflito de NIF dentro do mesmo tenant
-        if (dto.nif) {
-            const existing = await this.prisma.client.findUnique({
-                where: { tenantId_nif: { tenantId, nif: dto.nif } },
-            })
-            if (existing) {
-                throw new ConflictException(`Já existe um cliente com o NIF ${dto.nif} neste escritório.`)
-            }
-        }
+        const { nome, telefone, tipo, gdprConsent, ...rest } = dto
 
-        return this.prisma.client.create({
+        const client = await this.prisma.client.create({
             data: {
-                tenantId,
-                name: dto.name,
-                type: dto.type ?? 'SINGULAR',
-                nif: dto.nif,
-                email: dto.email,
-                phone: dto.phone,
-                address: dto.address,
-                notes: dto.notes,
-                gdprConsentAt: dto.gdprConsent ? new Date() : null,
+                ...rest,
+                name: nome,
+                phone: telefone,
+                type: tipo === 'COLETIVA' ? 'COLETIVO' : 'SINGULAR',
+                gdprConsentAt: gdprConsent ? new Date() : null,
+                tenant: { connect: { id: tenantId } },
             },
-        })
-    }
-
-    async conflictCheck(tenantId: string, dto: ConflictCheckDto) {
-        const conditions = []
-
-        if (dto.name) {
-            conditions.push({ name: { contains: dto.name, mode: 'insensitive' as const } })
-        }
-        if (dto.nif) {
-            conditions.push({ nif: dto.nif })
-        }
-        if (dto.email) {
-            conditions.push({ email: { equals: dto.email, mode: 'insensitive' as const } })
-        }
-        if (dto.phone) {
-            conditions.push({ phone: { contains: dto.phone } })
-        }
-
-        const potentialConflicts = await this.prisma.client.findMany({
-            where: {
-                tenantId,
-                OR: conditions,
-            },
-            select: {
-                id: true,
-                name: true,
-                type: true,
-                nif: true,
-                email: true,
-                phone: true,
-                createdAt: true,
-                _count: { select: { matters: true } },
-            },
-            take: 20, // Limite para não sobrecarregar
         })
 
         return {
-            hasConflicts: potentialConflicts.length > 0,
-            conflicts: potentialConflicts,
+            data: {
+                ...client,
+                nome: client.name,
+                telefone: client.phone,
+                tipo: client.type === 'COLETIVO' ? 'COLETIVA' : 'SINGULAR',
+            }
         }
     }
 
     async findAll(tenantId: string, filters: ClientFiltersDto) {
-        const { search, type, page, perPage } = filters
+        const { search, tipo, page, perPage } = filters
         const skip = (page - 1) * perPage
 
-        const where = {
+        const where: any = {
             tenantId,
-            ...(type && { type }),
-            ...(search && {
-                OR: [
-                    { name: { contains: search, mode: 'insensitive' as const } },
-                    { email: { contains: search, mode: 'insensitive' as const } },
-                    { nif: { contains: search } },
-                ],
-            }),
+            deletedAt: null,
         }
 
-        const [clients, total] = await Promise.all([
+        if (search) {
+            where.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { nif: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+            ]
+        }
+
+        if (tipo) {
+            where.type = tipo === 'COLETIVA' ? 'COLETIVO' : 'SINGULAR'
+        }
+
+        const [items, total] = await Promise.all([
             this.prisma.client.findMany({
                 where,
                 skip,
                 take: perPage,
                 orderBy: { name: 'asc' },
-                select: {
-                    id: true,
-                    name: true,
-                    type: true,
-                    nif: true,
-                    email: true,
-                    phone: true,
-                    gdprConsentAt: true,
-                    createdAt: true,
-                    _count: { select: { matters: true } },
+                include: {
+                    _count: {
+                        select: { matters: true },
+                    },
                 },
             }),
             this.prisma.client.count({ where }),
         ])
 
         return {
-            data: clients,
-            meta: { page, perPage, total, totalPages: Math.ceil(total / perPage) },
+            data: items.map(item => ({
+                ...item,
+                nome: item.name,
+                telefone: item.phone,
+                tipo: item.type === 'COLETIVO' ? 'COLETIVA' : 'SINGULAR',
+            })),
+            meta: {
+                total,
+                page,
+                perPage,
+                totalPages: Math.ceil(total / perPage),
+            },
         }
     }
 
     async findOne(tenantId: string, id: string) {
         const client = await this.prisma.client.findFirst({
-            where: { id, tenantId },
+            where: { id, tenantId, deletedAt: null },
             include: {
                 matters: {
-                    select: {
-                        id: true,
-                        title: true,
-                        type: true,
-                        status: true,
-                        deadlineAt: true,
-                        createdAt: true,
-                    },
-                    orderBy: { createdAt: 'desc' },
-                    take: 10,
+                    orderBy: { updatedAt: 'desc' },
                 },
             },
         })
 
-        if (!client) throw new NotFoundException('Cliente não encontrado.')
-        return client
+        if (!client) {
+            throw new NotFoundException('Cliente não encontrado')
+        }
+
+        return {
+            data: {
+                ...client,
+                nome: client.name,
+                telefone: client.phone,
+                tipo: client.type === 'COLETIVO' ? 'COLETIVA' : 'SINGULAR',
+            }
+        }
     }
 
     async update(tenantId: string, id: string, dto: UpdateClientDto) {
-        await this.findOne(tenantId, id) // Garante que pertence ao tenant
+        await this.findOne(tenantId, id)
 
-        return this.prisma.client.update({
-            where: { id },
-            data: {
-                ...dto,
-                gdprConsentAt: dto.gdprConsent === true ? new Date() : undefined,
-            },
+        const { nome, telefone, tipo, gdprConsent, ...rest } = dto
+
+        const data: any = { ...rest }
+        if (nome) data.name = nome
+        if (telefone !== undefined) data.phone = telefone
+        if (tipo) data.type = tipo === 'COLETIVA' ? 'COLETIVO' : 'SINGULAR'
+        
+        if (gdprConsent !== undefined) {
+            data.gdprConsentAt = gdprConsent ? new Date() : null
+        }
+
+        const updated = await this.prisma.client.update({
+            where: { id, tenantId },
+            data,
         })
+
+        return {
+            data: {
+                ...updated,
+                nome: updated.name,
+                telefone: updated.phone,
+                tipo: updated.type === 'COLETIVO' ? 'COLETIVA' : 'SINGULAR',
+            }
+        }
     }
 
     async remove(tenantId: string, id: string) {
-        const client = await this.findOne(tenantId, id)
+        await this.findOne(tenantId, id)
 
-        // Verificar se tem processos activos antes de eliminar
-        const activeMatters = await this.prisma.matter.count({
-            where: { clientId: id, status: 'ATIVO' },
+        return this.prisma.client.update({
+            where: { id, tenantId },
+            data: { deletedAt: new Date() },
         })
+    }
 
-        if (activeMatters > 0) {
-            throw new ConflictException(
-                `Não é possível eliminar o cliente: possui ${activeMatters} processo(s) activo(s).`,
-            )
+    async conflictCheck(tenantId: string, dto: ConflictCheckDto) {
+        const { nome, nif, email, telefone } = dto
+
+        const where: any = {
+            tenantId,
+            deletedAt: null,
+            OR: [],
         }
 
-        await this.prisma.client.delete({ where: { id } })
-        return { message: `Cliente '${client.name}' eliminado com sucesso.` }
+        if (nome) where.OR.push({ name: { contains: nome, mode: 'insensitive' } })
+        if (nif) where.OR.push({ nif })
+        if (email) where.OR.push({ email: { contains: email, mode: 'insensitive' } })
+        if (telefone) where.OR.push({ phone: { contains: telefone, mode: 'insensitive' } })
+
+        if (where.OR.length === 0) delete where.OR
+
+        const conflicts = await this.prisma.client.findMany({
+            where,
+            take: 5,
+        })
+
+        return {
+            hasConflicts: conflicts.length > 0,
+            conflicts: conflicts.map(c => ({
+                id: c.id,
+                nome: c.name,
+                nif: c.nif,
+                type: c.type,
+            })),
+        }
     }
 }

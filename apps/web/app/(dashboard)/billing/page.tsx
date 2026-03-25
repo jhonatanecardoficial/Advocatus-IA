@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { Wallet, ArrowRight, FileText, Calendar, TrendingUp } from "lucide-react";
+import { Wallet, ArrowRight, FileText, Calendar, TrendingUp, Plus } from "lucide-react";
 import SaftExportPanel from "@/components/SaftExportPanel";
  
 interface InvoiceRow {
@@ -30,7 +30,9 @@ async function fetchInvoices(): Promise<InvoiceRow[]> {
     return [];
   }
  
-  return res.json();
+  const data = await res.json();
+  // Ensure we return an array
+  return Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []);
 }
 
 async function fetchTenant(token: string) {
@@ -49,10 +51,12 @@ export default async function BillingPage() {
   const token = (await cookies()).get("accessToken")?.value;
   if (!token) return null;
 
-  const [invoices, tenant] = await Promise.all([
+  const [invoicesResult, tenant] = await Promise.all([
     fetchInvoices(),
     fetchTenant(token)
   ]);
+
+  const invoices = Array.isArray(invoicesResult) ? invoicesResult : [];
  
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
@@ -73,10 +77,14 @@ export default async function BillingPage() {
               </p>
           </div>
           <div className="flex gap-4">
-              <button className="px-6 py-4 text-[10px] font-black uppercase tracking-widest bg-emerald-500 text-navy shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:scale-[1.02] transition-all">
-                  Nova Fatura
-              </button>
-          </div>
+          <Link 
+            href="/matters" 
+            className="px-6 py-4 text-[10px] font-black uppercase tracking-widest bg-emerald-500 text-navy shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:scale-[1.02] transition-all flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Novo Faturamento
+          </Link>
+        </div>
       </div>
 
       {/* SAF-T and Fiscal Config Section */}
