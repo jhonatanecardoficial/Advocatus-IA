@@ -35,7 +35,8 @@ async function fetchClient(id: string): Promise<Client | null> {
       cache: 'no-store',
     });
     if (!res.ok) return null;
-    return await res.json();
+    const json = await res.json();
+    return json.data;
   } catch (e) {
     return null;
   }

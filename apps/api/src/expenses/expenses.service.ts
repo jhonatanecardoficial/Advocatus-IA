@@ -117,9 +117,12 @@ export class ExpensesService {
             _count: true,
         });
 
+        // Segurança extra contra falha de serialização/parseFloat em nulls
+        const totalAmount = result._sum.amount ? parseFloat(result._sum.amount.toString()) : 0;
+
         return {
-            total_amount: result._sum.amount ? parseFloat(result._sum.amount.toString()) : 0,
-            expense_count: result._count,
+            total_amount: isNaN(totalAmount) ? 0 : totalAmount,
+            expense_count: result._count || 0,
         };
     }
 }

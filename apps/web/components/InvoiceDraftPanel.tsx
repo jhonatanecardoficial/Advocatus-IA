@@ -34,7 +34,7 @@ export default function InvoiceDraftPanel({ matterId }: InvoiceDraftPanelProps) 
     });
     if (res.ok) {
       const data = await res.json();
-      setInvoices(data);
+      setInvoices(Array.isArray(data) ? data : []);
     }
   }
 

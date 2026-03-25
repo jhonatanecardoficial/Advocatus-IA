@@ -108,14 +108,21 @@ export class TimeEntriesService {
 
   async getTotalHoursByMatter(tenantId: string, matterId: string) {
     const result = await this.prisma.timeEntry.aggregate({
-      where: { matterId, tenantId },
+      where: { 
+        matterId, 
+        tenantId,
+        // Garantir que apenas entradas válidas são contadas
+      },
       _sum: { hours: true },
       _count: true,
     });
 
+    // Segurança contra valores nulos em agregados vazios
+    const totalHours = result._sum.hours ? parseFloat(result._sum.hours.toString()) : 0;
+
     return {
-      total_hours: result._sum.hours ? parseFloat(result._sum.hours.toString()) : 0,
-      entry_count: result._count,
+      total_hours: isNaN(totalHours) ? 0 : totalHours,
+      entry_count: result._count || 0,
     };
   }
 

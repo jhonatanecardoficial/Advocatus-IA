@@ -98,6 +98,7 @@ model Client {
   conflictCheckStatus String?
   gdprConsentAt       DateTime?
   notes               String?
+  deletedAt           DateTime?
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
 

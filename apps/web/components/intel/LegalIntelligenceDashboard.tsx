@@ -13,6 +13,7 @@ import {
   Sparkles,
   Database
 } from 'lucide-react';
+import { aiSearchAction } from '@/app/actions/ai';
 import { 
   Card, 
   ButtonPrimary, 
@@ -46,14 +47,14 @@ export function LegalIntelligenceDashboard() {
     setLoading(true);
     setAiAnswer(null);
     try {
-      // Usamos o endpoint de busca enriquecido com MCP
-      const response = await fetch('/api/ai/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
-      });
+      const data = await aiSearchAction(query);
       
-      const data = await response.json();
+      if (data.error) {
+        console.error('Erro retornado pela API:', data.error);
+        // Fallback silently or show a toast if available
+        return;
+      }
+      
       setResults(data.results || []);
       setAiAnswer(data.answer || null);
     } catch (error) {
@@ -88,7 +89,7 @@ export function LegalIntelligenceDashboard() {
             <input 
               type="text" 
               placeholder="Pesquise por legislação, jurisprudência ou conceitos jurídicos..." 
-              className="w-full bg-slate-50 border-none rounded-lg pl-10 pr-4 py-3 focus:ring-2 focus:ring-navy-100 transition-all outline-none"
+              className="w-full bg-slate-50 border-none rounded-lg pl-10 pr-4 py-3 focus:ring-2 focus:ring-navy-100 transition-all outline-none text-slate-900"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />

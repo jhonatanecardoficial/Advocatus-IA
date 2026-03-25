@@ -3,7 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { Users, Mail, Phone, Settings, ArrowRight, Briefcase } from 'lucide-react';
+import { Users, Mail, Phone, Settings, ArrowRight, Briefcase, Plus, ShieldAlert, ShieldCheck, AlertCircle, Search, Trash2 } from 'lucide-react';
+import { updateClientAction, deleteClientAction, checkConflictAction } from '@/app/actions/clients';
+import { useRouter } from 'next/navigation';
+import AddMatterModal from './AddMatterModal';
 
 interface Matter {
   id: string;
@@ -27,11 +30,12 @@ interface Client {
   matters?: Matter[];
 }
 
-interface Props {
+interface ClientDetailProps { // Renamed from Props to ClientDetailProps
   client: Client;
 }
 
-export default function ClientDetail({ client: initialClient }: Props) {
+export default function ClientDetail({ client: initialClient }: ClientDetailProps) {
+  const router = useRouter();
   const [client, setClient] = useState(initialClient);
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({
@@ -51,59 +55,84 @@ export default function ClientDetail({ client: initialClient }: Props) {
     setForm((f: any) => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
   }
 
-  async function save() {
+  const save = async () => {
+    // Validação de nome completo
+    const nameParts = form.nome.trim().split(/\s+/).filter(Boolean);
+    if (nameParts.length < 2) {
+        toast.error('Por favor, introduza o nome completo (pelo menos dois nomes).');
+        return;
+    }
+
     setLoading(true);
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
-      const res = await fetch(`${API_URL}/clients/${client.id}`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) throw new Error('Falha ao atualizar');
-      const data = await res.json();
-      setClient(data);
-      toast.success('Cliente atualizado');
-      setIsEditing(false);
-    } catch (err) {
-      toast.error((err as Error).message || 'Erro');
+        const result = await updateClientAction(client.id, {
+            nome: form.nome,
+            nif: form.nif,
+            tipo: form.tipo,
+            email: form.email,
+            telefone: form.telefone,
+            address: form.address,
+            notes: form.notes,
+            gdprConsent: form.gdprConsent,
+        });
+
+        if (result.error) {
+            toast.error(result.error);
+        } else {
+            toast.success('Cliente atualizado com sucesso!');
+            setClient({ ...client, ...form, gdprConsentAt: form.gdprConsent ? new Date().toISOString() : null }); // Update client state with new form data
+            setIsEditing(false);
+        }
+    } catch (error) {
+        toast.error('Erro ao atualizar cliente.');
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  }
+  };
+
+  const handleDelete = async () => {
+      if (!window.confirm('Tem a certeza que deseja eliminar este cliente? Esta ação é irreversível.')) {
+          return;
+      }
+
+      setLoading(true);
+      try {
+          const result = await deleteClientAction(client.id);
+          if (result.error) {
+              toast.error(result.error);
+          } else {
+              toast.success('Cliente eliminado com sucesso.');
+              router.push('/clients');
+          }
+      } catch (error) {
+          toast.error('Erro ao eliminar cliente.');
+      } finally {
+          setLoading(false);
+      }
+  };
+
+  const [conflictStatus, setConflictStatus] = useState<'idle' | 'checking' | 'none' | 'found'>('idle');
 
   async function checkConflict() {
-    setLoading(true);
+    setConflictStatus('checking');
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
-      const payload = {
+      const result = await checkConflictAction({
         nome: form.nome,
         nif: form.nif,
-        email: form.email || undefined,
-        telefone: form.telefone || undefined,
-      };
-      const res = await fetch(`${API_URL}/clients/conflict-check`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('Falha no conflict check');
-      const data = await res.json();
-      if (data.hasConflicts) {
-        toast.error('Foram encontrados possíveis conflitos');
+
+      if (result.error) throw new Error(result.error);
+      
+      if (result.hasConflicts) {
+        setConflictStatus('found');
+        toast.error('Foram encontrados possíveis conflitos de interesses!');
       } else {
-        toast.success('Sem conflitos');
+        setConflictStatus('none');
+        toast.success('Verificação concluída: Sem conflitos detetados.');
       }
     } catch (err) {
-      toast.error((err as Error).message || 'Erro');
-    } finally {
-      setLoading(false);
+      setConflictStatus('idle');
+      toast.error((err as Error).message || 'Erro ao verificar conflitos');
     }
   }
 
@@ -146,22 +175,50 @@ export default function ClientDetail({ client: initialClient }: Props) {
               </button>
             </>
           ) : (
-            <>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10 border border-white/20 transition-all flex items-center gap-2"
-              >
-                <Settings size={14} />
-                Editar Perfil
-              </button>
+            <div className="flex gap-3 text-white items-center">
+              <AddMatterModal 
+                clientId={client.id}
+                clientName={client.nome}
+                trigger={
+                  <button className="px-6 py-4 text-[10px] font-black uppercase tracking-widest bg-amber text-navy shadow-[0_0_20px_rgba(251,191,36,0.2)] hover:scale-[1.02] transition-all flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    <span>Abrir Novo Processo</span>
+                  </button>
+                }
+              />
               <button
                 onClick={checkConflict}
-                disabled={loading}
-                className="px-8 py-4 text-[10px] font-black uppercase tracking-widest bg-amber text-navy shadow-glow hover:scale-[1.02] transition-all disabled:opacity-50"
+                disabled={conflictStatus === 'checking'}
+                className={`flex items-center gap-3 px-8 py-4 text-[10px] font-black uppercase tracking-widest border transition-all ${
+                  conflictStatus === 'found' ? 'bg-red-500/10 border-red-500/30 text-red-400' :
+                  conflictStatus === 'none' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' :
+                  conflictStatus === 'checking' ? 'bg-amber/5 border-amber/20 text-amber animate-pulse' :
+                  'bg-amber text-navy border-amber shadow-glow hover:scale-[1.02]'
+                }`}
               >
-                {loading ? 'Analisando...' : 'Verificar Conflitos'}
+                {conflictStatus === 'checking' ? <Search size={14} className="animate-spin" /> : 
+                 conflictStatus === 'found' ? <ShieldAlert size={14} /> :
+                 conflictStatus === 'none' ? <ShieldCheck size={14} /> :
+                 <AlertCircle size={14} />}
+                
+                {conflictStatus === 'idle' && 'Verificar Conflitos'}
+                {conflictStatus === 'checking' && 'A Analisar...'}
+                {conflictStatus === 'found' && 'Conflito Encontrado'}
+                {conflictStatus === 'none' && 'Sem Conflitos'}
               </button>
-            </>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center text-white/30 hover:border-white/40 hover:text-white transition-all bg-white/5"
+              >
+                <Settings size={20} />
+              </button>
+              <button 
+                onClick={handleDelete}
+                className="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center text-red-400 hover:border-red-500 hover:text-red-500 transition-all bg-white/5"
+              >
+                <Trash2 size={20} />
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -346,9 +403,16 @@ export default function ClientDetail({ client: initialClient }: Props) {
               )}
             </div>
 
-            <button className="w-full mt-8 py-4 border border-dashed border-white/10 text-[10px] font-black uppercase tracking-widest text-white/30 hover:border-amber/40 hover:text-amber hover:bg-amber/5 transition-all">
-              + Abrir Novo Processo
-            </button>
+            {/* Abrir Novo Processo Sidebar Trigger */}
+            <AddMatterModal 
+              clientId={client.id}
+              clientName={client.nome}
+              trigger={
+                <button className="w-full mt-8 py-4 border border-dashed border-white/10 text-[10px] font-black uppercase tracking-widest text-white/30 hover:border-amber/40 hover:text-amber hover:bg-amber/5 transition-all">
+                  + Abrir Novo Processo
+                </button>
+              }
+            />
           </div>
         </div>
       </div>

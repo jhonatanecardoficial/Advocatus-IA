@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Plus, X, Calendar, FileText, Clock, ChevronDown } from 'lucide-react';
 import { createTaskAction } from '@/app/actions/tasks';
 import { toast } from 'sonner';
@@ -14,7 +15,13 @@ interface Props {
 
 export default function AddTaskModal({ matterId, onSuccess, isOpen: externalIsOpen, onClose: externalOnClose }: Props) {
     const [internalIsOpen, setInternalIsOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+    
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const setIsOpen = (val: boolean) => {
         if (externalOnClose && !val) externalOnClose();
         setInternalIsOpen(val);
@@ -75,6 +82,191 @@ export default function AddTaskModal({ matterId, onSuccess, isOpen: externalIsOp
         }
     };
 
+    const modalContent = isOpen && (
+        <div className="fixed inset-0 bg-navy/80 backdrop-blur-xl z-[150] flex items-start justify-center p-4 overflow-y-auto custom-scrollbar animate-in fade-in duration-500">
+            <div className="glass-panel border-white/10 w-full max-w-lg shadow-glow my-auto sm:my-8 animate-reveal">
+                <div className="bg-navy p-5 flex justify-between items-center border-b border-white/5 shrink-0">
+                    <h2 className="text-white font-display font-black uppercase tracking-widest text-sm flex items-center gap-3">
+                        <div className="p-2 bg-amber/20 rounded-lg">
+                            <Clock size={16} className="text-amber" />
+                        </div>
+                        Agendar Prazo / Tarefa
+                    </h2>
+                    <button
+                        onClick={() => setIsOpen(false)}
+                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white transition-all"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="flex flex-col">
+                    <div className="p-8 space-y-6 bg-black/5">
+                        <div>
+                            <label htmlFor="task-title-portal" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Título da Tarefa</label>
+                            <div className="relative group">
+                                <FileText className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber transition-colors" size={18} />
+                                <input
+                                    id="task-title-portal"
+                                    required
+                                    type="text"
+                                    value={form.title}
+                                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                                    placeholder="Ex: Entrega de Contestação"
+                                    className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-slate-400 focus:border-amber/50 focus:bg-white/15 outline-none transition-all font-body text-sm"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                            <div>
+                                <label htmlFor="task-type-portal" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Tipo</label>
+                                <div className="relative">
+                                    <select
+                                        id="task-type-portal"
+                                        required
+                                        value={form.type}
+                                        onChange={(e) => setForm({ ...form, type: e.target.value })}
+                                        className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white focus:border-amber/50 focus:bg-white/15 outline-none transition-all font-body text-sm appearance-none cursor-pointer"
+                                    >
+                                        <option value="PRAZO" className="bg-[#0a192f] text-white">Prazo Processual</option>
+                                        <option value="AUDIENCIA" className="bg-[#0a192f] text-white">Audiência</option>
+                                        <option value="DILIGENCIA" className="bg-[#0a192f] text-white">Diligência</option>
+                                        <option value="REUNIAO" className="bg-[#0a192f] text-white">Reunião</option>
+                                        <option value="OUTRO" className="bg-[#0a192f] text-white">Outro</option>
+                                    </select>
+                                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                </div>
+                            </div>
+                            <div>
+                                <label htmlFor="task-priority-portal" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Prioridade</label>
+                                <div className="relative">
+                                    <select
+                                        id="task-priority-portal"
+                                        required
+                                        value={form.priority}
+                                        onChange={(e) => setForm({ ...form, priority: e.target.value })}
+                                        className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white focus:border-amber/50 focus:bg-white/15 outline-none transition-all font-body text-sm appearance-none cursor-pointer"
+                                    >
+                                        <option value="BAIXA" className="bg-[#0a192f] text-white">Baixa</option>
+                                        <option value="MEDIA" className="bg-[#0a192f] text-white">Média</option>
+                                        <option value="ALTA" className="bg-[#0a192f] text-white">Alta</option>
+                                        <option value="CRITICA" className="bg-[#0a192f] text-red-400">Crítica</option>
+                                    </select>
+                                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {form.type === 'PRAZO' && (
+                            <div className="space-y-6 bg-amber/5 p-4 rounded-xl border border-amber/10">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Clock size={14} className="text-amber" />
+                                    <span className="text-[10px] font-bold uppercase text-amber tracking-widest">Calculadora de Prazos (Art. 138.º CPC)</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="task-start-date-portal" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Data de Início</label>
+                                        <input
+                                            id="task-start-date-portal"
+                                            type="date"
+                                            value={form.startDate}
+                                            onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white [color-scheme:dark] outline-none text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="task-days-portal" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Dias (CPC)</label>
+                                        <input
+                                            id="task-days-portal"
+                                            type="number"
+                                            value={form.days}
+                                            onChange={(e) => setForm({ ...form, days: e.target.value })}
+                                            placeholder="Ex: 15"
+                                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white outline-none text-sm"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label htmlFor="task-dilacao-portal" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Dilação (Art. 139.º CPC)</label>
+                                    <div className="relative">
+                                        <select
+                                            id="task-dilacao-portal"
+                                            value={form.dilacao}
+                                            onChange={(e) => setForm({ ...form, dilacao: e.target.value })}
+                                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white outline-none text-sm appearance-none cursor-pointer"
+                                        >
+                                            <option value="0" className="bg-[#0a192f] text-white">Sem dilação</option>
+                                            <option value="5" className="bg-[#0a192f] text-white">5 dias (Continente/R. Autónomas)</option>
+                                            <option value="15" className="bg-[#0a192f] text-white">15 dias (País Estrangeiro - Europa)</option>
+                                            <option value="30" className="bg-[#0a192f] text-white">30 dias (Fora da Europa)</option>
+                                        </select>
+                                        <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        id="isUrgent-portal"
+                                        checked={form.isUrgent}
+                                        onChange={(e) => setForm({ ...form, isUrgent: e.target.checked })}
+                                        className="w-4 h-4 rounded border-white/10 bg-white/5 text-amber focus:ring-amber"
+                                    />
+                                    <label htmlFor="isUrgent-portal" className="text-[10px] font-bold uppercase text-slate-400 tracking-widest cursor-pointer">
+                                        Processo Urgente (Sem suspensão em férias judiciais)
+                                    </label>
+                                </div>
+                            </div>
+                        )}
+
+                        <div>
+                            <label htmlFor="task-due-at-portal" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Prazo Limite (Manual)</label>
+                            <div className="relative group">
+                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber transition-colors" size={18} />
+                                <input
+                                    id="task-due-at-portal"
+                                    type="datetime-local"
+                                    value={form.dueAt}
+                                    onChange={(e) => setForm({ ...form, dueAt: e.target.value })}
+                                    className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white [color-scheme:dark] focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label htmlFor="task-description-portal" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Notas Adicionais</label>
+                            <textarea
+                                id="task-description-portal"
+                                value={form.description}
+                                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                                rows={3}
+                                placeholder="Detalhes adicionais sobre a tarefa..."
+                                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-600 focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm resize-none"
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    <div className="p-6 border-t border-white/10 bg-navy/50 backdrop-blur-xl flex gap-4 shrink-0">
+                        <button
+                            type="button"
+                            onClick={() => setIsOpen(false)}
+                            className="btn-premium btn-premium-outline flex-1 py-4 text-xs font-bold uppercase tracking-widest"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="btn-premium btn-premium-primary flex-1 py-4 text-xs font-bold uppercase tracking-widest disabled:opacity-30"
+                        >
+                            {loading ? 'A Gravar...' : 'Agendar Tarefa'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+
     return (
         <>
             <button
@@ -84,191 +276,7 @@ export default function AddTaskModal({ matterId, onSuccess, isOpen: externalIsOp
                 <Plus className="h-4 w-4" /> Adicionar Prazo/Tarefa
             </button>
 
-            {isOpen && (
-                <div className="fixed inset-0 bg-navy/80 backdrop-blur-xl z-[60] flex items-center justify-center p-4 animate-in fade-in duration-500">
-                    <div className="glass-panel border-white/10 w-full max-w-lg shadow-glow overflow-hidden animate-reveal">
-                        <div className="bg-white/5 p-5 flex justify-between items-center border-b border-white/5">
-                            <h2 className="text-white font-display font-black uppercase tracking-widest text-sm flex items-center gap-3">
-                                <div className="p-2 bg-amber/20 rounded-lg">
-                                    <Clock size={16} className="text-amber" />
-                                </div>
-                                Agendar Prazo / Tarefa
-                            </h2>
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white transition-all"
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                            <div>
-                                <label htmlFor="task-title" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Título da Tarefa</label>
-                                <div className="relative group">
-                                    <FileText className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber transition-colors" size={18} />
-                                    <input
-                                        id="task-title"
-                                        required
-                                        type="text"
-                                        value={form.title}
-                                        onChange={(e) => setForm({ ...form, title: e.target.value })}
-                                        placeholder="Ex: Entrega de Contestação"
-                                        className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-slate-400 focus:border-amber/50 focus:bg-white/15 outline-none transition-all font-body text-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-6">
-                                <div>
-                                    <label htmlFor="task-type" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Tipo</label>
-                                    <div className="relative">
-                                        <select
-                                            id="task-type"
-                                            required
-                                            value={form.type}
-                                            onChange={(e) => setForm({ ...form, type: e.target.value })}
-                                            className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white focus:border-amber/50 focus:bg-white/15 outline-none transition-all font-body text-sm appearance-none cursor-pointer"
-                                        >
-                                            <option value="PRAZO" className="bg-[#0a192f] text-white">Prazo Processual</option>
-                                            <option value="AUDIENCIA" className="bg-[#0a192f] text-white">Audiência</option>
-                                            <option value="DILIGENCIA" className="bg-[#0a192f] text-white">Diligência</option>
-                                            <option value="REUNIAO" className="bg-[#0a192f] text-white">Reunião</option>
-                                            <option value="OUTRO" className="bg-[#0a192f] text-white">Outro</option>
-                                        </select>
-                                        <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label htmlFor="task-priority" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Prioridade</label>
-                                    <div className="relative">
-                                        <select
-                                            id="task-priority"
-                                            required
-                                            value={form.priority}
-                                            onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                                            className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white focus:border-amber/50 focus:bg-white/15 outline-none transition-all font-body text-sm appearance-none cursor-pointer"
-                                        >
-                                            <option value="BAIXA" className="bg-[#0a192f] text-white">Baixa</option>
-                                            <option value="MEDIA" className="bg-[#0a192f] text-white">Média</option>
-                                            <option value="ALTA" className="bg-[#0a192f] text-white">Alta</option>
-                                            <option value="CRITICA" className="bg-[#0a192f] text-red-400">Crítica</option>
-                                        </select>
-                                        <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {form.type === 'PRAZO' && (
-                                <div className="space-y-6 bg-amber/5 p-4 rounded-xl border border-amber/10">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Clock size={14} className="text-amber" />
-                                        <span className="text-[10px] font-bold uppercase text-amber tracking-widest">Calculadora de Prazos (Art. 138.º CPC)</span>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label htmlFor="task-start-date" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Data de Início</label>
-                                            <input
-                                                id="task-start-date"
-                                                type="date"
-                                                value={form.startDate}
-                                                onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white [color-scheme:dark] outline-none text-sm"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label htmlFor="task-days" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Dias (CPC)</label>
-                                            <input
-                                                id="task-days"
-                                                type="number"
-                                                value={form.days}
-                                                onChange={(e) => setForm({ ...form, days: e.target.value })}
-                                                placeholder="Ex: 15"
-                                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white outline-none text-sm"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label htmlFor="task-dilacao" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Dilação (Art. 139.º CPC)</label>
-                                        <div className="relative">
-                                            <select
-                                                id="task-dilacao"
-                                                value={form.dilacao}
-                                                onChange={(e) => setForm({ ...form, dilacao: e.target.value })}
-                                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white outline-none text-sm appearance-none cursor-pointer"
-                                            >
-                                                <option value="0" className="bg-[#0a192f] text-white">Sem dilação</option>
-                                                <option value="5" className="bg-[#0a192f] text-white">5 dias (Continente/R. Autónomas)</option>
-                                                <option value="15" className="bg-[#0a192f] text-white">15 dias (País Estrangeiro - Europa)</option>
-                                                <option value="30" className="bg-[#0a192f] text-white">30 dias (Fora da Europa)</option>
-                                            </select>
-                                            <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            type="checkbox"
-                                            id="isUrgent"
-                                            checked={form.isUrgent}
-                                            onChange={(e) => setForm({ ...form, isUrgent: e.target.checked })}
-                                            className="w-4 h-4 rounded border-white/10 bg-white/5 text-amber focus:ring-amber"
-                                        />
-                                        <label htmlFor="isUrgent" className="text-[10px] font-bold uppercase text-slate-400 tracking-widest cursor-pointer">
-                                            Processo Urgente (Sem suspensão em férias judiciais)
-                                        </label>
-                                    </div>
-                                    <p className="text-[9px] text-slate-500 italic">
-                                        * Se preencher os campos acima, o sistema calculará automaticamente o prazo limite considerando feriados e férias judiciais portuguesas.
-                                    </p>
-                                </div>
-                            )}
-
-                            <div>
-                                <label htmlFor="task-due-at" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Prazo Limite (Manual)</label>
-                                <div className="relative group">
-                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber transition-colors" size={18} />
-                                    <input
-                                        id="task-due-at"
-                                        type="datetime-local"
-                                        value={form.dueAt}
-                                        onChange={(e) => setForm({ ...form, dueAt: e.target.value })}
-                                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white [color-scheme:dark] focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label htmlFor="task-description" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Notas Adicionais</label>
-                                <textarea
-                                    id="task-description"
-                                    value={form.description}
-                                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                                    rows={3}
-                                    placeholder="Detalhes adicionais sobre a tarefa..."
-                                    className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-600 focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm resize-none"
-                                ></textarea>
-                            </div>
-
-                            <div className="pt-4 flex gap-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsOpen(false)}
-                                    className="btn-premium btn-premium-outline flex-1 py-4 text-xs font-bold uppercase tracking-widest"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="btn-premium btn-premium-primary flex-1 py-4 text-xs font-bold uppercase tracking-widest disabled:opacity-30"
-                                >
-                                    {loading ? 'A Gravar...' : 'Agendar Tarefa'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            {mounted && isOpen && createPortal(modalContent, document.getElementById('modal-root') || document.body)}
         </>
     );
 }

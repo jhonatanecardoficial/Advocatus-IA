@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, History, Download, Loader2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -30,8 +31,11 @@ interface DocumentHistoryDialogProps {
 export default function DocumentHistoryDialog({ documentId, filename, onClose, onUploadNewVersion }: DocumentHistoryDialogProps) {
   const [history, setHistory] = useState<Version[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    
     async function fetchHistory() {
       const token = getCookie('accessToken');
       try {
@@ -70,9 +74,9 @@ export default function DocumentHistoryDialog({ documentId, filename, onClose, o
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-navy/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-      <div className="bg-white border-4 border-navy w-full max-w-2xl shadow-[8px_8px_0px_#D4A853] flex flex-col max-h-[80vh]">
+  const dialogContent = (
+    <div className="fixed inset-0 bg-navy/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 animate-in fade-in duration-300">
+      <div className="bg-white border-4 border-navy w-full max-w-2xl shadow-[8px_8px_0px_#D4A853] flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-300">
         <div className="bg-navy p-4 flex justify-between items-center">
           <h2 className="text-white font-display font-black uppercase tracking-widest text-sm flex items-center gap-2">
             <History size={16} className="text-amber-400" />
@@ -83,7 +87,7 @@ export default function DocumentHistoryDialog({ documentId, filename, onClose, o
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto flex-grow">
+        <div className="p-6 overflow-y-auto flex-grow custom-scrollbar">
           {loading ? (
             <div className="flex flex-col items-center py-12 space-y-4">
               <Loader2 className="w-8 h-8 text-navy animate-spin" />
@@ -142,4 +146,8 @@ export default function DocumentHistoryDialog({ documentId, filename, onClose, o
       </div>
     </div>
   );
+
+  if (!mounted) return null;
+
+  return createPortal(dialogContent, document.getElementById('modal-root') || document.body);
 }

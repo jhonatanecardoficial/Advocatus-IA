@@ -47,6 +47,7 @@ export default function RootLayout({
         <html lang="pt" suppressHydrationWarning>
             <body className={`${inter.variable} ${playfair.variable} antialiased bg-navy text-navy-100 min-h-screen`} suppressHydrationWarning>
                 {children}
+                <div id="modal-root" />
             </body>
         </html>
     )
