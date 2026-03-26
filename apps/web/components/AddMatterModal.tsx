@@ -30,6 +30,7 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
     const [isSearching, setIsSearching] = useState(false);
     const [showResults, setShowResults] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const portalRef = useRef<HTMLDivElement>(null);
 
     const [form, setForm] = useState({
         title: '',
@@ -57,14 +58,16 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
 
     // Lógica de Autocomplete (Debounce)
     useEffect(() => {
-        if (!isOpen || clientId) return; // Não pesquisa se estiver fechado ou se já houver cliente fixo
+        if (!isOpen || clientId) return;
+
+        // Se o campo estiver vazio, não fazemos debounce para a carga inicial rápida no foco
+        if (searchTerm.length === 0) {
+            fetchClients('');
+            return;
+        }
 
         const timer = setTimeout(() => {
-            if (searchTerm.length >= 2) {
-                fetchClients(searchTerm);
-            } else if (searchTerm.length === 0) {
-                setClients([]);
-            }
+            fetchClients(searchTerm);
         }, 300);
 
         return () => clearTimeout(timer);
@@ -73,7 +76,10 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
     // Fechar dropdown ao clicar fora
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+            const isInsideInput = dropdownRef.current && dropdownRef.current.contains(event.target as Node);
+            const isInsidePortal = portalRef.current && portalRef.current.contains(event.target as Node);
+            
+            if (!isInsideInput && !isInsidePortal) {
                 setShowResults(false);
             }
         }
@@ -81,16 +87,25 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const fetchClients = async (query: string = '') => {
+    const fetchClients = async (query: string) => {
         setIsSearching(true);
         try {
-            const result = await searchClientsAction(query);
-            if (result.error) throw new Error(result.error);
-            setClients(result.data || []);
-            setShowResults(true);
-        } catch (err) {
-            console.error('Erro ao buscar clientes:', err);
-            toast.error('Erro ao pesquisar clientes');
+            const data = await searchClientsAction(query);
+            
+            if (data.error) {
+                console.error('Erro ao procurar clientes:', data.error);
+                setClients([]);
+                return;
+            }
+
+            if (data.data) {
+                setClients(data.data);
+            } else if (Array.isArray(data)) {
+                setClients(data);
+            }
+        } catch (error) {
+            console.error('Erro ao procurar clientes:', error);
+            setClients([]);
         } finally {
             setIsSearching(false);
         }
@@ -139,8 +154,8 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
     };
 
     const modalContent = isOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[150] flex items-start justify-center p-4 sm:p-8 md:p-12 animate-in fade-in duration-300 overflow-y-auto custom-scrollbar">
-            <div className="glass-panel w-full max-w-2xl border border-white/20 shadow-premium flex flex-col my-auto animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 bg-slate-950/95 z-[150] flex items-start justify-center p-4 sm:p-8 md:p-12 animate-in fade-in duration-300 overflow-y-auto custom-scrollbar">
+            <div className="w-full max-w-2xl bg-[#050b14] border border-white/20 shadow-premium flex flex-col my-auto animate-in zoom-in-95 duration-300">
                 {/* Header Area */}
                 <div className="bg-gradient-to-r from-navy via-navy/95 to-navy/90 p-6 flex justify-between items-center shrink-0 border-b border-white/10 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-amber/50 to-transparent" />
@@ -161,8 +176,8 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="flex flex-col">
-                    <div className="p-8 space-y-8 bg-black/5">
+                <form onSubmit={handleSubmit} className="flex flex-col bg-[#050b14] !opacity-100">
+                    <div className="p-8 space-y-8 !bg-[#050b14] !bg-opacity-100 !opacity-100">
                         <div className="animate-reveal" style={{ animationDelay: '100ms' }}>
                             <label className="text-[10px] text-amber/60 uppercase font-black tracking-widest mb-3 block flex items-center gap-2">
                                 <FileText className="w-3.5 h-3.5" />
@@ -174,7 +189,7 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
                                 value={form.title}
                                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                                 placeholder="Ex: Acção de Despejo - Imóvel Centro"
-                                className="w-full px-5 py-4 bg-white/[0.03] border border-white/10 rounded-2xl focus:border-amber/50 focus:bg-white/[0.07] focus:ring-4 focus:ring-amber/5 outline-none transition-all font-body text-sm text-white placeholder:text-white/20"
+                                className="w-full px-5 py-4 bg-white/[0.03] border border-white/10 rounded-none focus:border-amber/50 focus:bg-white/[0.07] focus:ring-4 focus:ring-amber/5 outline-none transition-all font-body text-sm text-white placeholder:text-white/20"
                             />
                         </div>
 
@@ -198,9 +213,14 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
                                                 setForm({ ...form, clientId: '' });
                                             }
                                         }}
-                                        onFocus={() => !clientId && searchTerm.length >= 2 && setShowResults(true)}
-                                        placeholder={clientId ? "" : "Pesquisar cliente por nome ou NIF..."}
-                                        className={`w-full pl-12 pr-12 py-4 bg-white/[0.05] border ${clientId ? 'border-amber/40 bg-amber/5 text-amber font-bold' : 'border-white/20 text-white'} rounded-2xl outline-none transition-all font-body text-sm ${!clientId && 'focus:border-amber/50 focus:bg-white/[0.07] cursor-pointer cursor-text'}`}
+                                        onFocus={() => {
+                                            if (!clientId) {
+                                                setShowResults(true);
+                                                if (clients.length === 0) fetchClients(searchTerm);
+                                            }
+                                        }}
+                                        placeholder={clientId ? "" : "Clique para ver clientes ou pesquise..."}
+                                        className={`w-full pl-12 pr-12 py-4 bg-white/[0.05] border ${ clientId ? 'border-amber/40 bg-amber/5 text-amber font-bold' : 'border-white/20 text-white' } rounded-none outline-none transition-all font-body text-sm ${ !clientId ? 'focus:border-amber/50 focus:bg-white/[0.07] cursor-pointer' : '' } `}
                                     />
                                     {isSearching && (
                                         <div className="absolute right-5 top-1/2 -translate-y-1/2 text-amber animate-spin">
@@ -215,34 +235,39 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
                                 </div>
 
                                 {/* Results Dropdown */}
-                                {!clientId && showResults && (clients.length > 0 || searchTerm.length >= 2) && (
-                                    <div className="absolute z-[160] w-full mt-2 glass-panel border border-white/20 shadow-2xl overflow-hidden animate-in slide-in-from-top-2 duration-200">
-                                        <div className="max-h-[250px] overflow-y-auto custom-scrollbar bg-[#0a192f]/95 backdrop-blur-3xl">
+                                 {!clientId && showResults && typeof document !== 'undefined' && createPortal(
+                                    <div 
+                                        ref={portalRef}
+                                        className="fixed w-full mt-1 border border-white/20 shadow-[0_30px_90px_rgba(0,0,0,1)] rounded-none overflow-hidden bg-[#050b14] opacity-100"
+                                        style={{ 
+                                            zIndex: 9999999,
+                                            left: dropdownRef.current?.getBoundingClientRect().left,
+                                            top: (dropdownRef.current?.getBoundingClientRect().bottom || 0) + window.scrollY,
+                                            width: dropdownRef.current?.offsetWidth,
+                                            backgroundColor: '#050b14'
+                                        }}
+                                    >
+                                        <div className="max-h-[340px] overflow-y-auto custom-scrollbar bg-[#050b14] opacity-100">
                                             {clients.length > 0 ? (
                                                 clients.map((c) => (
                                                     <button
                                                         key={c.id}
                                                         type="button"
                                                         onClick={() => handleSelectClient(c)}
-                                                        className="w-full text-left px-5 py-4 hover:bg-white/10 flex items-center justify-between group transition-all border-b border-white/5 last:border-0"
+                                                        className="w-full text-left px-5 py-4 flex items-center justify-between transition-all text-white text-sm font-medium border-b border-white/[0.03] last:border-none hover:bg-[#b3c7f7] hover:text-[#0a192f] bg-[#050b14] hover:!bg-[#b3c7f7]"
                                                     >
-                                                        <div>
-                                                            <p className="text-sm font-bold text-white group-hover:text-amber transition-colors">
-                                                                {c.nome || c.name}
-                                                            </p>
-                                                            <p className="text-[10px] text-white/30 uppercase tracking-widest mt-0.5">ID: {c.id.slice(-6).toUpperCase()}</p>
-                                                        </div>
-                                                        <Plus size={14} className="text-white/20 group-hover:text-amber group-hover:rotate-90 transition-all" />
+                                                        <span className="truncate">{c.nome || c.name}</span>
                                                     </button>
                                                 ))
                                             ) : !isSearching && (
-                                                <div className="p-8 text-center">
+                                                <div className="p-10 text-center bg-[#050b14] opacity-100">
                                                     <User size={24} className="mx-auto text-white/5 mb-3" />
                                                     <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Nenhum cliente encontrado</p>
                                                 </div>
                                             )}
                                         </div>
-                                    </div>
+                                    </div>,
+                                    document.body
                                 )}
                             </div>
                             <div>
@@ -255,7 +280,7 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
                                         required
                                         value={form.type}
                                         onChange={(e) => setForm({ ...form, type: e.target.value })}
-                                        className="w-full px-5 py-4 bg-white/[0.05] border border-white/20 rounded-2xl focus:border-amber/50 focus:bg-white/[0.07] outline-none transition-all font-body text-sm text-white appearance-none cursor-pointer"
+                                        className="w-full px-5 py-4 bg-white/[0.05] border border-white/20 rounded-none focus:border-amber/50 focus:bg-white/[0.07] outline-none transition-all font-body text-sm text-white appearance-none cursor-pointer"
                                     >
                                         <option value="CIVEL" className="bg-[#0a192f] text-white">Cível</option>
                                         <option value="PENAL" className="bg-[#0a192f] text-white">Penal</option>
@@ -282,7 +307,7 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
                                     value={form.courtReference}
                                     onChange={(e) => setForm({ ...form, courtReference: e.target.value })}
                                     placeholder="Ex: 5000123-45.2024.8.26.0000"
-                                    className="w-full px-5 py-4 bg-white/[0.03] border border-white/10 rounded-2xl focus:border-amber/50 focus:bg-white/[0.07] outline-none transition-all font-body text-sm text-white placeholder:text-white/20"
+                                    className="w-full px-5 py-4 bg-white/[0.03] border border-white/10 rounded-none focus:border-amber/50 focus:bg-white/[0.07] outline-none transition-all font-body text-sm text-white placeholder:text-white/20"
                                 />
                             </div>
                             <div>
@@ -294,7 +319,7 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
                                     type="date"
                                     value={form.deadlineAt}
                                     onChange={(e) => setForm({ ...form, deadlineAt: e.target.value })}
-                                    className="w-full px-5 py-4 bg-white/[0.03] border border-white/10 rounded-2xl focus:border-amber/50 focus:bg-white/[0.07] outline-none transition-all font-body text-sm text-white [color-scheme:dark]"
+                                    className="w-full px-5 py-4 bg-white/[0.03] border border-white/10 rounded-none focus:border-amber/50 focus:bg-white/[0.07] outline-none transition-all font-body text-sm text-white [color-scheme:dark]"
                                 />
                             </div>
                         </div>
@@ -309,7 +334,7 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
                                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                                 rows={4}
                                 placeholder="Breve descrição dos fatos ou objetivos do processo..."
-                                className="w-full px-5 py-4 bg-white/[0.03] border border-white/10 rounded-2xl focus:border-amber/50 focus:bg-white/[0.07] outline-none transition-all font-body text-sm text-white placeholder:text-white/20 resize-none"
+                                className="w-full px-5 py-4 bg-white/[0.03] border border-white/10 rounded-none focus:border-amber/50 focus:bg-white/[0.07] outline-none transition-all font-body text-sm text-white placeholder:text-white/20 resize-none"
                             ></textarea>
                         </div>
                     </div>
@@ -318,14 +343,14 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
                         <button
                             type="button"
                             onClick={() => setIsOpen(false)}
-                            className="flex-1 py-4 text-[10px] font-black uppercase tracking-widest text-white/60 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:text-white transition-all font-display"
+                            className="flex-1 py-4 text-[10px] font-black uppercase tracking-widest text-white/60 bg-white/5 border border-white/10 rounded-none hover:bg-white/10 hover:text-white transition-all font-display"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             disabled={loading || !form.clientId}
-                            className="flex-1 py-4 text-[10px] font-black uppercase tracking-widest bg-amber text-navy rounded-2xl hover:scale-[1.02] active:scale-[0.98] shadow-glow transition-all disabled:opacity-50 flex items-center justify-center gap-3 font-display"
+                            className="flex-1 py-4 text-[10px] font-black uppercase tracking-widest bg-amber text-navy rounded-none hover:scale-[1.02] active:scale-[0.98] shadow-glow transition-all disabled:opacity-50 flex items-center justify-center gap-3 font-display"
                         >
                             {loading ? (
                                 <div className="w-4 h-4 border-2 border-navy/30 border-t-navy rounded-full animate-spin" />
