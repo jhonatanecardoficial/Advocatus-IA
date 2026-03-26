@@ -70,7 +70,8 @@ export class JwtAuthGuard implements CanActivate {
             }
 
             return true
-        } catch {
+        } catch (error: any) {
+
             throw new UnauthorizedException('Sessão inválida. Inicie sessão novamente.')
         }
     }

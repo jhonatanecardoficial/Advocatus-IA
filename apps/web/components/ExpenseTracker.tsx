@@ -55,7 +55,7 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    setTasks(data);
+                    setTasks(Array.isArray(data) ? data : []);
                 }
             } catch (err) {
                 console.error('Erro ao carregar tarefas:', err);
@@ -74,7 +74,7 @@ export default function ExpenseTracker({ matterId, expenses = [], onExpensesChan
             });
             if (res.ok) {
                 const data = await res.json();
-                setAllExpenses(data);
+                setAllExpenses(Array.isArray(data) ? data : []);
             }
         } catch (err) {
             console.error('Erro ao carregar despesas:', err);

@@ -28,10 +28,11 @@ export class MattersService {
     }
 
     async findAll(tenantId: string, filters: MatterFiltersDto) {
+
         const { search, clientId, type, status, responsibleId, page, perPage } = filters
         const skip = (page - 1) * perPage
 
-        const where = {
+        const where: any = {
             tenantId,
             ...(clientId && { clientId }),
             ...(type && { type }),

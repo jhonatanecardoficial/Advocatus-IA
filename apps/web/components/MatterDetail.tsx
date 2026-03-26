@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { Clock, FileText, Calendar, Wallet, User, AlertTriangle, History, DollarSign, Receipt, Info, ChevronRight, ShieldCheck, Wand2 } from 'lucide-react';
+import { Clock, FileText, Calendar, Wallet, User, AlertTriangle, History, DollarSign, Receipt, Info, ChevronRight, ShieldCheck, Wand2, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import TimeTracker from './TimeTracker';
 import ExpenseTracker from './ExpenseTracker';
@@ -638,23 +638,42 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
 
             <div className="flex items-center gap-3 mb-6">
                 <div className="p-2.5 bg-amber rounded-xl text-navy shadow-lg shadow-amber/20">
+                    <Zap size={18} />
+                </div>
+                <div>
+                   <h3 className="text-[11px] font-black uppercase text-white tracking-widest leading-none mb-1">Ações de Processo</h3>
+                   <p className="text-[10px] text-amber/60 font-medium">GESTÃO RÁPIDA</p>
+                </div>
+            </div>
+            
+            <div className="space-y-3">
+                <AiDraftButton matterId={matter.id} />
+                <div className="grid grid-cols-2 gap-3">
+                    <UploadDocumentModal matterId={matter.id} />
+                    <AddTaskModal matterId={matter.id} onSuccess={loadTasks} />
+                </div>
+            </div>
+          </motion.div>
+
+          {/* Document Repository Card */}
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.55 }}
+            className="glass-panel p-6 border-white/10 overflow-hidden relative"
+          >
+            <div className="flex items-center gap-3 mb-6">
+                <div className="p-2.5 bg-navy-600 rounded-xl text-amber shadow-lg">
                     <FileText size={18} />
                 </div>
                 <div>
                    <h3 className="text-[11px] font-black uppercase text-white tracking-widest leading-none mb-1">Repositório</h3>
-                   <p className="text-[10px] text-amber/60 font-medium">GESTÃO DE DOCUMENTOS</p>
+                   <p className="text-[10px] text-slate-500 font-medium">DOCUMENTOS ANEXADOS</p>
                 </div>
             </div>
             
             <div className="space-y-4">
-                <AiDraftButton matterId={matter.id} />
-                <div className="h-[1px] bg-white/5 my-2" />
                 <DocumentListPanel matterId={matter.id} documents={matter.documents || []} />
-            </div>
-            
-            <div className="mt-8 grid grid-cols-1 gap-3">
-                <UploadDocumentModal matterId={matter.id} />
-                <AddTaskModal matterId={matter.id} onSuccess={loadTasks} />
             </div>
           </motion.div>
 

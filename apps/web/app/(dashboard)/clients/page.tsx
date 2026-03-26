@@ -1,7 +1,8 @@
-import { Users, Search, Phone, Mail, ArrowRight } from "lucide-react";
+import { Users, Phone, Mail, ArrowRight } from "lucide-react";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import AddClientModal from "@/components/AddClientModal";
+import SearchAndFilters from "@/components/shared/SearchAndFilters";
 
 interface Client {
     id: string;
@@ -15,16 +16,21 @@ interface Client {
     }
 }
 
-async function fetchClients(): Promise<Client[]> {
+async function fetchClients(search?: string, tipo?: string): Promise<Client[]> {
     const cookieStore = await cookies();
     const token = cookieStore.get("accessToken")?.value;
 
     if (!token) return [];
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
+    
+    // Construir URL com filtros
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+    if (tipo) params.append("tipo", tipo);
 
     try {
-        const res = await fetch(`${API_URL}/clients`, {
+        const res = await fetch(`${API_URL}/clients?${params.toString()}`, {
             headers: { Authorization: `Bearer ${token}` },
             cache: "no-store",
         });
@@ -37,8 +43,13 @@ async function fetchClients(): Promise<Client[]> {
     }
 }
 
-export default async function ClientsPage() {
-    const clients = await fetchClients();
+export default async function ClientsPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ search?: string; tipo?: string }>;
+}) {
+    const { search, tipo } = await searchParams;
+    const clients = await fetchClients(search, tipo);
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
@@ -64,30 +75,14 @@ export default async function ClientsPage() {
             </div>
 
             {/* Quick Actions / Search */}
-            <div className="glass-panel p-2 flex flex-col md:flex-row gap-2 items-center justify-between border border-white/5 backdrop-blur-xl bg-navy/20">
-                <div className="relative w-full md:w-96">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
-                    <input
-                        type="text"
-                        placeholder="Pesquisar por nome, CPF/CNPJ ou email..."
-                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-none focus:outline-none focus:border-amber/50 focus:bg-white/10 font-mono text-xs text-white placeholder:text-white/20 transition-all uppercase tracking-wider"
-                    />
-                </div>
-                <div className="flex gap-1 w-full md:w-auto">
-                    {['Físicas', 'Jurídicas', 'Todos'].map((label) => (
-                        <button 
-                            key={label}
-                            className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest transition-all flex-1 md:flex-none ${
-                                label === 'Todos' 
-                                    ? 'bg-amber text-navy shadow-glow hover:scale-[1.02]' 
-                                    : 'text-white/40 hover:text-white hover:bg-white/5 border border-transparent'
-                            }`}
-                        >
-                            {label}
-                        </button>
-                    ))}
-                </div>
-            </div>
+            <SearchAndFilters 
+                placeholder="Pesquisar por nome, NIF ou email..."
+                filterParamName="tipo"
+                filterOptions={[
+                    { label: "Físicas", value: "SINGULAR" },
+                    { label: "Jurídicas", value: "COLETIVA" }
+                ]}
+            />
 
             {/* Clients Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -100,7 +95,7 @@ export default async function ClientsPage() {
                             <div>
                                 <div className="flex justify-between items-start mb-6">
                                     <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 border ${client.type === 'SINGULAR' ? 'border-white/20 text-white/80 bg-white/5' : 'border-amber/40 text-amber bg-amber/10'}`}>
-                                        {client.type}
+                                        {client.type === 'SINGULAR' ? 'PESSOA FÍSICA' : 'PESSOA JURÍDICA'}
                                     </span>
                                     <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/20 group-hover/card:text-amber group-hover/card:bg-amber/10 transition-all">
                                         <ArrowRight className="h-4 w-4 transform group-hover/card:translate-x-0.5 transition-transform" />
@@ -110,7 +105,7 @@ export default async function ClientsPage() {
                                     {client.name}
                                 </h3>
                                 <p className="font-mono text-[10px] text-white/60 uppercase tracking-[0.2em] mt-3 mb-8 bg-white/5 px-2 py-1 inline-block border border-white/10">
-                                    Documento: <span className="text-white font-bold">{client.nif}</span>
+                                    NIF: <span className="text-white font-bold">{client.nif}</span>
                                 </p>
                             </div>
                             <div className="space-y-4 pt-8 border-t border-white/5 mt-auto">
@@ -132,11 +127,11 @@ export default async function ClientsPage() {
                 ))}
 
                 {clients.length === 0 && (
-                    <div className="col-span-1 md:col-span-2 xl:col-span-3 py-32 flex flex-col items-center justify-center glass-panel border border-white/10 bg-white/5 text-white/40">
+                    <div className="col-span-1 md:col-span-2 xl:col-span-3 py-10 md:py-32 flex flex-col items-center justify-center glass-panel border border-white/10 bg-white/5 text-white/40">
                         <Users className="h-16 w-16 mb-6 opacity-10" />
                         <h3 className="text-xl font-display font-bold text-white">Nenhum cliente encontrado</h3>
                         <p className="font-body text-xs mt-2 mb-8 text-center max-w-sm opacity-60">
-                            Sua lista de clientes está vazia. Comece adicionando os dados do seu primeiro cliente para iniciar a gestão inteligente.
+                            Não encontramos clientes com os filtros aplicados. Tente ajustar sua busca ou adicione um novo cliente.
                         </p>
                         <AddClientModal />
                     </div>

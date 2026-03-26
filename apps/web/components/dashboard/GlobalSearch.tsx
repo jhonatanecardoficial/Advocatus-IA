@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Search, X, Users, Scale, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { globalSearchAction } from '@/app/actions/search';
 
 interface SearchResult {
     id: string;
@@ -12,14 +13,6 @@ interface SearchResult {
     title?: string;
     type: 'client' | 'matter';
     subtitle?: string;
-}
-
-function getCookie(name: string): string | undefined {
-    if (typeof document === 'undefined') return undefined;
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift();
-    return undefined;
 }
 
 export function GlobalSearch() {
@@ -52,42 +45,10 @@ export function GlobalSearch() {
         setIsLoading(true);
         setIsOpen(true);
 
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
-        const token = getCookie('accessToken');
-        const headers: Record<string, string> = {};
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-
         try {
-            const [clientsRes, mattersRes] = await Promise.all([
-                fetch(`${API_URL}/clients?search=${encodeURIComponent(q)}&perPage=5`, { headers }),
-                fetch(`${API_URL}/matters?search=${encodeURIComponent(q)}&perPage=5`, { headers }),
-            ]);
-
-            const combined: SearchResult[] = [];
-
-            if (clientsRes.ok) {
-                const data = await clientsRes.json();
-                const clients: SearchResult[] = (data.data ?? []).map((c: {id: string; name: string; nif?: string; email?: string}) => ({
-                    id: c.id,
-                    name: c.name,
-                    type: 'client' as const,
-                    subtitle: c.nif ?? c.email ?? 'Cliente',
-                }));
-                combined.push(...clients);
-            }
-
-            if (mattersRes.ok) {
-                const data = await mattersRes.json();
-                const matters: SearchResult[] = (data.data ?? []).map((m: {id: string; title: string; type?: string; courtReference?: string}) => ({
-                    id: m.id,
-                    title: m.title,
-                    type: 'matter' as const,
-                    subtitle: m.courtReference ?? m.type ?? 'Processo',
-                }));
-                combined.push(...matters);
-            }
-
-            setResults(combined);
+            const result = await globalSearchAction(q);
+            if (result.error) throw new Error(result.error);
+            setResults(result.data || []);
         } catch {
             setResults([]);
         } finally {
@@ -116,9 +77,9 @@ export function GlobalSearch() {
         setIsOpen(false);
         setQuery('');
         if (result.type === 'client') {
-            router.push(`/clients`);
+            router.push(`/clients/${result.id}`);
         } else {
-            router.push(`/matters`);
+            router.push(`/matters/${result.id}`);
         }
     };
 
