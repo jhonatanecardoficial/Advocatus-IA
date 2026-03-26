@@ -7,6 +7,7 @@ import { LogOut, Scale, Bell, AlertTriangle, Clock } from 'lucide-react';
 import { useLogout } from '@/context/logout-context';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GlobalSearch } from './GlobalSearch';
+import { getDashboardMetricsAction } from '@/app/actions/reports';
 
 interface TopNavProps {
     userName: string;
@@ -20,7 +21,6 @@ interface DeadlineAlert {
 
 /**
  * Gera as iniciais a partir do nome completo do utilizador.
- * Exemplo: "João do Santos Martins" → "JM" (1ª letra do 1º nome + 1ª letra do último nome)
  */
 function getInitials(name: string): string {
     const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -28,14 +28,6 @@ function getInitials(name: string): string {
     const first = parts[0][0] ?? '';
     const last = parts.length > 1 ? (parts[parts.length - 1][0] ?? '') : '';
     return (first + last).toUpperCase() || '??';
-}
-
-function getCookie(name: string): string | undefined {
-    if (typeof document === 'undefined') return undefined;
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift();
-    return undefined;
 }
 
 export function TopNav({ userName }: TopNavProps) {
@@ -51,7 +43,6 @@ export function TopNav({ userName }: TopNavProps) {
         fetchDeadlineAlerts();
     }, []);
 
-    // Fechar dropdown de notificações ao clicar fora
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
@@ -63,33 +54,29 @@ export function TopNav({ userName }: TopNavProps) {
     }, []);
 
     const fetchDeadlineAlerts = async () => {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
         try {
-            const token = getCookie('accessToken');
-            const res = await fetch(`${API_URL}/reports/dashboard-metrics`, {
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-            });
-            if (res.ok) {
-                const data = await res.json();
+            const result = await getDashboardMetricsAction();
+            if (result.success && result.data) {
+                const data = result.data;
                 const alerts: DeadlineAlert[] = [];
-                if (data.data?.fatalDeadlines > 0) {
+                if (data.fatalDeadlines > 0) {
                     alerts.push({
                         id: 'fatal',
-                        title: `${data.data.fatalDeadlines} prazo(s) crítico(s) próximo(s)`,
+                        title: `${data.fatalDeadlines} prazo(s) crítico(s) próximo(s)`,
                         type: 'fatal'
                     });
                 }
-                if (data.data?.upcomingTasks > 0) {
+                if (data.upcomingTasks > 0) {
                     alerts.push({
                         id: 'upcoming',
-                        title: `${data.data.upcomingTasks} tarefa(s) nos próximos 7 dias`,
+                        title: `${data.upcomingTasks} tarefa(s) nos próximos 7 dias`,
                         type: 'warning'
                     });
                 }
                 setDeadlineAlerts(alerts);
             }
         } catch {
-            // Silencioso — notificações são opcionais
+            // Silencioso
         }
     };
 
@@ -104,7 +91,6 @@ export function TopNav({ userName }: TopNavProps) {
     if (!isMounted) return null;
 
     const hasAlerts = deadlineAlerts.length > 0;
-    // Iniciais calculadas a partir do userName passado pelo Server Component
     const initials = getInitials(userName);
 
     return (
@@ -130,10 +116,8 @@ export function TopNav({ userName }: TopNavProps) {
                 </div>
 
                 <div className="flex items-center gap-6">
-                    {/* Pesquisa Global — busca clientes e processos reais */}
                     <GlobalSearch />
 
-                    {/* Botão de Notificações com Dropdown */}
                     <div className="relative" ref={notifRef}>
                         <motion.button
                             whileHover={{ scale: 1.1 }}

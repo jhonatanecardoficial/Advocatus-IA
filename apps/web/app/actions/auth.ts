@@ -19,7 +19,7 @@ export async function loginAction(data: any) {
         }
 
         const result = await response.json();
-        const token = result.access_token || result.accessToken;
+        const token = result.access_token || result.accessToken || result.token;
 
         if (token) {
             (await cookies()).set("accessToken", token, {
