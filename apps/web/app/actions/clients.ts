@@ -135,7 +135,7 @@ export async function checkConflictAction(data: { nome: string, nif: string }) {
 
 export async function searchClientsAction(query: string) {
     const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
+    const token = cookieStore.get('accessToken')?.value;
 
     if (!token) return { error: 'Não autenticado' };
 
@@ -143,6 +143,7 @@ export async function searchClientsAction(query: string) {
         const url = `${API_URL}/clients?search=${encodeURIComponent(query)}&perPage=10`;
         const res = await fetch(url, {
             headers: { Authorization: `Bearer ${token}` },
+            cache: 'no-store',
         });
 
         if (!res.ok) throw new Error('Falha ao pesquisar clientes');

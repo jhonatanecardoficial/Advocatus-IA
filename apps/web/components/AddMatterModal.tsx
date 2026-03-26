@@ -95,6 +95,9 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
             if (data.error) {
                 console.error('Erro ao procurar clientes:', data.error);
                 setClients([]);
+                if (data.error.includes('autenticado') || data.error.includes('Não autenticado')) {
+                    window.location.href = '/login';
+                }
                 return;
             }
 
@@ -113,7 +116,7 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
 
     const handleSelectClient = (client: Client) => {
         const displayName = client.nome || client.name || '';
-        setForm({ ...form, clientId: client.id });
+        setForm(prev => ({ ...prev, clientId: client.id }));
         setSearchTerm(displayName);
         setShowResults(false);
     };
@@ -132,6 +135,9 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
             const result = await createMatterAction(form);
             if (result.error) {
                 toast.error(result.error);
+                if (result.error.includes('autenticado') || result.error.includes('Não autenticado')) {
+                    window.location.href = '/login';
+                }
             } else {
                 toast.success('Processo criado com sucesso!');
                 setIsOpen(false);
@@ -209,8 +215,10 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
                                         value={searchTerm}
                                         onChange={(e) => {
                                             if (!clientId) {
-                                                setSearchTerm(e.target.value);
-                                                setForm({ ...form, clientId: '' });
+                                                const value = e.target.value;
+                                                setSearchTerm(value);
+                                                setForm(prev => ({ ...prev, clientId: '' }));
+                                                if (!showResults) setShowResults(true);
                                             }
                                         }}
                                         onFocus={() => {
@@ -220,7 +228,7 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
                                             }
                                         }}
                                         placeholder={clientId ? "" : "Clique para ver clientes ou pesquise..."}
-                                        className={`w-full pl-12 pr-12 py-4 bg-white/[0.05] border ${ clientId ? 'border-amber/40 bg-amber/5 text-amber font-bold' : 'border-white/20 text-white' } rounded-none outline-none transition-all font-body text-sm ${ !clientId ? 'focus:border-amber/50 focus:bg-white/[0.07] cursor-pointer' : '' } `}
+                                        className={`w-full pl-12 pr-12 py-4 bg-white/[0.05] border ${ (clientId || form.clientId) ? 'border-amber/40 bg-amber/5 text-amber font-bold' : 'border-white/20 text-white' } rounded-none outline-none transition-all font-body text-sm ${ !(clientId || form.clientId) ? 'focus:border-amber/50 focus:bg-white/[0.07] cursor-pointer' : '' } `}
                                     />
                                     {isSearching && (
                                         <div className="absolute right-5 top-1/2 -translate-y-1/2 text-amber animate-spin">
@@ -253,8 +261,12 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
                                                     <button
                                                         key={c.id}
                                                         type="button"
+                                                        onMouseDown={(e) => {
+                                                            e.preventDefault(); // Evita perder o foco do input antes de selecionar
+                                                            handleSelectClient(c);
+                                                        }}
                                                         onClick={() => handleSelectClient(c)}
-                                                        className="w-full text-left px-5 py-4 flex items-center justify-between transition-all text-white text-sm font-medium border-b border-white/[0.03] last:border-none hover:bg-[#b3c7f7] hover:text-[#0a192f] bg-[#050b14] hover:!bg-[#b3c7f7]"
+                                                        className="w-full text-left px-5 py-4 flex items-center justify-between transition-all text-white text-sm font-medium border-b border-white/[0.03] last:border-none hover:bg-amber hover:text-navy bg-[#050b14] hover:!bg-amber transition-colors"
                                                     >
                                                         <span className="truncate">{c.nome || c.name}</span>
                                                     </button>
