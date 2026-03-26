@@ -4,7 +4,8 @@ import { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X, Users, Scale, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
+
+import { globalSearchAction } from '@/app/actions/search';
 
 interface SearchResult {
     id: string;
@@ -12,14 +13,6 @@ interface SearchResult {
     title?: string;
     type: 'client' | 'matter';
     subtitle?: string;
-}
-
-function getCookie(name: string): string | undefined {
-    if (typeof document === 'undefined') return undefined;
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift();
-    return undefined;
 }
 
 export function GlobalSearch() {
@@ -52,42 +45,13 @@ export function GlobalSearch() {
         setIsLoading(true);
         setIsOpen(true);
 
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
-        const token = getCookie('accessToken');
-        const headers: Record<string, string> = {};
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-
         try {
-            const [clientsRes, mattersRes] = await Promise.all([
-                fetch(`${API_URL}/clients?search=${encodeURIComponent(q)}&perPage=5`, { headers }),
-                fetch(`${API_URL}/matters?search=${encodeURIComponent(q)}&perPage=5`, { headers }),
-            ]);
-
-            const combined: SearchResult[] = [];
-
-            if (clientsRes.ok) {
-                const data = await clientsRes.json();
-                const clients: SearchResult[] = (data.data ?? []).map((c: {id: string; name: string; nif?: string; email?: string}) => ({
-                    id: c.id,
-                    name: c.name,
-                    type: 'client' as const,
-                    subtitle: c.nif ?? c.email ?? 'Cliente',
-                }));
-                combined.push(...clients);
+            const response = await globalSearchAction(q);
+            if (response.data) {
+                setResults(response.data as SearchResult[]);
+            } else {
+                setResults([]);
             }
-
-            if (mattersRes.ok) {
-                const data = await mattersRes.json();
-                const matters: SearchResult[] = (data.data ?? []).map((m: {id: string; title: string; type?: string; courtReference?: string}) => ({
-                    id: m.id,
-                    title: m.title,
-                    type: 'matter' as const,
-                    subtitle: m.courtReference ?? m.type ?? 'Processo',
-                }));
-                combined.push(...matters);
-            }
-
-            setResults(combined);
         } catch {
             setResults([]);
         } finally {
@@ -102,9 +66,9 @@ export function GlobalSearch() {
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' && query.trim()) {
-            setIsOpen(false);
-            router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            // Mantém o popup aberto ou apenas evita a navegação conforme solicitado
         }
         if (e.key === 'Escape') {
             setIsOpen(false);
@@ -116,9 +80,9 @@ export function GlobalSearch() {
         setIsOpen(false);
         setQuery('');
         if (result.type === 'client') {
-            router.push(`/clients`);
+            router.push(`/clients/${result.id}`);
         } else {
-            router.push(`/matters`);
+            router.push(`/matters/${result.id}`);
         }
     };
 
@@ -209,20 +173,10 @@ export function GlobalSearch() {
                                         ))}
                                     </>
                                 )}
-                                {/* Ver todos */}
-                                <div className="border-t border-white/5 mt-1">
-                                    <Link
-                                        href={`/search?q=${encodeURIComponent(query)}`}
-                                        onClick={() => { setIsOpen(false); setQuery(''); }}
-                                        className="w-full flex items-center justify-center py-3 text-[10px] font-black uppercase tracking-widest text-amber/60 hover:text-amber transition-colors"
-                                    >
-                                        Ver todos os resultados →
-                                    </Link>
-                                </div>
                             </div>
                         ) : (
                             <div className="py-8 text-center text-slate-500 text-xs font-mono">
-                                {isLoading ? 'A pesquisar...' : `Sem resultados para "${query}"`}
+                                {isLoading ? 'A pesquisar...' : 'Sem resultados para "' + query + '"'}
                             </div>
                         )}
                     </motion.div>
