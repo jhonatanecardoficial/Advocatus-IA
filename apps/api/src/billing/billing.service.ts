@@ -77,11 +77,11 @@ export class BillingService {
 
     await Promise.all([
       this.prisma.timeEntry.updateMany({
-        where: { tenantId, matterId: matter.id, billable: true, invoiceId: invoice.id },
+        where: { tenantId, matterId: matter.id, billable: true, invoiceId: null },
         data: { invoiceId: invoice.id },
       }),
       this.prisma.expense.updateMany({
-        where: { tenantId, matterId: matter.id, billable: true, invoiceId: invoice.id },
+        where: { tenantId, matterId: matter.id, billable: true, invoiceId: null },
         data: { invoiceId: invoice.id },
       }),
     ]);

@@ -35,8 +35,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
             query: {
                 $allModels: {
                     async $allOperations({ args, query }: any) {
-                        // PrismaPromise array permite executar o set_config primeiro
-                        // e logo de seguida a query na MAIS absoluta mesma conexão db.
+                        // Prisma 7 Fix: 'omit' option cannot be null. 
+                        // If Prisma is internally setting it to null or it's coming from an invalid transform,
+                        // we must ensure it's undefined before passing it to query(args).
+                        if (args && args.omit === null) {
+                            args.omit = undefined;
+                        }
+
                         const [, result] = await rootClient.$transaction([
                             rootClient.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenantId}, true)`,
                             query(args),

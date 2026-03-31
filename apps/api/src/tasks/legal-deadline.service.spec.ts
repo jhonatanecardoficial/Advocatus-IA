@@ -123,5 +123,58 @@ describe('LegalDeadlineService', () => {
       // Prazo começa 2 Out. + 14 dias = 16 Out (Quinta)
       expect(dueAt.toISOString()).toContain('2025-10-16');
     });
+
+    it('deve suspender o prazo durante a Páscoa de 2026 (5 de Abril)', () => {
+      // 2026: Domingo de Ramos é 29 de Março, Segunda-feira de Pascoela é 6 de Abril
+      // Prazo de 5 dias começando a 28 de Março (Sábado)
+      const startDate = new Date('2026-03-28T10:00:00Z');
+      const result = service.calculateDeadline({
+        startDate,
+        days: 5,
+        includeSuspension: true,
+      });
+      const { dueAt } = result;
+
+      // Prazo começa 29 Março (Suscetível a suspensão? Sim, Domingo de Ramos)
+      // 29 Mar a 6 Abr (Suspensos)
+      // Retoma 7 Abr (Terça) - Dia 1
+      // 8 Abr (Dia 2), 9 (Dia 3), 10 (Dia 4), 11 abr (Dia 5 - Sábado)
+      // Transfere para 13 de Abril (Segunda)
+      expect(dueAt.toISOString()).toContain('2026-04-13');
+    });
+
+    it('deve lidar com o feriado de 25 de Abril de 2026 (Sábado)', () => {
+      // 24 de Abril de 2026 (Sexta)
+      // Prazo de 2 dias.
+      const startDate = new Date('2026-04-24T10:00:00Z');
+      const { dueAt } = service.calculateDeadline({
+        startDate,
+        days: 2,
+        includeSuspension: false,
+      });
+
+      // Prazo começa 25 Abr (Sábado - Feriado)
+      // 25 Abr (Dia 1), 26 Abr (Dia 2 - Domingo)
+      // Transfere para 27 de Abril (Segunda)
+      expect(dueAt.toISOString()).toContain('2026-04-27');
+    });
+
+    it('deve calcular multa de 3 dias úteis após 1 de Maio de 2026 (Sexta)', () => {
+      // Termina a 30 de Abril 2026 (Quinta)
+      // 25 Abr (Sab), 26 (Dom), 27 (Seg - Day 1), 28 (Ter - Day 2), 29 (Qua - Day 3), 30 (Qui - Day 4), 1 Mai (Dia 5 - Feriado/Sexta)
+      // ... Na verdade, vamos simplificar o teste para o termo.
+      
+      const { dueAt, penaltyLimitAt } = service.calculateDeadline({
+        startDate: new Date('2026-04-24T10:00:00Z'),
+        days: 4,
+        includeSuspension: false,
+      });
+
+      // Termina 28 de Abril (Terça)
+      expect(dueAt.toISOString()).toContain('2026-04-28');
+
+      // Multa 3 dias úteis: 29 (Qua), 30 (Qui), 1 Mai (Feriado - salta), 2 Mai (Sab - salta), 3 Mai (Dom - salta), 4 Mai (Seg)
+      expect(penaltyLimitAt.toISOString()).toContain('2026-05-04');
+    });
   });
 });

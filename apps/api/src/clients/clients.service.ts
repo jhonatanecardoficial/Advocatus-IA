@@ -143,10 +143,12 @@ export class ClientsService {
     async remove(tenantId: string, id: string) {
         await this.findOne(tenantId, id)
 
-        return this.prisma.client.update({
+        const deleted = await this.prisma.client.update({
             where: { id, tenantId },
             data: { deletedAt: new Date() },
         })
+
+        return { data: deleted }
     }
 
     async conflictCheck(tenantId: string, dto: ConflictCheckDto) {
@@ -171,13 +173,15 @@ export class ClientsService {
         })
 
         return {
-            hasConflicts: conflicts.length > 0,
-            conflicts: conflicts.map(c => ({
-                id: c.id,
-                nome: c.name,
-                nif: c.nif,
-                type: c.type,
-            })),
+            data: {
+                hasConflicts: conflicts.length > 0,
+                conflicts: conflicts.map(c => ({
+                    id: c.id,
+                    nome: c.name,
+                    nif: c.nif,
+                    type: c.type,
+                })),
+            }
         }
     }
 }

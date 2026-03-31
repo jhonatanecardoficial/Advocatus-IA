@@ -77,7 +77,7 @@ export class BillingController {
   }
 
   @Post(':id/finalize')
-  @Roles('SOCIO', 'ADMIN')
+  @Roles('SOCIO', 'ADMIN', 'ADVOGADO')
   @HttpCode(HttpStatus.OK)
   finalizeInvoice(@CurrentUser() user: RequestUser, @Param('id') id: string) {
     return this.billingService.finalizeInvoice(user.tenantId, id);

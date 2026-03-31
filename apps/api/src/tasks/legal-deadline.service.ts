@@ -68,23 +68,27 @@ export class LegalDeadlineService {
    * Páscoa: Domingo de Ramos a Segunda-feira de Pascoela
    */
   isJudicialHoliday(date: Date): boolean {
-    const month = date.getMonth(); // 0-11
+    const year = date.getFullYear();
+    const month = date.getMonth();
     const day = date.getDate();
+    const d = new Date(year, month, day);
 
-    // Verão: 16/jul a 31/ago
-    if ((month === 6 && day >= 16) || month === 7) return true;
+    // Verão: 16 de Julho a 31 de Agosto
+    if (month === 6 && day >= 16) return true;
+    if (month === 7) return true;
 
-    // Natal: 22/dez a 3/jan
-    if ((month === 11 && day >= 22) || (month === 0 && day <= 3)) return true;
+    // Natal: 22 de Dezembro a 3 de Janeiro
+    if (month === 11 && day >= 22) return true;
+    if (month === 0 && day <= 3) return true;
 
-    // Páscoa (Móvel)
-    const easter = this.calculateEaster(date.getFullYear());
+    // Páscoa: Domingo de Ramos a Segunda-feira de Pascoela
+    const easter = this.calculateEaster(year);
     const palmSunday = new Date(easter);
     palmSunday.setDate(palmSunday.getDate() - 7);
     const easterMonday = new Date(easter);
     easterMonday.setDate(easterMonday.getDate() + 1);
 
-    if (date >= palmSunday && date <= easterMonday) return true;
+    if (d >= palmSunday && d <= easterMonday) return true;
 
     return false;
   }

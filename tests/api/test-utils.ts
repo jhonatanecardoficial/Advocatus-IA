@@ -1,13 +1,19 @@
 import { execSync } from 'child_process';
 import * as path from 'path';
+import * as fs from 'fs';
 import * as jose from 'jose';
-import { config as loadDotenv } from 'dotenv';
 
-// Carregar .env.test para ter acesso a TEST_JWT_SECRET e TEST_DB_URL
-loadDotenv({ path: path.resolve(__dirname, '../../.env.test') });
+import * as dotenv from 'dotenv';
+
+// Carregar variáveis de ambiente de testes
+const envPath = path.resolve(__dirname, '../../.env.test');
+const ROOT_DIR = path.resolve(__dirname, '../../');
+
+if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+}
 
 const JWT_SECRET = process.env.TEST_JWT_SECRET || 'super-secret-jwt-token-with-at-least-32-characters-long';
-const ROOT_DIR = path.resolve(__dirname, '../../');
 
 export interface TestContext {
     token: string;
@@ -18,20 +24,26 @@ export interface TestContext {
 export async function setupTestContext(): Promise<TestContext> {
     const uniqueId = String(Date.now());
 
-    // Corre o seed no contexto da api (onde @prisma/client está instalado)
-    // Passa TEST_DB_URL para o processo filho para evitar dependência de .env hardcoded
-    const raw = execSync(
-        `pnpm --filter @advocatus/api exec node seed-test-data.js create ${uniqueId}`,
-        {
-            cwd: ROOT_DIR,
-            encoding: 'utf-8',
-            env: {
-                ...process.env,
-                // Garantir que TEST_DB_URL está disponível para o script seed
-                TEST_DB_URL: process.env.TEST_DB_URL,
+    let raw: string;
+    try {
+        raw = execSync(
+            `pnpm --filter @advocatus/api exec node seed-test-data.js create ${uniqueId}`,
+            {
+                cwd: ROOT_DIR,
+                encoding: 'utf-8',
+                env: {
+                    ...process.env,
+                    TEST_DB_URL: process.env.TEST_DB_URL,
+                    DATABASE_URL: process.env.TEST_DB_URL // Some scripts might look for this instead
+                }
             }
-        }
-    ).trim();
+        ).trim();
+    } catch (e: any) {
+        console.error('SEED SCRIPT FAILED!');
+        console.error('STDOUT:', e.stdout?.toString());
+        console.error('STDERR:', e.stderr?.toString());
+        throw new Error(`Failed to seed test data: ${e.message}`);
+    }
 
     const { tenantId, userId, supabaseUserId } = JSON.parse(raw);
 

@@ -10,8 +10,9 @@ export const CreateTaskSchema = z.object({
     priority: z.enum(['BAIXA', 'MEDIA', 'ALTA', 'CRITICA']).default('MEDIA'),
     dueAt: z.coerce.date().optional(),
     assignedToId: z.string().cuid().optional(),
-    // Campos para cálculo assistido via LegalDeadlineService
+    // Campos para agendamento e cálculo assistido
     startDate: z.coerce.date().optional(),
+    endDate: z.coerce.date().optional(),
     days: z.number().int().positive().optional(),
     isUrgent: z.boolean().optional(),
     dilacao: z.coerce.number().int().min(0).default(0).optional(),

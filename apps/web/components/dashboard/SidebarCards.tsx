@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Zap, Calendar, CheckCircle2 } from "lucide-react";
 import Link from 'next/link';
+import AddTaskModal from '../AddTaskModal';
 
 interface TodayTask {
     id: string;
@@ -156,6 +157,10 @@ export default function DashboardSidebarCards({ todayTasks = [] }: DashboardSide
                     </button>
                 </Link>
             </motion.div>
+
+            <AddTaskModal 
+                onSuccess={() => window.location.reload()} // Recarrega para ver a nova tarefa no Dashboard
+            />
         </div>
     );
 }

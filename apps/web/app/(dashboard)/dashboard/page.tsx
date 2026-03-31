@@ -50,10 +50,16 @@ async function fetchDashboardData() {
         let todayTasks: TodayTask[] = [];
         if (tasksRes.ok) {
             const allTasks: TodayTask[] = await tasksRes.json();
-            const todayStr = new Date().toISOString().slice(0, 10);
+            const now = new Date();
+            const todayStr = now.toISOString().slice(0, 10);
+            const nextWeek = new Date(now);
+            nextWeek.setDate(now.getDate() + 7);
+            const nextWeekStr = nextWeek.toISOString().slice(0, 10);
+
             todayTasks = (Array.isArray(allTasks) ? allTasks : [])
-                .filter((t) => t.dueAt && t.dueAt.slice(0, 10) === todayStr)
-                .slice(0, 5);
+                .filter((t) => t.dueAt && t.dueAt.slice(0, 10) >= todayStr && t.dueAt.slice(0, 10) <= nextWeekStr)
+                .sort((a, b) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime())
+                .slice(0, 6);
         }
 
         return { user, matters, metrics, todayTasks };

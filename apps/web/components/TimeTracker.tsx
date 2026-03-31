@@ -33,6 +33,7 @@ interface TimeTrackerProps {
 export default function TimeTracker({ matterId, entries = [], onEntriesChange, onRefresh }: TimeTrackerProps) {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [seconds, setSeconds] = useState(0);
+  const [manualHours, setManualHours] = useState<string>('0.00');
   const [description, setDescription] = useState('');
   const [ratePerHour, setRatePerHour] = useState<number>(150);
   const [isBillable, setIsBillable] = useState(true);
@@ -232,21 +233,37 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange, o
     return (sec / 3600).toFixed(2);
   }
 
+  // Sync seconds and manualHours
+  useEffect(() => {
+    if (!isTimerRunning) {
+      setManualHours(getHours(seconds));
+    }
+  }, [seconds, isTimerRunning]);
+
+  const handleManualHoursChange = (val: string) => {
+    setManualHours(val);
+    const parsed = parseFloat(val);
+    if (!isNaN(parsed) && !isTimerRunning) {
+      setSeconds(Math.floor(parsed * 3600));
+    }
+  };
+
   async function saveTimeEntry() {
     if (!description.trim()) {
       toast.error('Descreva a atividade');
       return;
     }
 
-    if (seconds === 0) {
-      toast.error('Cronômetro parado - nenhum tempo registado');
+    if (seconds <= 0 && parseFloat(manualHours) <= 0) {
+      toast.error('Nenhum tempo registado para gravar');
       return;
     }
 
     setLoading(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
-      const hours = parseFloat(getHours(seconds));
+      const finalSeconds = seconds > 0 ? seconds : (parseFloat(manualHours) * 3600);
+      const hours = parseFloat((finalSeconds / 3600).toFixed(2));
       const rate = ratePerHour || 0;
       
       const payload = {
@@ -363,15 +380,29 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange, o
         transition={{ delay: 0.1 }}
         className="glass-panel p-6 space-y-4"
       >
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Atividade Realizada</label>
-          <input
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="O que está a fazer agora?"
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all placeholder:text-slate-600 font-medium"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Atividade Realizada</label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="O que está a fazer agora?"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all placeholder:text-slate-600 font-medium"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Tempo (Horas)</label>
+            <input
+              type="number"
+              step="0.01"
+              value={manualHours}
+              onChange={(e) => handleManualHoursChange(e.target.value)}
+              disabled={isTimerRunning}
+              placeholder="0.00"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-amber/50 outline-none transition-all placeholder:text-slate-600 font-medium disabled:opacity-50"
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -420,7 +451,7 @@ export default function TimeTracker({ matterId, entries = [], onEntriesChange, o
 
         <button
           onClick={saveTimeEntry}
-          disabled={loading || seconds === 0}
+          disabled={loading || (seconds <= 0 && parseFloat(manualHours) <= 0)}
           className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-xl text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-amber hover:text-navy hover:border-amber transition-all disabled:opacity-30 disabled:hover:bg-white/5 flex items-center justify-center gap-2"
         >
           {loading ? 'A Gravar...' : (

@@ -1,0 +1,362 @@
+﻿[dotenv@17.3.1] injecting env (3) from .env.test -- tip: ­ƒøá´©Å  run anywhere with `dotenvx run -- yourcommand`
+{
+  "config": {
+    "configFile": "C:\\Users\\E\\Desktop\\Ecard\\Projeto IA\\Advocatus IA\\playwright.config.ts",
+    "rootDir": "C:/Users/E/Desktop/Ecard/Projeto IA/Advocatus IA/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/E/Desktop/Ecard/Projeto IA/Advocatus IA/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/E/Desktop/Ecard/Projeto IA/Advocatus IA/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 15000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 12,
+    "webServer": {
+      "command": "pnpm --filter @advocatus/api run dev",
+      "url": "http://127.0.0.1:4000/api/v1/auth/health",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "api\\clients.spec.ts",
+      "file": "api/clients.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Clients API",
+          "file": "api/clients.spec.ts",
+          "line": 4,
+          "column": 15,
+          "specs": [
+            {
+              "title": "Criar um novo Cliente (POST /clients)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 15000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 82,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-30T23:31:28.476Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c197617a10094df58e57-99cc9d4b541fc53e101f",
+              "file": "api/clients.spec.ts",
+              "line": 16,
+              "column": 9
+            },
+            {
+              "title": "Listar Clientes (GET /clients)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 15000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 29,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-30T23:31:39.417Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c197617a10094df58e57-fd60c88d85213a92c611",
+              "file": "api/clients.spec.ts",
+              "line": 42,
+              "column": 9
+            },
+            {
+              "title": "Obter um Cliente espec├¡fico (GET /clients/:id)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 15000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 23,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"cmndto54s0002dkeg7fd564tz\"\u001b[39m\nReceived: \u001b[31mundefined\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"cmndto54s0002dkeg7fd564tz\"\u001b[39m\nReceived: \u001b[31mundefined\u001b[39m\n    at C:\\Users\\E\\Desktop\\Ecard\\Projeto IA\\Advocatus IA\\tests\\api\\clients.spec.ts:60:25",
+                        "location": {
+                          "file": "C:\\Users\\E\\Desktop\\Ecard\\Projeto IA\\Advocatus IA\\tests\\api\\clients.spec.ts",
+                          "column": 25,
+                          "line": 60
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 58 |\u001b[39m         expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 59 |\u001b[39m         \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 60 |\u001b[39m         expect(data\u001b[33m.\u001b[39mid)\u001b[33m.\u001b[39mtoBe(clientId)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 61 |\u001b[39m     })\u001b[33m;\u001b[39m\n \u001b[90m 62 |\u001b[39m\n \u001b[90m 63 |\u001b[39m     test(\u001b[32m'Atualizar Cliente (PUT /clients/:id)'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ request }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\E\\Desktop\\Ecard\\Projeto IA\\Advocatus IA\\tests\\api\\clients.spec.ts",
+                            "column": 25,
+                            "line": 60
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"cmndto54s0002dkeg7fd564tz\"\u001b[39m\nReceived: \u001b[31mundefined\u001b[39m\n\n  58 |         expect(response.status()).toBe(200);\n  59 |         const data = await response.json();\n> 60 |         expect(data.id).toBe(clientId);\n     |                         ^\n  61 |     });\n  62 |\n  63 |     test('Atualizar Cliente (PUT /clients/:id)', async ({ request }) => {\n    at C:\\Users\\E\\Desktop\\Ecard\\Projeto IA\\Advocatus IA\\tests\\api\\clients.spec.ts:60:25"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\E\\Desktop\\Ecard\\Projeto IA\\Advocatus IA\\tests\\api\\test-utils.ts",
+                            "column": 13,
+                            "line": 62
+                          },
+                          "message": "Error: Command failed: pnpm --filter @advocatus/api exec node seed-test-data.js delete _ cmndtnxa400008ceggv2qqazy cmndtnxb700018ceg15wopu8e\nSEED_ERROR: \nInvalid `prisma.$executeRawUnsafe()` invocation:\n\n\nRaw query failed. Code: `42P01`. Message: `relation \"portal_accesses\" does not exist`\n\n\n   at api\\test-utils.ts:62\n\n  60 |\n  61 | export async function cleanupTestContext(ctx: TestContext) {\n> 62 |     execSync(\n     |             ^\n  63 |         `pnpm --filter @advocatus/api exec node seed-test-data.js delete _ ${ctx.tenantId} ${ctx.userId}`,\n  64 |         {\n  65 |             cwd: ROOT_DIR,\n    at cleanupTestContext (C:\\Users\\E\\Desktop\\Ecard\\Projeto IA\\Advocatus IA\\tests\\api\\test-utils.ts:62:13)\n    at C:\\Users\\E\\Desktop\\Ecard\\Projeto IA\\Advocatus IA\\tests\\api\\clients.spec.ts:13:33"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "SEED_ERROR: \nInvalid `prisma.$executeRawUnsafe()` invocation:\n\n\nRaw query failed. Code: `42P01`. Message: `relation \"portal_accesses\" does not exist`\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-03-30T23:31:39.460Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "C:\\Users\\E\\Desktop\\Ecard\\Projeto IA\\Advocatus IA\\tests\\api\\clients.spec.ts",
+                        "column": 25,
+                        "line": 60
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "c197617a10094df58e57-393a28394a3f7f20c980",
+              "file": "api/clients.spec.ts",
+              "line": 53,
+              "column": 9
+            },
+            {
+              "title": "Atualizar Cliente (PUT /clients/:id)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 15000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-30T23:31:41.286Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c197617a10094df58e57-2a53c85d82950993e1a8",
+              "file": "api/clients.spec.ts",
+              "line": 63,
+              "column": 9
+            },
+            {
+              "title": "Conflict check retorna sem conflitos para cliente existente",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 15000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-30T23:31:41.286Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c197617a10094df58e57-adef06786792ad1637f2",
+              "file": "api/clients.spec.ts",
+              "line": 74,
+              "column": 9
+            },
+            {
+              "title": "Erro 404 ao consultar Cliente inexistente",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 15000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-30T23:31:41.286Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c197617a10094df58e57-c451d83b52d04e6fe412",
+              "file": "api/clients.spec.ts",
+              "line": 84,
+              "column": 9
+            },
+            {
+              "title": "Erro 401 ao aceder sem Token",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 15000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-30T23:31:41.286Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c197617a10094df58e57-e1685fb4af4b9a962142",
+              "file": "api/clients.spec.ts",
+              "line": 91,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-03-30T23:31:26.950Z",
+    "duration": 14373.973,
+    "expected": 2,
+    "skipped": 4,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

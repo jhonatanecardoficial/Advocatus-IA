@@ -1,5 +1,7 @@
 // Script de seed para os testes Playwright
 // Executado via: pnpm --filter @advocatus/api exec node seed-test-data.js <action> <uniqueId> [tenantId]
+const pg = require('pg');
+const { PrismaPg } = require('@prisma/adapter-pg');
 const { PrismaClient } = require('@prisma/client');
 
 // Porta e URL da DB configur\u00e1veis via env — sem valores hardcoded
@@ -10,9 +12,10 @@ if (!DB_URL) {
     process.exit(1);
 }
 
-const p = new PrismaClient({
-    datasources: { db: { url: DB_URL } }
-});
+// Em Prisma 7, o engine 'client' exige um adapter
+const pool = new pg.Pool({ connectionString: DB_URL });
+const adapter = new PrismaPg(pool);
+const p = new PrismaClient({ adapter });
 
 const args = process.argv.slice(2);
 const action = args[0];   // 'create' ou 'delete'
@@ -46,19 +49,26 @@ async function main() {
         }));
 
     } else if (action === 'delete') {
-        // Usar SQL raw para evitar conflito de nomes p.client vs PrismaClient
-        await p.$executeRawUnsafe(`DELETE FROM "audit_logs" WHERE "tenantId" = $1`, tenantId);
-        await p.$executeRawUnsafe(`DELETE FROM "time_entries" WHERE "tenantId" = $1`, tenantId);
-        await p.$executeRawUnsafe(`DELETE FROM "expenses" WHERE "tenantId" = $1`, tenantId);
-        await p.$executeRawUnsafe(`DELETE FROM "invoices" WHERE "tenantId" = $1`, tenantId);
-        await p.$executeRawUnsafe(`DELETE FROM "tasks" WHERE "tenantId" = $1`, tenantId);
-        await p.$executeRawUnsafe(`DELETE FROM "portal_accesses" WHERE "tenantId" = $1`, tenantId);
-        await p.$executeRawUnsafe(`DELETE FROM "messages" WHERE "tenantId" = $1`, tenantId);
-        await p.$executeRawUnsafe(`DELETE FROM "documents" WHERE "tenantId" = $1`, tenantId);
-        await p.$executeRawUnsafe(`DELETE FROM "matters" WHERE "tenantId" = $1`, tenantId);
-        await p.$executeRawUnsafe(`DELETE FROM "clients" WHERE "tenantId" = $1`, tenantId);
-        await p.$executeRawUnsafe(`DELETE FROM "users" WHERE "tenantId" = $1`, tenantId);
-        await p.$executeRawUnsafe(`DELETE FROM "tenants" WHERE "id" = $1`, tenantId);
+        const tables = [
+            "audit_logs", "time_entries", "expenses", "invoices", "tasks",
+            "portal_accesses", "messages", "documents", "matters", "clients",
+            "users", "tenants"
+        ];
+        
+        for (const table of tables) {
+            try {
+                if (table === 'tenants') {
+                    await p.$executeRawUnsafe(`DELETE FROM "${table}" WHERE "id" = $1`, tenantId);
+                } else {
+                    await p.$executeRawUnsafe(`DELETE FROM "${table}" WHERE "tenantId" = $1`, tenantId);
+                }
+            } catch (e) {
+                // Ignore if table doesn't exist (relation does not exist)
+                if (!e.message.includes('42P01')) {
+                    throw e;
+                }
+            }
+        }
         console.log('cleanup done');
     }
 }

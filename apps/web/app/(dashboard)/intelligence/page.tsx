@@ -2,7 +2,7 @@ import { LegalIntelligenceDashboard } from '@/components/intel/LegalIntelligence
 
 export const metadata = {
   title: 'Inteligência Jurídica | Advocatus IA',
-  description: 'Pesquisa avançada de legislação e jurisprudência brasileira.',
+  description: 'Pesquisa avançada de legislação e jurisprudência portuguesa.',
 };
 
 export default function IntelligencePage() {
