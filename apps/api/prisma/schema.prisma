@@ -327,6 +327,8 @@ model Task {
   type             TaskType     @default(OUTRO)
   priority         TaskPriority @default(MEDIA)
   dueAt            DateTime?
+  startDate        DateTime?
+  endDate          DateTime?
   penaltyLimitAt   DateTime?
   completedAt      DateTime?
   notificationSent Boolean      @default(false)
@@ -398,7 +400,7 @@ model LegalDocument {
   title       String
   reference   String?
   content     String                       @db.Text
-  embedding   Unsupported("vector(1536)")?
+  embedding   Unsupported("vector(768)")?
   publishedAt DateTime?
   url         String?
   ingestedAt  DateTime                     @default(now())

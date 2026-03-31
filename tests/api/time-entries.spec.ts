@@ -20,12 +20,14 @@ test.describe.serial('Time Entries API', () => {
         const clientRes = await request.post('/api/v1/clients', {
             headers: { 'Authorization': `Bearer ${ctx.token}` },
             data: {
-                name: 'Teste Time Entries',
+                nome: 'Teste Time Entries',
                 nif: uniqueNif,
-                type: 'SINGULAR'
+                tipo: 'SINGULAR'
             }
         });
-        clientId = (await clientRes.json()).id;
+        expect(clientRes.status()).toBe(201);
+        const { data } = await clientRes.json();
+        clientId = data.id;
 
         const matterRes = await request.post('/api/v1/matters', {
             headers: { 'Authorization': `Bearer ${ctx.token}` },

@@ -36,6 +36,8 @@ export class TasksService {
                 type: dto.type ?? 'OUTRO',
                 priority: dto.priority ?? 'MEDIA',
                 dueAt: finalDueAt,
+                startDate: dto.startDate,
+                endDate: dto.endDate,
                 penaltyLimitAt: (dto.days && dto.startDate) ? 
                     this.deadlineService.calculateDeadline({
                         startDate: dto.startDate,

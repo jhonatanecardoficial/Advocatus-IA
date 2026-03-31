@@ -18,11 +18,11 @@ test.describe.serial('Clients API', () => {
         const response = await request.post('/api/v1/clients', {
             headers: { 'Authorization': `Bearer ${ctx.token}` },
             data: {
-                name: "João Silva",
+                nome: "João Silva",
                 email: `joaosilva_${Date.now()}@example.com`,
-                phone: "+351912345678",
+                telefone: "+351912345678",
                 nif: uniqueNif,
-                type: "SINGULAR"
+                tipo: "SINGULAR"
             }
         });
 
@@ -33,8 +33,8 @@ test.describe.serial('Clients API', () => {
         }
 
         expect(response.status()).toBe(201);
-        const data = await response.json();
-        expect(data.name).toBe("João Silva");
+        const { data } = await response.json();
+        expect(data.nome).toBe("João Silva");
         expect(data.id).toBeDefined();
         clientId = data.id;
     });
@@ -56,19 +56,19 @@ test.describe.serial('Clients API', () => {
         });
 
         expect(response.status()).toBe(200);
-        const data = await response.json();
+        const { data } = await response.json();
         expect(data.id).toBe(clientId);
     });
 
     test('Atualizar Cliente (PUT /clients/:id)', async ({ request }) => {
-        const updatedName = 'João Silva Jr.';
+        const updatedNome = 'João Silva Jr.';
         const response = await request.put(`/api/v1/clients/${clientId}`, {
             headers: { 'Authorization': `Bearer ${ctx.token}` },
-            data: { name: updatedName },
+            data: { nome: updatedNome },
         });
         expect(response.status()).toBe(200);
-        const data = await response.json();
-        expect(data.name).toBe(updatedName);
+        const { data } = await response.json();
+        expect(data.nome).toBe(updatedNome);
     });
 
     test('Conflict check retorna sem conflitos para cliente existente', async ({ request }) => {
@@ -77,7 +77,7 @@ test.describe.serial('Clients API', () => {
             data: { nif: Math.random().toString() }, // random nif para não bater
         });
         expect(response.status()).toBe(200);
-        const data = await response.json();
+        const { data } = await response.json();
         expect(data.hasConflicts).toBe(false);
     });
 

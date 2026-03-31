@@ -9,11 +9,12 @@ import { toast } from 'sonner';
 interface Props {
     matterId?: string;
     onSuccess?: () => void;
+    onOpen?: () => void;
     isOpen?: boolean;
     onClose?: () => void;
 }
 
-export default function AddTaskModal({ matterId, onSuccess, isOpen: externalIsOpen, onClose: externalOnClose }: Props) {
+export default function AddTaskModal({ matterId, onSuccess, onOpen, isOpen: externalIsOpen, onClose: externalOnClose }: Props) {
     const [internalIsOpen, setInternalIsOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
@@ -23,6 +24,7 @@ export default function AddTaskModal({ matterId, onSuccess, isOpen: externalIsOp
     }, []);
 
     const setIsOpen = (val: boolean) => {
+        if (val && onOpen) onOpen();
         if (externalOnClose && !val) externalOnClose();
         setInternalIsOpen(val);
     };
@@ -36,6 +38,7 @@ export default function AddTaskModal({ matterId, onSuccess, isOpen: externalIsOp
         priority: 'MEDIA' as any,
         dueAt: '',
         startDate: '',
+        endDate: '',
         days: '',
         isUrgent: false,
         dilacao: '0',
@@ -52,6 +55,7 @@ export default function AddTaskModal({ matterId, onSuccess, isOpen: externalIsOp
             dilacao: parseInt(form.dilacao),
             dueAt: form.dueAt || undefined,
             startDate: form.startDate || undefined,
+            endDate: form.endDate || undefined,
         };
 
         try {
@@ -69,6 +73,7 @@ export default function AddTaskModal({ matterId, onSuccess, isOpen: externalIsOp
                     priority: 'MEDIA',
                     dueAt: '',
                     startDate: '',
+                    endDate: '',
                     days: '',
                     isUrgent: false,
                     dilacao: '0',
@@ -219,19 +224,50 @@ export default function AddTaskModal({ matterId, onSuccess, isOpen: externalIsOp
                             </div>
                         )}
 
-                        <div>
-                            <label htmlFor="task-due-at-portal" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Prazo Limite (Manual)</label>
-                            <div className="relative group">
-                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber transition-colors" size={18} />
-                                <input
-                                    id="task-due-at-portal"
-                                    type="datetime-local"
-                                    value={form.dueAt}
-                                    onChange={(e) => setForm({ ...form, dueAt: e.target.value })}
-                                    className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white [color-scheme:dark] focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm"
-                                />
+                        {form.type !== 'PRAZO' ? (
+                            <div className="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label htmlFor="task-start-portal" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Início (Data/Hora)</label>
+                                    <div className="relative group">
+                                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber transition-colors" size={18} />
+                                        <input
+                                            id="task-start-portal"
+                                            type="datetime-local"
+                                            value={form.startDate}
+                                            onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                                            className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white [color-scheme:dark] focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label htmlFor="task-end-portal" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Fim (Data/Hora)</label>
+                                    <div className="relative group">
+                                        <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber transition-colors" size={18} />
+                                        <input
+                                            id="task-end-portal"
+                                            type="datetime-local"
+                                            value={form.endDate}
+                                            onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                                            className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white [color-scheme:dark] focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm"
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div>
+                                <label htmlFor="task-due-at-portal" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Prazo Limite (Manual)</label>
+                                <div className="relative group">
+                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber transition-colors" size={18} />
+                                    <input
+                                        id="task-due-at-portal"
+                                        type="datetime-local"
+                                        value={form.dueAt}
+                                        onChange={(e) => setForm({ ...form, dueAt: e.target.value })}
+                                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white [color-scheme:dark] focus:border-amber/50 focus:bg-white/10 outline-none transition-all font-body text-sm"
+                                    />
+                                </div>
+                            </div>
+                        )}
 
                         <div>
                             <label htmlFor="task-description-portal" className="block text-[10px] font-bold uppercase text-slate-500 mb-2 tracking-widest">Notas Adicionais</label>

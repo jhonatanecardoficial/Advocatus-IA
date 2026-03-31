@@ -30,11 +30,17 @@ class AllExceptionsFilter implements ExceptionFilter {
         const response = ctx.getResponse();
         const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
         console.error('API ERROR:', exception);
+
+        const isProd = process.env.NODE_ENV === 'production';
         response.status(status).send({
             statusCode: status,
-            message: exception?.message || 'Internal server error',
-            error: exception?.response || exception,
-            stack: process.env.NODE_ENV !== 'production' ? exception?.stack : undefined
+            message: isProd && status === HttpStatus.INTERNAL_SERVER_ERROR
+                ? 'Internal server error'
+                : (exception?.message || 'Internal server error'),
+            ...(isProd ? {} : {
+                error: exception?.response || exception,
+                stack: exception?.stack,
+            }),
         });
     }
 }
@@ -51,16 +57,25 @@ async function bootstrap() {
     app.useLogger(app.get(Logger));
 
     // Register fastify-cookie
+    const cookieSecret = process.env.COOKIE_SECRET;
+    if (!cookieSecret && process.env.NODE_ENV === 'production') {
+        throw new Error('COOKIE_SECRET environment variable is required in production');
+    }
     await app.register(fastifyCookie, {
-        secret: process.env.COOKIE_SECRET || 'advocatus-secure-cookie-secret',
+        secret: cookieSecret || 'advocatus-secure-cookie-secret',
     });
 
     // Prefixo global de API
     app.setGlobalPrefix('api/v1')
 
     // CORS — apenas origens configuradas
+    const allowedOrigins = process.env.ALLOWED_ORIGINS
+        ? process.env.ALLOWED_ORIGINS.split(',')
+        : ['http://localhost:3001'];
     app.enableCors({
-        origin: true, // Em desenvolvimento, permitir todos (ou especificar melhor se necessário)
+        origin: process.env.NODE_ENV === 'production'
+            ? allowedOrigins
+            : true, // Em desenvolvimento, permitir todos
         credentials: true,
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         allowedHeaders: 'Content-Type,Accept,Authorization,X-Requested-With',

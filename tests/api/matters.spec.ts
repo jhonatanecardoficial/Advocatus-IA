@@ -19,16 +19,16 @@ test.describe.serial('Matters API', () => {
         const response = await request.post('/api/v1/clients', {
             headers: { 'Authorization': `Bearer ${ctx.token}` },
             data: {
-                name: "Empresa XPTO Limitada",
+                nome: "Empresa XPTO Limitada",
                 email: `empresa_${Date.now()}@example.com`,
-                phone: "+351912345678",
+                telefone: "+351912345678",
                 nif: uniqueNif,
-                type: "COLETIVO"
+                tipo: "COLETIVA"
             }
         });
 
         expect(response.status()).toBe(201);
-        const data = await response.json();
+        const { data } = await response.json();
         clientId = data.id;
     });
 

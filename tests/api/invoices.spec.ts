@@ -13,13 +13,13 @@ test.describe.serial('Invoices API (Task 008)', () => {
     const clientRes = await request.post('/api/v1/clients', {
       headers: { Authorization: `Bearer ${ctx.token}` },
       data: {
-        name: 'Cliente Faturacao',
+        nome: 'Cliente Faturacao',
         email: `billing_${Date.now()}@example.com`,
         nif: uniqueNif,
-        type: 'SINGULAR',
+        tipo: 'SINGULAR',
       },
     });
-    const client = await clientRes.json();
+    const { data: client } = await clientRes.json();
 
     const matterRes = await request.post('/api/v1/matters', {
       headers: { Authorization: `Bearer ${ctx.token}` },

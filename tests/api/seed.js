@@ -1,11 +1,13 @@
 // Script de seed para os testes — executado via pnpm exec no contexto da api
+const pg = require('pg');
+const { PrismaPg } = require('@prisma/adapter-pg');
 const { PrismaClient } = require('@prisma/client');
 
-const p = new PrismaClient({
-    datasources: {
-        db: { url: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres' }
-    }
-});
+const DB_URL = process.env.TEST_DB_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+// Em Prisma 7, o engine 'client' exige um adapter
+const pool = new pg.Pool({ connectionString: DB_URL });
+const adapter = new PrismaPg(pool);
+const p = new PrismaClient({ adapter });
 
 const args = process.argv.slice(2);
 const action = args[0]; // 'create' ou 'delete'
