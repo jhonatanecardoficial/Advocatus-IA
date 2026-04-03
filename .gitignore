@@ -23,6 +23,7 @@ node_modules
 # production
 /build
 /dist
+/dist-temp
 
 # misc
 .DS_Store
