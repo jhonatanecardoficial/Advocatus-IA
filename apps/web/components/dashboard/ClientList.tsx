@@ -4,6 +4,7 @@ import { Search, Phone, Mail, ArrowRight, Users } from "lucide-react";
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import AddClientModal from "@/components/AddClientModal";
+import { ClientType } from "@advocatus/types";
 
 interface Client {
     id: string;
@@ -11,7 +12,7 @@ interface Client {
     email: string | null;
     phone: string | null;
     nif: string;
-    type: 'SINGULAR' | 'COLETIVO';
+    type: ClientType;
     _count?: {
         matters: number;
     }

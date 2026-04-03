@@ -9,7 +9,7 @@ export const CreateClientSchema = z.object({
       message: 'Por favor, introduza o nome completo (pelo menos nome e apelido).',
     })
     .max(200),
-  tipo: z.enum(['SINGULAR', 'COLETIVA']).default('SINGULAR'),
+  tipo: z.enum(['SINGULAR', 'COLETIVO']).default('SINGULAR'),
   nif: z
     .string()
     .regex(/^\d{9}$/, 'NIF deve ter 9 dígitos')
@@ -25,7 +25,7 @@ export const UpdateClientSchema = CreateClientSchema.partial()
 
 export const ClientFiltersSchema = z.object({
   search: z.string().optional(),
-  tipo: z.enum(['SINGULAR', 'COLETIVA']).optional(),
+  tipo: z.enum(['SINGULAR', 'COLETIVO']).optional(),
   page: z.coerce.number().int().min(1).default(1),
   perPage: z.coerce.number().int().min(1).max(100).default(20),
 })

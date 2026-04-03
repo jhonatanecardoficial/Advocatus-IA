@@ -111,6 +111,25 @@ export class DocumentsService {
         })
     }
 
+    async uploadAiDraft(tenantId: string, matterId: string, filename: string, content: string) {
+        const timestamp = Date.now()
+        const safeFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_')
+        const storagePath = `${tenantId}/${matterId}/ai_${timestamp}_${safeFilename}.html`
+
+        const { error } = await this.supabase.storage
+            .from(this.storageBucket)
+            .upload(storagePath, content, { 
+                contentType: 'text/html',
+                upsert: true 
+            })
+
+        if (error) {
+            throw new InternalServerErrorException(`Falha ao carregar rascunho IA: ${error.message}`)
+        }
+
+        return { storagePath, size: content.length }
+    }
+
     async requestSignature(tenantId: string, _userId: string, dto: RequestSignatureDto) {
         const doc = await this.prisma.document.findFirst({
             where: { id: dto.documentId, tenantId },

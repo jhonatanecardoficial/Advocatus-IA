@@ -72,14 +72,12 @@ export class TasksService {
                 tenantId,
                 completedAt: null,
                 ...(userId && { assignedToId: userId }),
-                dueAt: { gte: new Date() },
             },
             include: {
                 matter: { select: { id: true, title: true } },
                 assignedTo: { select: { id: true, name: true } },
             },
             orderBy: { dueAt: 'asc' },
-            take: 50,
         })
     }
 

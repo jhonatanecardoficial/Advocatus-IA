@@ -51,14 +51,17 @@ async function fetchDashboardData() {
         if (tasksRes.ok) {
             const allTasks: TodayTask[] = await tasksRes.json();
             const now = new Date();
-            const todayStr = now.toISOString().slice(0, 10);
             const nextWeek = new Date(now);
             nextWeek.setDate(now.getDate() + 7);
             const nextWeekStr = nextWeek.toISOString().slice(0, 10);
 
             todayTasks = (Array.isArray(allTasks) ? allTasks : [])
-                .filter((t) => t.dueAt && t.dueAt.slice(0, 10) >= todayStr && t.dueAt.slice(0, 10) <= nextWeekStr)
-                .sort((a, b) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime())
+                .filter((t) => !t.dueAt || t.dueAt.slice(0, 10) <= nextWeekStr)
+                .sort((a, b) => {
+                    const dateA = a.dueAt ? new Date(a.dueAt).getTime() : Infinity;
+                    const dateB = b.dueAt ? new Date(b.dueAt).getTime() : Infinity;
+                    return dateA - dateB;
+                })
                 .slice(0, 6);
         }
 

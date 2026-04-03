@@ -51,14 +51,17 @@ export function LegalIntelligenceDashboard() {
       
       if (data.error) {
         console.error('Erro retornado pela API:', data.error);
-        // Fallback silently or show a toast if available
+        setAiAnswer(data.error);
+        setResults([]);
         return;
       }
       
       setResults(data.results || []);
       setAiAnswer(data.answer || null);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Falha na busca inteligente:', error);
+      setAiAnswer('Ocorreu um erro no acesso à Inteligência Jurídica. Por favor, verifique se a sua sessão expirou (tente terminar sessão e iniciar novamente) ou contacte o suporte técnico. Detalhes: ' + error.message);
+      setResults([]);
     } finally {
       setLoading(false);
     }
@@ -131,7 +134,7 @@ export function LegalIntelligenceDashboard() {
             <SkeletonLoader count={1} height="h-64" />
           </div>
         </div>
-      ) : results.length > 0 ? (
+      ) : (results.length > 0 || aiAnswer) ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {/* Results List */}
           <div className="lg:col-span-2 space-y-4">

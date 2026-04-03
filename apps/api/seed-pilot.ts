@@ -1,36 +1,42 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import * as bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
     try {
-        const hashedPassword = await bcrypt.hash('Teste123!', 10);
+        // Centralized Admin Password (Approved: admin123)
+        const hashedPassword = await bcrypt.hash('admin123', 10);
 
         // Check if tenant already exists
-        let tenant = await prisma.tenant.findFirst({ where: { slug: 'escritorio-piloto' } });
+        let tenant = await prisma.tenant.findFirst({ where: { slug: 'advocatus-ia' } });
         if (!tenant) {
             tenant = await prisma.tenant.create({
-                data: { name: 'Escritório Piloto', plan: 'SOLO', slug: 'escritorio-piloto' }
+                data: { name: 'Advocatus IA Escritório', plan: 'ENTERPRISE', slug: 'advocatus-ia' }
             });
-            console.log('✅ Tenant created: Escritório Piloto');
+            console.log('✅ Tenant created: Advocatus IA');
         }
 
-        // Check if user already exists
-        let user = await prisma.user.findFirst({ where: { email: 'advogado@piloto.pt' } });
+        // Check if Admin user already exists
+        let user = await prisma.user.findFirst({ where: { email: 'admin@advocatus.pt' } });
 
         if (!user) {
             user = await prisma.user.create({
                 data: {
-                    email: 'advogado@piloto.pt',
+                    email: 'admin@advocatus.pt',
                     passwordHash: hashedPassword,
-                    name: 'Advogado Piloto',
+                    name: 'Admin Advocatus',
                     tenantId: tenant.id,
                     role: 'ADMIN',
-                    barNumber: '12345L'
+                    barNumber: 'ADMIN-001'
                 }
             });
-            console.log('✅ User created:', user.email);
+            console.log('✅ Admin User created:', user.email);
         }
 
         // Add Sample Client

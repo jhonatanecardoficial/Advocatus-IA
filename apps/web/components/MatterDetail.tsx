@@ -147,6 +147,22 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
     }
   }
 
+  async function loadMatter() {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+      const res = await fetch(`${API_URL}/matters/${matter.id}`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMatter(data);
+        console.log('[MatterDetail] Dados do processo atualizados.');
+      }
+    } catch (err) {
+      console.error('Erro ao recarregar processo:', err);
+    }
+  }
+
   useEffect(() => {
     if (matter.id) {
         loadSummaries();
@@ -630,7 +646,7 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
             transition={{ delay: 0.5 }}
             className="glass-panel p-6 border-amber/20 overflow-hidden relative"
           >
-            <div className="absolute top-0 right-0 p-4 opacity-10">
+            <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
                 <div className="animate-spin-slow">
                     <History size={120} className="text-amber" />
                 </div>
@@ -649,7 +665,7 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
             <div className="space-y-3">
                 <AiDraftButton matterId={matter.id} />
                 <div className="grid grid-cols-2 gap-3">
-                    <UploadDocumentModal matterId={matter.id} />
+                    <UploadDocumentModal matterId={matter.id} onSuccess={loadMatter} />
                     <AddTaskModal matterId={matter.id} onSuccess={loadTasks} />
                 </div>
             </div>
@@ -673,7 +689,7 @@ export default function MatterDetail({ matter: initialMatter }: Props) {
             </div>
             
             <div className="space-y-4">
-                <DocumentListPanel matterId={matter.id} documents={matter.documents || []} />
+                <DocumentListPanel matterId={matter.id} documents={matter.documents || []} onRefresh={loadMatter} />
             </div>
           </motion.div>
 

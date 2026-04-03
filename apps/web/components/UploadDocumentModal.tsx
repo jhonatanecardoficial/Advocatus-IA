@@ -32,27 +32,39 @@ export default function UploadDocumentModal({ matterId, parentVersionId, buttonT
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!file) return;
+        console.log('[Upload] Iniciando submissão...', { file: file?.name, size: file?.size, matterId });
+        
+        if (!file) {
+            toast.error('Por favor, selecione um ficheiro primeiro.');
+            return;
+        }
 
         setLoading(true);
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('matterId', matterId);
-        formData.append('title', file.name);
-        if (parentVersionId) formData.append('parentVersionId', parentVersionId);
+        const toastId = toast.loading('A preparar upload...');
 
         try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('matterId', matterId);
+            formData.append('title', file.name);
+            if (parentVersionId) formData.append('parentVersionId', parentVersionId);
+
+            console.log('[Upload] Chamando Server Action uploadDocumentAction...');
             const result = await uploadDocumentAction(formData);
+            
             if (result.error) {
-                toast.error(result.error);
+                console.error('[Upload] Erro retornado pela action:', result.error);
+                toast.error(result.error, { id: toastId });
             } else {
-                toast.success(parentVersionId ? 'Nova versão carregada com sucesso!' : 'Documento carregado com sucesso!');
+                console.log('[Upload] Sucesso:', result);
+                toast.success(parentVersionId ? 'Nova versão carregada com sucesso!' : 'Documento carregado com sucesso!', { id: toastId });
                 setIsOpen(false);
                 setFile(null);
                 if (onSuccess) onSuccess();
             }
-        } catch (_) {
-            toast.error('Erro ao conectar ao servidor');
+        } catch (error: any) {
+            console.error('[Upload] Erro catastrófico na submissão:', error);
+            toast.error(`Erro inesperado: ${error.message || 'Falha na conexão'}`, { id: toastId });
         } finally {
             setLoading(false);
         }

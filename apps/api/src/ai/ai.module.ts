@@ -3,10 +3,11 @@ import { AiController } from './ai.controller';
 import { AiService } from './ai.service';
 import { DocumentDraftingService } from './document-drafting.service';
 import { PrismaModule } from '../prisma/prisma.module';
+import { DocumentsModule } from '../documents/documents.module';
 import { McpClientService } from './mcp-client.service';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, DocumentsModule],
   controllers: [AiController],
   providers: [AiService, DocumentDraftingService, McpClientService],
   exports: [AiService, DocumentDraftingService],

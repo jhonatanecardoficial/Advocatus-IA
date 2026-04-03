@@ -2,103 +2,125 @@ import { PrismaClient } from '@prisma/client';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
-// Load .env from apps/api
+// Carregar .env do apps/api
 dotenv.config({ path: join(__dirname, '../../../.env') });
 
-const prisma = new PrismaClient();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+// Modelo gemini-embedding-001 (3072 dimensões)
 const model = genAI.getGenerativeModel({ model: 'gemini-embedding-001' });
 
 const legalDocs = [
     {
-        title: 'Artigo 1022.º - Noção (Arrendamento)',
-        source: 'Código Civil',
+        id: 'nacionalidade-pt-base',
+        title: 'Atribuição da Nacionalidade Portuguesa',
+        source: 'Lei da Nacionalidade',
         type: 'LEI',
-        reference: 'Artigo 1022.º',
-        url: 'https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1966-34509075-49856575',
-        content: 'Locação é o contrato pelo qual uma das partes se obriga a proporcionar à outra o gozo temporário de uma coisa, mediante retribuição. O arrendamento é a locação de coisas imóveis.',
+        reference: 'Lei n.º 37/81, Artigo 1.º',
+        url: 'https://diariodarepublica.pt/dr/lex/lei-da-nacionalidade',
+        content: 'São portugueses de origem os filhos de pai português ou de mãe portuguesa nascidos no território português ou no estrangeiro se o progenitor ali estiver ao serviço do Estado Português.',
     },
     {
-        title: 'Artigo 1094.º - Tipos de Arrendamento Habitacional',
-        source: 'Código Civil',
+        id: 'nacionalidade-it-base',
+        title: 'Nacionalidade Italiana (Jure Sanguinis)',
+        source: 'Legislação Italiana',
         type: 'LEI',
-        reference: 'Artigo 1094.º',
-        url: 'https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1966-34509075-49856575',
-        content: '1 - O contrato de arrendamento habitacional pode celebrar-se com prazo certo ou por duração indeterminada. 2 - O contrato celebrado com prazo certo não pode ter duração inferior a um nem superior a 30 anos, fixando-se em cinco anos o prazo no caso de ser silente.',
+        reference: 'Lei n.º 91/1992',
+        url: 'https://www.esteri.it',
+        content: 'A cidadania italiana transmite-se por "jure sanguinis", ou seja, por descendência de pai ou mãe cidadãos italianos, sem limite de gerações, desde que nenhum antepassado tenha renunciado à cidadania.',
     },
     {
-        title: 'Artigo 1097.º - Oposição à renovação pelo senhorio',
-        source: 'Código Civil',
+        id: 'imigracao-residencia',
+        title: 'Autorização de Residência para Trabalho',
+        source: 'Lei de Estrangeiros',
         type: 'LEI',
-        reference: 'Artigo 1097.º',
-        url: 'https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1966-34509075-49856575',
-        content: '1 - O senhorio pode impedir a renovação automática do contrato mediante comunicação ao arrendatário com a antecedência mínima de: a) 120 dias, se o prazo de duração inicial do contrato ou da sua renovação for igual ou superior a um ano e inferior a seis anos; b) 60 dias, se for igual ou superior a seis meses e inferior a um ano.',
+        reference: 'Lei n.º 23/2007, Artigo 88.º',
+        url: 'https://diariodarepublica.pt',
+        content: 'A autorização de residência para exercício de atividade profissional subordinada exige contrato de trabalho, inscrição na Segurança Social e entrada legal em território nacional.',
     },
     {
-        title: 'Artigo 1083.º - Fundamentos da resolução',
+        id: 'imobiliario-compra-venda',
+        title: 'Contrato de Compra e Venda de Imóveis',
         source: 'Código Civil',
         type: 'LEI',
-        reference: 'Artigo 1083.º',
-        url: 'https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1966-34509075-49856575',
-        content: '1 - Qualquer das partes pode resolver o contrato, nos termos gerais de direito, com base em incumprimento pela outra parte que, pela sua gravidade ou consequências, torne inexigível à outra parte a manutenção do arrendamento. 2 - É fundamento de resolução o incumprimento que consista na mora igual ou superior a dois meses no pagamento da renda, encargos ou despesas.',
+        reference: 'Artigo 874.º',
+        url: 'https://diariodarepublica.pt',
+        content: 'Compra e venda é o contrato pelo qual se transmite a propriedade de uma coisa, ou outro direito, mediante um preço. Imóveis exigem escritura pública ou documento particular autenticado.',
     },
     {
-        title: 'Requisitos de validade do testamento',
+        id: 'familia-divorcio',
+        title: 'Divórcio por Mútuo Consentimento',
         source: 'Código Civil',
         type: 'LEI',
-        reference: 'Artigo 2179.º e seguintes',
-        url: 'https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1966-34509075',
-        content: 'Testamento é o acto unilateral e revogável pelo qual uma pessoa dispõe, para depois da morte, de todos os seus bens ou de parte deles. O testamento é um ato pessoal, não podendo ser feito por meio de representante ou ficar dependente do arbítrio de outrem.',
+        reference: 'Artigo 1775.º',
+        url: 'https://diariodarepublica.pt',
+        content: 'O divórcio por mútuo consentimento pode ser requerido na conservatória do registo civil mediante acordo sobre o destino da casa de morada de família e alimentos.',
+    },
+    {
+        id: 'advogado-autenticacao',
+        title: 'Competência de Autenticação de Advogados',
+        source: 'Estatuto Ordem Advogados',
+        type: 'LEI',
+        reference: 'Decreto-Lei n.º 76-A/2006',
+        url: 'https://portal.oa.pt',
+        content: 'Os advogados têm competência para efetuar reconhecimentos com termo de autenticação em documentos particulares, com o mesmo valor de atos notariais.',
+    },
+    {
+        id: 'consumidor-voos-atraso',
+        title: 'Indemnização por Atraso de Voo',
+        source: 'Regulamento (CE) n.º 261/2004',
+        type: 'LEI',
+        reference: 'Artigo 7.º',
+        url: 'https://eur-lex.europa.eu',
+        content: 'Os passageiros têm direito a indemnização entre 250€ e 600€ em caso de cancelamento ou atraso superior a 3 horas, salvo em circunstâncias extraordinárias.',
+    },
+    {
+        id: 'registo-civil-certidoes',
+        title: 'Acesso ao Registo Civil Online',
+        source: 'Código do Registo Civil',
+        type: 'LEI',
+        reference: 'Portaria n.º 181-A/2012',
+        url: 'https://justica.gov.pt',
+        content: 'Qualquer pessoa pode requerer certidões de registo de nascimento ou casamento através do portal Civil Online, mediante pagamento de taxa e identificação.',
     }
 ];
 
 async function seed() {
-    console.log(`🚀 Iniciando ingestão com embeddings via Gemini (gemini-embedding-001)`);
+    console.log(`🚀 Iniciando ingestão jurídica (gemini-embedding-001)...`);
 
     for (const doc of legalDocs) {
-        console.log(`📄 Processando: ${doc.title}`);
-
-        const id = `seed-${doc.reference.replace(/\s+/g, '-').replace(/\./g, '').toLowerCase()}`;
-        
-        // Generate embedding
-        let embedding = null;
         try {
+            console.log(`📄 Gerando vetores para: ${doc.title}`);
             const result = await model.embedContent(doc.content);
-            embedding = result.embedding.values;
+            const embedding = result.embedding.values;
+            const vectorString = `[${embedding.join(',')}]`;
+
+            // Usando UPSERT manual via executeRaw pq Prisma nao suporta unsupported vectors nativamente
+            await prisma.$executeRawUnsafe(`
+                INSERT INTO legal_documents (id, title, source, type, content, reference, url, embedding, "ingestedAt", "updatedAt")
+                VALUES ($1, $2, $3, $4::"LegalDocumentType", $5, $6, $7, $8::vector, NOW(), NOW())
+                ON CONFLICT (id) DO UPDATE SET
+                    content = EXCLUDED.content,
+                    embedding = EXCLUDED.embedding,
+                    "updatedAt" = NOW()
+            `,
+                doc.id, doc.title, doc.source, doc.type, doc.content, doc.reference, doc.url, vectorString
+            );
+            console.log(`   ✅ Inserido.`);
         } catch (e: any) {
-            console.error(`❌ Erro ao gerar embedding para ${doc.title}:`, e.message);
+            console.error(`   ❌ ERRO EM ${doc.title}:`, e.message);
+            // Mostrar mais detalhes se for erro do Prisma
+            if (e.code) console.error(`      Prisma Error Code: ${e.code}`);
         }
-
-        const vectorString = embedding ? `[${embedding.join(',')}]` : null;
-
-        await prisma.$executeRawUnsafe(`
-            INSERT INTO legal_documents (id, title, source, type, content, reference, url, embedding, "ingestedAt", "updatedAt")
-            VALUES ($1, $2, $3, $4::"LegalDocumentType", $5, $6, $7, ${vectorString ? "$8::vector" : "NULL"}, NOW(), NOW())
-            ON CONFLICT (id) DO UPDATE SET
-                content = EXCLUDED.content,
-                embedding = EXCLUDED.embedding,
-                "updatedAt" = NOW()
-        `,
-            id,
-            doc.title,
-            doc.source,
-            doc.type,
-            doc.content,
-            doc.reference,
-            doc.url,
-            ...(vectorString ? [vectorString] : [])
-        );
     }
-
-    console.log('✅ Ingestão concluída com sucesso!');
+    console.log('✅ Concluído.');
 }
 
 seed()
-    .catch((e) => {
-        console.error('❌ Erro na ingestão:', e);
-        process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+    .catch(console.error)
+    .finally(() => prisma.$disconnect());

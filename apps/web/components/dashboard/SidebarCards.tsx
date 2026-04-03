@@ -99,10 +99,10 @@ export default function DashboardSidebarCards({ todayTasks = [] }: DashboardSide
                 <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4 relative z-10">
                     <h3 className="text-xs font-black uppercase tracking-[0.15em] text-white/80 flex items-center gap-2">
                         <Calendar size={16} className="text-amber" />
-                        Agenda Hoje
+                        Próximos Passos
                     </h3>
                     {/* Data dinâmica */}
-                    <span className="text-[10px] font-mono text-amber/60 font-bold uppercase tracking-widest">
+                    <span suppressHydrationWarning className="text-[10px] font-mono text-amber/60 font-bold uppercase tracking-widest">
                         {formatTodayDate()}
                     </span>
                 </div>
@@ -120,10 +120,10 @@ export default function DashboardSidebarCards({ todayTasks = [] }: DashboardSide
                                 }`}
                             >
                                 <div className="flex flex-col items-center flex-shrink-0">
-                                    <div className={`font-mono text-[11px] font-black px-3 py-1.5 rounded-lg shadow-sm ${
+                                    <div suppressHydrationWarning className={`font-mono text-[11px] font-black px-3 py-1.5 rounded-lg shadow-sm ${
                                         idx === 0 ? "text-navy bg-amber" : "text-amber bg-white/5 border border-white/10"
                                     }`}>
-                                        {formatTime(task.dueAt)}
+                                        {task.dueAt ? formatTime(task.dueAt) : '--'}
                                     </div>
                                 </div>
                                 <div className="flex-1 min-w-0">

@@ -11,7 +11,7 @@ export const CreateMatterSchema = z.object({
     citiusReference: z.string().max(100).optional(),
     opposingParty: z.string().max(200).optional(),
     opposingCounsel: z.string().max(200).optional(),
-    deadlineAt: z.coerce.date().optional(),
+    deadlineAt: z.preprocess((val) => val === "" ? null : val, z.coerce.date().nullable().optional()),
     responsibleId: z.string().cuid().optional(),
 })
 

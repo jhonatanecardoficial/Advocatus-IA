@@ -19,7 +19,7 @@ export class ClientsService {
                 ...rest,
                 name: nome,
                 phone: telefone,
-                type: tipo === 'COLETIVA' ? 'COLETIVO' : 'SINGULAR',
+                type: tipo,
                 gdprConsentAt: gdprConsent ? new Date() : null,
                 tenant: { connect: { id: tenantId } },
             },
@@ -30,7 +30,7 @@ export class ClientsService {
                 ...client,
                 nome: client.name,
                 telefone: client.phone,
-                tipo: client.type === 'COLETIVO' ? 'COLETIVA' : 'SINGULAR',
+                tipo: client.type,
             }
         }
     }
@@ -53,7 +53,7 @@ export class ClientsService {
         }
 
         if (tipo) {
-            where.type = tipo === 'COLETIVA' ? 'COLETIVO' : 'SINGULAR'
+            where.type = tipo
         }
 
         const [items, total] = await Promise.all([
@@ -76,7 +76,7 @@ export class ClientsService {
                 ...item,
                 nome: item.name,
                 telefone: item.phone,
-                tipo: item.type === 'COLETIVO' ? 'COLETIVA' : 'SINGULAR',
+                tipo: item.type,
             })),
             meta: {
                 total,
@@ -106,7 +106,7 @@ export class ClientsService {
                 ...client,
                 nome: client.name,
                 telefone: client.phone,
-                tipo: client.type === 'COLETIVO' ? 'COLETIVA' : 'SINGULAR',
+                tipo: client.type,
             }
         }
     }
@@ -119,7 +119,7 @@ export class ClientsService {
         const data: any = { ...rest }
         if (nome) data.name = nome
         if (telefone !== undefined) data.phone = telefone
-        if (tipo) data.type = tipo === 'COLETIVA' ? 'COLETIVO' : 'SINGULAR'
+        if (tipo) data.type = tipo
         
         if (gdprConsent !== undefined) {
             data.gdprConsentAt = gdprConsent ? new Date() : null
@@ -135,7 +135,7 @@ export class ClientsService {
                 ...updated,
                 nome: updated.name,
                 telefone: updated.phone,
-                tipo: updated.type === 'COLETIVO' ? 'COLETIVA' : 'SINGULAR',
+                tipo: updated.type,
             }
         }
     }

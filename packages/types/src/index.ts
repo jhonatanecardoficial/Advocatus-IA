@@ -33,7 +33,7 @@ export type TaskPriority = 'baixa' | 'media' | 'alta' | 'critica'
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 
 // --- Clients ---
-export type ClientType = 'singular' | 'coletivo'
+export type ClientType = 'SINGULAR' | 'COLETIVO'
 
 // --- API Response wrapper ---
 export interface ApiResponse<T> {

@@ -22,10 +22,10 @@ interface Document {
 interface Props {
   matterId: string;
   documents: Document[];
+  onRefresh?: () => void;
 }
 
-export default function DocumentListPanel({ matterId, documents: initialDocuments }: Props) {
-  const [documents, setDocuments] = useState(initialDocuments || []);
+export default function DocumentListPanel({ matterId, documents, onRefresh }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<{ id: string; filename: string } | null>(null);
   const [showUploadVersion, setShowUploadVersion] = useState<{ id: string; filename: string } | null>(null);
@@ -47,9 +47,7 @@ export default function DocumentListPanel({ matterId, documents: initialDocument
 
       if (!res.ok) throw new Error('Falha ao atualizar permissão');
       
-      setDocuments(docs => 
-        docs.map(d => d.id === docId ? { ...d, isSharedWithClient: !currentStatus } : d)
-      );
+      if (onRefresh) onRefresh();
       toast.success(
         !currentStatus 
           ? 'Documento partilhado com o cliente no portal.' 
@@ -175,8 +173,8 @@ export default function DocumentListPanel({ matterId, documents: initialDocument
               buttonText={`Substituir ${showUploadVersion.filename}`}
               onSuccess={() => {
                 setShowUploadVersion(null);
-                // In a real app we'd refresh the list, but for now toast is enough
-                toast.success("Documento atualizado com sucesso.");
+                if (onRefresh) onRefresh();
+                toast.success("Nova versão carregada com sucesso.");
               }}
             />
             <button 

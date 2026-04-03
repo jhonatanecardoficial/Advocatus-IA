@@ -35,6 +35,7 @@ export class AiService implements OnModuleInit {
 
     async generateEmbedding(text: string): Promise<number[]> {
         if (this.provider === 'gemini' && this.genAI) {
+            // Utilizando gemini-embedding-001 com 3072 dimensões para compatibilidade com a DB
             const model = this.genAI.getGenerativeModel({ model: 'gemini-embedding-001' });
             const result = await model.embedContent(text);
             return result.embedding.values;
@@ -53,7 +54,7 @@ export class AiService implements OnModuleInit {
     }
 
     async chatWithContext(query: string, context: string): Promise<string> {
-        const modelName = this.configService.get<string>('LLM_MODEL', 'gemini-1.5-flash');
+        const modelName = this.configService.get<string>('LLM_MODEL', 'gemini-2.5-flash');
 
         if (this.provider === 'gemini' && this.genAI) {
             const model = this.genAI.getGenerativeModel({ model: modelName });
@@ -82,6 +83,71 @@ export class AiService implements OnModuleInit {
         }
 
         return "Assistente temporariamente indisponível.";
+    }
+
+    async generateDraft(query: string, context: string): Promise<string> {
+        const modelName = this.configService.get<string>('LLM_MODEL', 'gemini-2.5-flash');
+
+        if (this.provider === 'gemini' && this.genAI) {
+            const model = this.genAI.getGenerativeModel({ model: modelName });
+            const prompt = `
+        És um Advogado Sénior em Portugal, especializado em Redação de Peças Processuais (Drafting).
+        O teu objetivo é criar um RASCUNHO PROFISSIONAL de uma peça processual ou documento jurídico baseado no pedido do utilizador e no contexto legal fornecido.
+        
+        REGRAS DE REDAÇÃO (ESTILO PORTUGUÊS):
+        1. Estrutura a peça com "Articulados" (numeração de factos e fundamentos, ex: 1.º, 2.º, 3.º).
+        2. Inicia com o endereçamento correto (ex: "Exmo. Senhor Conservador", "Exmo. Senhor Juiz de Direito").
+        3. Identifica as partes de forma genérica (ex: [NOME_DO_REQUERENTE], [ESTADO_CIVIL], [NIF]).
+        4. Fundamenta juridicamente com base no CONTEXTO fornecido (cita artigos da Lei da Nacionalidade, Código do Procedimento Administrativo, etc.).
+        5. Termina com a fórmula "Pede Deferimento".
+        6. O tom deve ser formal, técnico e persuasivo.
+        7. NÃO uses placeholders fantasiosos, usa [PLACEHOLDER] para dados que o utilizador deve preencher.
+        
+        CONTEXTO LEGAL RECUPERADO (RAG):
+        ${context}
+        
+        TIPO DE DOCUMENTO/PEDIDO: ${query}
+        
+        RASCUNHO DA PEÇA (em Português de Portugal):`;
+
+            const result = await model.generateContent(prompt);
+            return result.response.text();
+        }
+
+        return "Funcionalidade de rascunho apenas disponível com Gemini.";
+    }
+
+    async refineDraft(currentContent: string, instruction: string, context: string): Promise<string> {
+        const modelName = this.configService.get<string>('LLM_MODEL', 'gemini-2.5-flash');
+
+        if (this.provider === 'gemini' && this.genAI) {
+            const model = this.genAI.getGenerativeModel({ model: modelName });
+            const prompt = `
+        És um Advogado Sénior em Portugal. Estás a ajudar um colega a REFINAR uma peça processual.
+        
+        CONTEÚDO ATUAL:
+        """
+        ${currentContent}
+        """
+        
+        INSTRUÇÃO DE REFINAMENTO: 
+        "${instruction}"
+        
+        CONTEXTO LEGAL DE APOIO:
+        ${context}
+        
+        TAREFA:
+        Aplica a instrução ao conteúdo atual de forma precisa e profissional. 
+        Mantém a estrutura de articulados e o tom formal português.
+        Retorna APENAS o novo conteúdo completo da peça.
+        
+        NOVO CONTEÚDO (em Português de Portugal):`;
+
+            const result = await model.generateContent(prompt);
+            return result.response.text();
+        }
+
+        return currentContent;
     }
 
     async searchLegalDocuments(query: string, limit = 5) {

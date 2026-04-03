@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { Plus, X, User, Briefcase, Hash, Mail, Phone, Shield, AlertTriangle, Info, Zap } from 'lucide-react';
 import { createClientAction, checkConflictAction } from '@/app/actions/clients';
 import { toast } from 'sonner';
+import { ClientType } from '@advocatus/types';
 
 export default function AddClientModal() {
     const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +14,7 @@ export default function AddClientModal() {
     const [form, setForm] = useState({
         nome: '',
         nif: '',
-        tipo: 'SINGULAR' as 'SINGULAR' | 'COLETIVA',
+        tipo: 'SINGULAR' as ClientType,
         email: '',
         telefone: '',
     });
@@ -122,17 +123,17 @@ export default function AddClientModal() {
                             <User size={18} className={form.tipo === 'SINGULAR' ? 'text-amber' : 'text-white/40'} />
                             <span className={`text-[11px] font-black uppercase tracking-widest ${form.tipo === 'SINGULAR' ? 'text-white' : 'text-white/40'}`}>Pessoa Singular</span>
                         </label>
-                        <label className={`flex items-center justify-center gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${form.tipo === 'COLETIVA' ? 'border-amber bg-amber/10 shadow-glow' : 'border-white/10 bg-white/5 hover:border-white/20'}`}>
+                        <label className={`flex items-center justify-center gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${form.tipo === 'COLETIVO' ? 'border-amber bg-amber/10 shadow-glow' : 'border-white/10 bg-white/5 hover:border-white/20'}`}>
                             <input
                                 type="radio"
                                 className="hidden"
                                 name="tipo-portal"
-                                value="COLETIVA"
-                                checked={form.tipo === 'COLETIVA'}
-                                onChange={() => setForm({ ...form, tipo: 'COLETIVA' })}
+                                value="COLETIVO"
+                                checked={form.tipo === 'COLETIVO'}
+                                onChange={() => setForm({ ...form, tipo: 'COLETIVO' })}
                             />
-                            <Briefcase size={18} className={form.tipo === 'COLETIVA' ? 'text-amber' : 'text-white/40'} />
-                            <span className={`text-[11px] font-black uppercase tracking-widest ${form.tipo === 'COLETIVA' ? 'text-white' : 'text-white/40'}`}>Pessoa Colectiva</span>
+                            <Briefcase size={18} className={form.tipo === 'COLETIVO' ? 'text-amber' : 'text-white/40'} />
+                            <span className={`text-[11px] font-black uppercase tracking-widest ${form.tipo === 'COLETIVO' ? 'text-white' : 'text-white/40'}`}>Pessoa Colectiva</span>
                         </label>
                     </div>
 

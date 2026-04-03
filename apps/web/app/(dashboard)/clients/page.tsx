@@ -2,6 +2,7 @@ import { Users } from "lucide-react";
 import { cookies } from "next/headers";
 import AddClientModal from "@/components/AddClientModal";
 import ClientList from "@/components/dashboard/ClientList";
+import { ClientType } from "@advocatus/types";
 
 interface Client {
     id: string;
@@ -9,7 +10,7 @@ interface Client {
     email: string | null;
     phone: string | null;
     nif: string;
-    type: 'SINGULAR' | 'COLETIVA';
+    type: ClientType;
     _count?: {
         matters: number;
     }

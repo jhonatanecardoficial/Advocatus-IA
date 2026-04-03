@@ -1,12 +1,14 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-generator client {
-  provider = "prisma-client-js"
+datasource db {
+  provider   = "postgresql"
+  extensions = [pgvector(map: "vector")]
 }
 
-datasource db {
-  provider = "postgresql"
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 // ============================================================
@@ -400,7 +402,7 @@ model LegalDocument {
   title       String
   reference   String?
   content     String                       @db.Text
-  embedding   Unsupported("vector(768)")?
+  embedding   Unsupported("vector(3072)")?
   publishedAt DateTime?
   url         String?
   ingestedAt  DateTime                     @default(now())

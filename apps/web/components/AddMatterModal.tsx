@@ -132,7 +132,13 @@ export default function AddMatterModal({ clientId, clientName, trigger }: AddMat
         setLoading(true);
 
         try {
-            const result = await createMatterAction(form);
+            // Sanitização: Se deadlineAt for string vazia, enviar null ou omitir
+            const payload = {
+                ...form,
+                deadlineAt: form.deadlineAt === "" ? null : form.deadlineAt,
+            };
+
+            const result = await createMatterAction(payload);
             if (result.error) {
                 toast.error(result.error);
                 if (result.error.includes('autenticado') || result.error.includes('Não autenticado')) {

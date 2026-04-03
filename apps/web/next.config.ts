@@ -19,6 +19,13 @@ const nextConfig: NextConfig = {
         ]
     },
 
+    // Aumentar o limite do corpo das Server Actions para upload de ficheiros
+    experimental: {
+        serverActions: {
+            bodySizeLimit: '10mb',
+        },
+    },
+
     // Imagens externas permitidas
     images: {
         remotePatterns: [

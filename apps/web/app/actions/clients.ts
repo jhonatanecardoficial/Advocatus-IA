@@ -2,10 +2,11 @@
 
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
+import { ClientType } from "@advocatus/types"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1"
 
-export async function createClientAction(data: { nome: string, nif: string, tipo: 'SINGULAR' | 'COLETIVA', email?: string, telefone?: string }) {
+export async function createClientAction(data: { nome: string, nif: string, tipo: ClientType, email?: string, telefone?: string }) {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get("accessToken")?.value;
@@ -42,7 +43,7 @@ export async function createClientAction(data: { nome: string, nif: string, tipo
 export async function updateClientAction(id: string, data: { 
     nome: string, 
     nif: string, 
-    tipo: 'SINGULAR' | 'COLETIVA', 
+    tipo: ClientType, 
     email?: string, 
     telefone?: string,
     address?: string,

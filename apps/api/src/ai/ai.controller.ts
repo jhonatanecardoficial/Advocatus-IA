@@ -34,4 +34,25 @@ export class AiController {
         const draft = await this.draftingService.generateDraft(user.tenantId, matterId, type);
         return { draft };
     }
+
+    @Post('refine')
+    async refineDraft(
+        @CurrentUser() user: RequestUser,
+        @Body('matterId') matterId: string,
+        @Body('currentContent') currentContent: string,
+        @Body('instruction') instruction: string,
+    ) {
+        const draft = await this.draftingService.refineDraft(user.tenantId, matterId, currentContent, instruction);
+        return { draft };
+    }
+
+    @Post('save-draft')
+    async saveDraft(
+        @CurrentUser() user: RequestUser,
+        @Body('matterId') matterId: string,
+        @Body('filename') filename: string,
+        @Body('htmlContent') htmlContent: string,
+    ) {
+        return this.draftingService.saveDraft(user.tenantId, user.id, matterId, filename, htmlContent);
+    }
 }

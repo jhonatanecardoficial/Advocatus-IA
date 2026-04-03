@@ -1,56 +1,71 @@
 "use client";
 
-import { useState } from 'react';
-import { Sparkles, X, Copy, Check, Wand2, Lightbulb, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Sparkles, X, Wand2, Lightbulb, Zap, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import dynamic from 'next/dynamic';
+import { aiDraftAction, aiRefineAction, aiSaveDraftAction } from '@/app/actions/ai';
+
+const DocumentEditor = dynamic(() => import('./DocumentEditor'), { 
+  ssr: false,
+  loading: () => (
+    <div className="flex-1 flex flex-col items-center justify-center bg-navy/50 gap-4">
+      <RefreshCw className="animate-spin text-amber" size={32} />
+      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">A carregar editor...</p>
+    </div>
+  )
+});
 
 interface Props {
   matterId: string;
-}
-
-function getCookie(name: string): string | undefined {
-    if (typeof document === 'undefined') return undefined;
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift();
-    return undefined;
 }
 
 export default function AiDraftButton({ matterId }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [draft, setDraft] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [isEditorActive, setIsEditorActive] = useState(false);
   const [selectedType, setSelectedType] = useState('Notificação Extrajudicial');
-
-  const draftTypes = [
+  const [draftTypes, setDraftTypes] = useState<string[]>([
     'Notificação Extrajudicial',
     'Petição Inicial (Simples)',
     'Contestação (Esboço)',
     'Requerimento de Junção',
     'Email de Atualização ao Cliente'
-  ];
+  ]);
+
+  useEffect(() => {
+    async function loadTemplates() {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+        const res = await fetch(`${API_URL}/legal-templates`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const names = data.map((t: any) => t.name);
+            setDraftTypes(prev => [...new Set([...prev, ...names])]);
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao carregar templates:', err);
+      }
+    }
+    loadTemplates();
+  }, []);
 
   const handleGenerate = async () => {
     setLoading(true);
     setDraft(null);
-    const token = getCookie('accessToken');
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+      const data = await aiDraftAction(matterId, selectedType);
       
-      const res = await fetch(`${API_URL}/ai/draft`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
-        body: JSON.stringify({ matterId, type: selectedType }),
-      });
-
-      if (!res.ok) throw new Error('Falha ao gerar rascunho');
+      if (data.error) {
+        toast.error(data.error);
+        return;
+      }
       
-      const data = await res.json();
       setDraft(data.draft);
+      setIsEditorActive(true);
       toast.success('Rascunho gerado pela Advocatus IA!');
     } catch (err) {
       toast.error('Erro ao gerar rascunho. Verifique a configuração da IA.');
@@ -60,14 +75,41 @@ export default function AiDraftButton({ matterId }: Props) {
     }
   };
 
-  const handleCopy = () => {
-    if (draft) {
-      navigator.clipboard.writeText(draft);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      toast.success('Copiado para o clipboard.');
+  const handleSave = async (htmlContent: string) => {
+    try {
+      const result = await aiSaveDraftAction(matterId, selectedType, htmlContent);
+      
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+      
+      toast.success('Rascunho salvo com sucesso no processo!');
+      setIsOpen(false);
+      setIsEditorActive(false);
+    } catch (err) {
+      toast.error('Erro ao salvar o documento.');
+      console.error(err);
     }
   };
+
+  const handleRefine = async (currentContent: string, instruction: string): Promise<string> => {
+    try {
+      const data = await aiRefineAction(matterId, currentContent, instruction);
+      
+      if (data.error) {
+        toast.error(data.error);
+        throw new Error(data.error);
+      }
+      
+      return data.draft;
+    } catch (err) {
+      toast.error('Erro ao refinar rascunho.');
+      throw err;
+    }
+  };
+
+
 
   return (
     <>
@@ -102,7 +144,7 @@ export default function AiDraftButton({ matterId }: Props) {
               </button>
             </div>
             <div className="p-8 overflow-y-auto custom-scrollbar flex-1 relative">
-              {!draft ? (
+              {!draft && (
                 <div className="space-y-8 pb-4">
                   <div className="animate-reveal stagger-1">
                     <label className="text-[11px] text-slate-400 uppercase font-bold mb-4 block flex items-center gap-2">
@@ -145,32 +187,21 @@ export default function AiDraftButton({ matterId }: Props) {
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Resultado</span>
-                      <h4 className="text-sm font-bold text-white">{selectedType}</h4>
-                    </div>
-                    <button
-                      onClick={handleCopy}
-                      className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-[11px] font-bold text-white hover:bg-white/20 transition-all group"
-                    >
-                      {copied ? (
-                        <Check className="w-4 h-4 text-green-400 animate-in zoom-in" />
-                      ) : (
-                        <Copy className="w-4 h-4 text-amber/70 group-hover:text-amber transition-colors" />
-                      )}
-                      {copied ? 'Copiado!' : 'Copiar Texto'}
-                    </button>
-                  </div>
-                  
-                  <div className="p-8 bg-black/40 border border-white/10 rounded-2xl shadow-inner font-serif text-sm text-slate-200 leading-relaxed whitespace-pre-wrap select-text max-h-[45vh] overflow-y-auto custom-scrollbar border-l-4 border-l-amber/50">
-                    {draft}
-                  </div>
-                </div>
               )}
             </div>
+
+            {/* Editor Integration */}
+            {isEditorActive && draft && (
+              <div className="absolute inset-0 z-50 bg-navy">
+                <DocumentEditor
+                  title={selectedType}
+                  initialContent={draft}
+                  onClose={() => setIsEditorActive(false)}
+                  onSave={handleSave}
+                  onRefine={handleRefine}
+                />
+              </div>
+            )}
 
             {/* Fixed Footer Actions */}
             <div className="p-6 border-t border-white/10 bg-navy/50 backdrop-blur-xl shrink-0">

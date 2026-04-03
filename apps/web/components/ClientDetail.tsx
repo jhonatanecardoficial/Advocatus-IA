@@ -23,7 +23,7 @@ interface Client {
   email: string | null;
   telefone: string | null;
   nif: string;
-  tipo: 'SINGULAR' | 'COLETIVA';
+  tipo: 'SINGULAR' | 'COLETIVO';
   address?: string | null;
   notes?: string | null;
   gdprConsentAt?: string | null;
