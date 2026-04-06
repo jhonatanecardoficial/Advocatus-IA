@@ -70,3 +70,7 @@ next-env.d.ts
 /report_sections
 /prompts_tests
 /compilation_errors.txt
+
+# ai infrastructure (nested repositories)
+/skills/
+/telemetria/

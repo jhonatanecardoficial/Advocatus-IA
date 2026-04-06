@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from 'react';
-import { FileText, Download, Globe, History, PenTool } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { FileText, Download, Globe, History, PenTool, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import DocumentHistoryDialog from './DocumentHistoryDialog';
 import UploadDocumentModal from './UploadDocumentModal';
 import SignDocumentModal from './documents/SignDocumentModal';
-
-
+import { DeleteDocumentModal } from './DeleteDocumentModal';
+import { deleteDocumentAction } from '@/app/actions/documents';
+import { getMeAction } from '@/app/actions/auth';
 
 interface Document {
   id: string;
@@ -27,9 +28,23 @@ interface Props {
 
 export default function DocumentListPanel({ matterId, documents, onRefresh }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<{ id: string; filename: string } | null>(null);
   const [showUploadVersion, setShowUploadVersion] = useState<{ id: string; filename: string } | null>(null);
   const [docToSign, setDocToSign] = useState<{ id: string; filename: string } | null>(null);
+  const [docToDelete, setDocToDelete] = useState<{ id: string; filename: string } | null>(null);
+
+  useEffect(() => {
+    async function fetchUserRole() {
+      const user = await getMeAction();
+      if (user && !user.error) {
+        setUserRole(user.role);
+      }
+    }
+    fetchUserRole();
+  }, []);
+
+  const canDelete = userRole && ['ADVOGADO', 'SOCIO', 'ADMIN', 'SECRETARIA'].includes(userRole);
 
   const toggleShare = async (docId: string, currentStatus: boolean) => {
     setLoading(docId);
@@ -78,6 +93,23 @@ export default function DocumentListPanel({ matterId, documents, onRefresh }: Pr
     } catch (error) {
       console.error(error);
       toast.error('Erro ao transferir documento.');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!docToDelete) return;
+
+    try {
+      const result = await deleteDocumentAction(docToDelete.id, matterId);
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success('Documento e histórico removidos permanentemente.');
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error(error);
+      toast.error('Erro ao remover documento.');
     }
   };
 
@@ -148,6 +180,15 @@ export default function DocumentListPanel({ matterId, documents, onRefresh }: Pr
             >
               <Download className="w-4 h-4" />
             </button>
+            {canDelete && (
+              <button
+                onClick={() => setDocToDelete({ id: doc.id, filename: doc.filename })}
+                title="Apagar permanentemente"
+                className="p-1.5 text-slate-400 hover:text-red-500 transition-all hover:scale-110"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       ))}
@@ -196,6 +237,15 @@ export default function DocumentListPanel({ matterId, documents, onRefresh }: Pr
             setDocToSign(null);
             toast.success("Solicitação de assinatura enviada!");
           }}
+        />
+      )}
+
+      {docToDelete && (
+        <DeleteDocumentModal
+          isOpen={true}
+          filename={docToDelete.filename}
+          onClose={() => setDocToDelete(null)}
+          onConfirm={handleDelete}
         />
       )}
     </div>

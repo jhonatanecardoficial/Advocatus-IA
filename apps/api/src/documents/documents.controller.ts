@@ -5,6 +5,7 @@ import {
     Patch,
     Param,
     Body,
+    Delete,
     UseGuards,
     HttpCode,
     HttpStatus,
@@ -79,5 +80,12 @@ export class DocumentsController {
     ) {
         // Garantir que o ID do param corresponde ao ID do body se necessário, ou apenas usar o param
         return this.documentsService.requestSignature(user.tenantId, user.id, { ...dto, documentId: id })
+    }
+
+    @Delete(':id')
+    @Roles('ADVOGADO', 'SOCIO', 'ADMIN', 'SECRETARIA')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    remove(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+        return this.documentsService.remove(user.tenantId, id)
     }
 }

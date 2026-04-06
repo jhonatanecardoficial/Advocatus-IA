@@ -214,4 +214,74 @@ export class DocumentsService {
             data: { isSharedWithClient },
         })
     }
+
+    async remove(tenantId: string, id: string) {
+        // 1. Procurar o documento e as suas versões
+        const document = await this.prisma.document.findFirst({
+            where: { id, tenantId },
+        })
+
+        if (!document) {
+            throw new NotFoundException('Documento não encontrado.')
+        }
+
+        // Se for um documento pai, apaga ele e todos os filhos.
+        // Se for um documento filho, o user pediu "limpeza completa", então apagamos a linhagem toda.
+        const rootId = document.parentVersionId || document.id;
+
+        const allVersions = await this.prisma.document.findMany({
+            where: {
+                tenantId,
+                OR: [
+                    { id: rootId },
+                    { parentVersionId: rootId }
+                ]
+            },
+            select: { storagePath: true, id: true, signedDocuments: { select: { signedFilePath: true } } }
+        });
+
+        const storagePaths: string[] = [];
+        const ids: string[] = [];
+
+        for (const v of allVersions) {
+            ids.push(v.id);
+            if (v.storagePath) storagePaths.push(v.storagePath);
+            
+            // Se houver documentos assinados associados, também apagamos os ficheiros deles
+            for (const sd of v.signedDocuments) {
+                if (sd.signedFilePath) storagePaths.push(sd.signedFilePath);
+            }
+        }
+
+        // 2. Apagar do Supabase Storage
+        if (storagePaths.length > 0) {
+            const { error: storageError } = await this.supabase.storage
+                .from(this.storageBucket)
+                .remove(storagePaths);
+
+            if (storageError) {
+                console.error(`Erro ao apagar ficheiros do storage: ${storageError.message}`);
+                // Não lançamos excepção aqui para garantir a limpeza da DB, 
+                // ficheiros órfãos são menos graves que inconsistência de dados.
+            }
+        }
+
+        // 3. Apagar da Base de Dados (Prisma)
+        // Limpar SignedDocument primeiro para evitar FK violations
+        await this.prisma.signedDocument.deleteMany({
+            where: {
+                documentId: { in: ids },
+                tenantId
+            }
+        });
+
+        await this.prisma.document.deleteMany({
+            where: {
+                id: { in: ids },
+                tenantId
+            }
+        });
+
+        return { success: true, removedCount: ids.length };
+    }
 }

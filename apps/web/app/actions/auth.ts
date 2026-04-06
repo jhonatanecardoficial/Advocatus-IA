@@ -82,3 +82,26 @@ export async function logoutAction() {
     cookieStore.delete("accessToken");
     return { success: true };
 }
+
+export async function getMeAction() {
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get("accessToken")?.value;
+
+        if (!token) return { error: "Não está autenticado." };
+
+        const response = await fetch(`${API_URL}/auth/me`, {
+            headers: { "Authorization": `Bearer ${token}` },
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            return { error: "Não foi possível obter o perfil." };
+        }
+
+        const result = await response.json();
+        return result.data;
+    } catch (error) {
+        return { error: "Erro ao contactar o servidor." };
+    }
+}
