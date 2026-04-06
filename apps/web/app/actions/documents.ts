@@ -115,3 +115,36 @@ export async function uploadDocumentAction(formData: FormData) {
         return { error: `Erro técnico: ${error.message || "Não foi possível contactar o servidor Backend."}` };
     }
 }
+
+export async function deleteDocumentAction(documentId: string, matterId: string) {
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get("accessToken")?.value;
+
+        if (!token) return { error: "Não está autenticado." };
+
+        const response = await fetch(`${API_URL}/documents/${documentId}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (response.status === 401) {
+            cookieStore.delete("accessToken");
+            return { error: "Sessão expirada. Faça login novamente." };
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { error: errorData?.message || "Erro ao apagar o documento." };
+        }
+
+        revalidatePath(`/matters/${matterId}`);
+        revalidatePath('/matters/[id]', 'page');
+
+        return { success: true };
+    } catch (error: any) {
+        return { error: "Não foi possível contactar o servidor Backend." };
+    }
+}
