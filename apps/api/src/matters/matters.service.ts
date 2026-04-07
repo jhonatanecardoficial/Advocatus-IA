@@ -80,6 +80,8 @@ export class MattersService {
                         version: true,
                         signatureType: true,
                         isSharedWithClient: true,
+                        tags: true,
+                        metadata: true,
                         createdAt: true,
                     },
                     orderBy: { createdAt: 'desc' },

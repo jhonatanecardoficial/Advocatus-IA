@@ -24,9 +24,11 @@ interface LegalTemplate {
 
 interface TemplateAutomationPanelProps {
   matterId: string;
+  documents?: any[];
+  onRefresh?: () => void;
 }
 
-export default function TemplateAutomationPanel({ matterId }: TemplateAutomationPanelProps) {
+export default function TemplateAutomationPanel({ matterId, documents = [], onRefresh }: TemplateAutomationPanelProps) {
   const [templates, setTemplates] = useState<LegalTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<LegalTemplate | null>(null);
   const [generatedContent, setGeneratedContent] = useState('');
@@ -124,8 +126,9 @@ export default function TemplateAutomationPanel({ matterId }: TemplateAutomation
       });
 
       if (!res.ok) throw new Error('Falha ao salvar documento');
-
+      
       toast.success('Documento guardado na pasta do processo!');
+      if (onRefresh) onRefresh();
     } catch (_) {
       toast.error('Erro ao guardar documento');
     }
@@ -168,134 +171,178 @@ export default function TemplateAutomationPanel({ matterId }: TemplateAutomation
     </div>
   );
 
+  const automatedDocs = documents.filter(doc => 
+    (Array.isArray(doc.tags) && (doc.tags.includes('AUTOMATION') || doc.tags.includes('AI_GENERATED'))) ||
+    doc.filename.toLowerCase().includes('_gerado') ||
+    doc.filename.toLowerCase().startsWith('ai_') ||
+    doc.mimeType === 'text/html' // A maioria dos rascunhos IA são HTML
+  );
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6">
-      {/* List Section */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-amber/20 rounded-lg">
-              <FileText size={18} className="text-amber" />
+    <div className="flex flex-col gap-8 p-6">
+      {/* Top Grid: Templates & Preview */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Templates List */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber/20 rounded-lg">
+                <FileText size={18} className="text-amber" />
+              </div>
+              <h3 className="text-sm font-black text-white uppercase tracking-widest">Modelos Disponíveis</h3>
             </div>
-            <h3 className="text-sm font-black text-white uppercase tracking-widest">Modelos Disponíveis</h3>
+            <span className="text-[10px] bg-white/5 px-3 py-1 rounded-full text-white/40 font-mono tracking-tighter">
+              {templates.length} TEMPLATES
+            </span>
           </div>
-          <span className="text-[10px] bg-white/5 px-3 py-1 rounded-full text-white/40 font-mono tracking-tighter">
-            {templates.length} TEMPLATES
-          </span>
+
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            {templates.map((template) => (
+              <div 
+                key={template.id}
+                onClick={() => handleGenerate(template.id)}
+                className={`p-5 rounded-2xl border transition-all cursor-pointer group ${
+                  selectedTemplate?.id === template.id 
+                  ? 'bg-amber border-amber shadow-glow-amber' 
+                  : 'bg-white/5 border-white/10 hover:border-white/30 hover:bg-white/10'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-2 rounded-lg ${selectedTemplate?.id === template.id ? 'bg-navy/20' : 'bg-white/5'}`}>
+                      <FileText size={20} className={selectedTemplate?.id === template.id ? 'text-navy' : 'text-slate-400'} />
+                    </div>
+                    <div>
+                      <h4 className={`text-xs font-black uppercase tracking-tight ${
+                        selectedTemplate?.id === template.id ? 'text-navy' : 'text-white'
+                      }`}>
+                        {template.name}
+                      </h4>
+                      <p className={`text-[10px] mt-0.5 line-clamp-1 ${
+                        selectedTemplate?.id === template.id ? 'text-navy/60' : 'text-slate-500'
+                      }`}>
+                        {template.description || template.category}
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight size={18} className={selectedTemplate?.id === template.id ? 'text-navy' : 'text-slate-600'} />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-          {templates.map((template) => (
-            <div 
-              key={template.id}
-              onClick={() => handleGenerate(template.id)}
-              className={`p-5 rounded-2xl border transition-all cursor-pointer group ${
-                selectedTemplate?.id === template.id 
-                ? 'bg-amber border-amber shadow-glow-amber' 
-                : 'bg-white/5 border-white/10 hover:border-white/30 hover:bg-white/10'
-              }`}
+        {/* Preview Area */}
+        <div className="min-h-[400px]">
+          {selectedTemplate ? (
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="h-full flex flex-col glass-panel overflow-hidden border-white/10"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className={`p-2 rounded-lg ${selectedTemplate?.id === template.id ? 'bg-navy/20' : 'bg-white/5'}`}>
-                    <FileText size={20} className={selectedTemplate?.id === template.id ? 'text-navy' : 'text-slate-400'} />
-                  </div>
-                  <div>
-                    <h4 className={`text-xs font-black uppercase tracking-tight ${
-                      selectedTemplate?.id === template.id ? 'text-navy' : 'text-white'
-                    }`}>
-                      {template.name}
-                    </h4>
-                    <p className={`text-[10px] mt-0.5 line-clamp-1 ${
-                      selectedTemplate?.id === template.id ? 'text-navy/60' : 'text-slate-500'
-                    }`}>
-                      {template.description || template.category}
-                    </p>
-                  </div>
+              <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+                <div className="flex items-center gap-3">
+                  <Sparkles size={16} className="text-amber" />
+                  <span className="text-[10px] font-black text-white uppercase tracking-widest">Documento Gerado</span>
                 </div>
-                <ChevronRight size={18} className={selectedTemplate?.id === template.id ? 'text-navy' : 'text-slate-600'} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Preview Section */}
-      <div className="min-h-[500px]">
-        {selectedTemplate ? (
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="h-full flex flex-col glass-panel overflow-hidden border-white/10"
-          >
-            <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-              <div className="flex items-center gap-3">
-                <Sparkles size={16} className="text-amber" />
-                <span className="text-[10px] font-black text-white uppercase tracking-widest">Documento Gerado</span>
-              </div>
-              <div className="flex gap-2">
-                <button 
-                  onClick={handleDownloadPdf}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] text-white uppercase font-bold tracking-widest transition-all"
-                >
-                  <Download size={14} /> PDF
-                </button>
-                <button 
-                  onClick={handleSaveToMatter}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber hover:bg-white rounded-lg text-[10px] text-navy uppercase font-black tracking-widest transition-all"
-                >
-                  <Save size={14} /> Guardar
-                </button>
-              </div>
-            </div>
-
-            <div className="flex-1 p-8 bg-black/20 overflow-y-auto custom-scrollbar">
-              {isGenerating ? (
-                <div className="h-full flex flex-col items-center justify-center gap-6 opacity-40">
-                  <RefreshCw size={40} className="text-amber animate-spin" />
-                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber text-center">IA: Extraindo dados do processo...</p>
-                </div>
-              ) : (
-                <div className="prose prose-invert prose-sm max-w-none text-slate-300 font-serif leading-relaxed line-clamp-none whitespace-pre-wrap">
-                  {generatedContent}
-                </div>
-              )}
-            </div>
-
-            <div className="p-6 bg-navy/40 border-t border-white/5">
-              <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-amber/30 to-blue-500/30 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition-opacity" />
-                <div className="relative flex gap-3">
-                  <input 
-                    type="text"
-                    value={refineInstruction}
-                    onChange={(e) => setRefineInstruction(e.target.value)}
-                    placeholder="Instruções para refinamento (ex: Tornar o tom mais formal, adicionar cláusula de mora...)"
-                    className="flex-1 bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-amber/50 transition-all font-mono"
-                  />
+                <div className="flex gap-2">
                   <button 
-                    onClick={handleRefine}
-                    disabled={isRefining || !refineInstruction}
-                    className="aspect-square w-14 flex items-center justify-center bg-white/5 hover:bg-amber hover:text-navy rounded-xl text-amber border border-white/10 transition-all disabled:opacity-20 flex-shrink-0"
+                    onClick={handleDownloadPdf}
+                    className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] text-white uppercase font-bold tracking-widest transition-all"
                   >
-                    {isRefining ? <RefreshCw className="animate-spin" size={20} /> : <Wand2 size={24} />}
+                    <Download size={14} /> PDF
+                  </button>
+                  <button 
+                    onClick={handleSaveToMatter}
+                    className="flex items-center gap-2 px-4 py-2 bg-amber hover:bg-white rounded-lg text-[10px] text-navy uppercase font-black tracking-widest transition-all"
+                  >
+                    <Save size={14} /> Guardar
                   </button>
                 </div>
               </div>
+
+              <div className="flex-1 p-8 bg-black/20 overflow-y-auto custom-scrollbar">
+                {isGenerating ? (
+                  <div className="h-full flex flex-col items-center justify-center gap-6 opacity-40">
+                    <RefreshCw size={40} className="text-amber animate-spin" />
+                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber text-center">IA: Extraindo dados do processo...</p>
+                  </div>
+                ) : (
+                  <div className="prose prose-invert prose-sm max-w-none text-slate-300 font-serif leading-relaxed line-clamp-none whitespace-pre-wrap">
+                    {generatedContent}
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 bg-navy/40 border-t border-white/5">
+                <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-amber/30 to-blue-500/30 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                  <div className="relative flex gap-3">
+                    <input 
+                      type="text"
+                      value={refineInstruction}
+                      onChange={(e) => setRefineInstruction(e.target.value)}
+                      placeholder="Instruções para refinamento..."
+                      className="flex-1 bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-amber/50 transition-all font-mono"
+                    />
+                    <button 
+                      onClick={handleRefine}
+                      disabled={isRefining || !refineInstruction}
+                      className="aspect-square w-14 flex items-center justify-center bg-white/5 hover:bg-amber hover:text-navy rounded-xl text-amber border border-white/10 transition-all disabled:opacity-20 flex-shrink-0"
+                    >
+                      {isRefining ? <RefreshCw className="animate-spin" size={20} /> : <Wand2 size={24} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center glass-panel border-dashed border-white/10 p-12 text-center select-none">
+              <div className="p-6 bg-white/5 rounded-full mb-6">
+                <FileText size={48} className="text-white/10" />
+              </div>
+              <h4 className="text-sm font-black text-white/20 uppercase tracking-[0.2em] mb-2">Editor de Peças IA</h4>
+              <p className="text-xs text-white/10 max-w-xs leading-relaxed italic">
+                Selecione um template à esquerda para iniciar.
+              </p>
             </div>
-          </motion.div>
-        ) : (
-          <div className="h-full flex flex-col items-center justify-center glass-panel border-dashed border-white/10 p-12 text-center select-none">
-            <div className="p-6 bg-white/5 rounded-full mb-6">
-              <FileText size={48} className="text-white/10" />
-            </div>
-            <h4 className="text-sm font-black text-white/20 uppercase tracking-[0.2em] mb-2">Editor de Peças IA</h4>
-            <p className="text-xs text-white/10 max-w-xs leading-relaxed italic">
-              Selecione um template à esquerda para iniciar a geração automática de documentos baseada nos dados do processo.
-            </p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
+      {/* History Section: Automated Documents generated for this matter */}
+      {automatedDocs.length > 0 && (
+        <div className="mt-8 border-t border-white/10 pt-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-blue-500/20 rounded-lg">
+              <RefreshCw size={18} className="text-blue-400" />
+            </div>
+            <h3 className="text-sm font-black text-white uppercase tracking-widest">Peças de Automação Geradas</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {automatedDocs.map((doc) => (
+              <div key={doc.id} className="p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all group">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/5 rounded-lg group-hover:bg-blue-500/20 transition-colors">
+                    <FileText size={16} className="text-slate-400 group-hover:text-blue-400" />
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <p className="text-[11px] font-bold text-white truncate uppercase tracking-tight">{doc.filename}</p>
+                    <p className="text-[9px] text-slate-500 font-mono mt-0.5">
+                      {new Date(doc.createdAt).toLocaleDateString('pt-PT')}
+                    </p>
+                  </div>
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {/* Reutilizar lógica de download se necessário, ou apenas indicar que está no repositório */}
+                    <span className="text-[8px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-black uppercase">Pronto</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
