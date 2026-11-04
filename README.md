@@ -4,7 +4,13 @@
 
 [![Node.js](https://img.shields.io/badge/Node.js-≥22.0.0-339933?logo=node.js)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-≥9.0.0-F69220?logo=pnpm)](https://pnpm.io/)
-[![License](https://img.shields.io/badge/License-Proprietary-blue)]()
+[![License](https://img.shields.io/badge/License-Proprietary%20%7C%20All%20Rights%20Reserved-red)](./LICENSE)
+
+> [!CAUTION]
+> **AVISO DE PROPRIEDADE INTELECTUAL — USO PROIBIDO**
+>
+> Este projeto é disponibilizado publicamente **apenas para demonstração de portfólio e avaliação técnica**.
+> **Não está liberado para uso comercial** e **qualquer uso indevido — mesmo para uso próprio, pessoal, cópia, execução, modificação ou redistribuição — é estritamente proibido** sem autorização prévia e por escrito do autor (**Jhonatan Ecard**). Todos os direitos reservados. Consulte a [LICENSE](./LICENSE).
 
 ---
 
@@ -192,3 +198,13 @@ Os testes da API utilizam Playwright para validar endpoints REST. Os testes E2E 
 ---
 
 > ⚖️ Desenvolvido para o mercado jurídico português — compliant com eIDAS, RGPD e Lei n.º 58/2019
+
+---
+
+## 🔒 Licença e Restrição de Uso (All Rights Reserved)
+
+Copyright © **Jhonatan Ecard**. **Todos os direitos reservados.**
+
+- 🚫 **Uso comercial proibido:** Este software **não** pode ser comercializado, revendido, prestado como serviço (SaaS) ou utilizado em atividades comerciais de terceiros.
+- 🚫 **Uso próprio ou indevido proibido:** É expressamente proibido copiar, clonar para uso próprio/pessoal, executar, modificar, distribuir ou criar trabalhos derivados a partir deste código sem autorização expressa e por escrito do autor.
+- 👁️ **Finalidade exclusiva:** Repositório público apenas para consulta de recrutadores e avaliação técnica de portfólio. Veja os termos completos em [LICENSE](./LICENSE).
